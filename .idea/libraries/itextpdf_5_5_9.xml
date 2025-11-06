@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="itextpdf-5.5.9">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/itextpdf-5.5.9.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jakarta.activation-2.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jakarta.mail-2.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/mail-1.4.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/xstream-1.4.21.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

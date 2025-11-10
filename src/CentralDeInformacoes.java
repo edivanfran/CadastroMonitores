@@ -1,9 +1,7 @@
 import java.util.ArrayList;
 
-
 public class CentralDeInformacoes {
     private ArrayList<Aluno> todosOsAlunos = new ArrayList<Aluno>();
-
 
     public boolean adicionarAluno(Aluno outro) {
         for (Aluno algum : todosOsAlunos) {
@@ -26,24 +24,28 @@ public class CentralDeInformacoes {
     }
 
 
-    public ArrayList<Aluno> getTodosOsAlunos() {
+    public ArrayList<Aluno> getTodosOsAlunos(){
         return todosOsAlunos;
     }
-
     public void setTodosOsAlunos(ArrayList<Aluno> listaAtualizada) {
         this.todosOsAlunos = listaAtualizada;
     }
-
     public ArrayList<EditalDeMonitoria> getTodosOsEditais() {
         return todosOsEditais;
     }
-
     public void setTodosOsEditais(ArrayList<EditalDeMonitoria> todosOsEditais) {
         this.todosOsEditais = todosOsEditais;
     }
-
     private ArrayList<EditalDeMonitoria> todosOsEditais = new ArrayList<EditalDeMonitoria>();
 
+    public void mostrarIdEditais() {
+        for (EditalDeMonitoria edital : todosOsEditais) {
+            System.out.printf("Disciplina: %s Id: %s \n", edital.getDisciplinas(), edital.getId());
+        }
+        if (todosOsEditais.isEmpty()) {
+            System.out.println("Lista vazia");
+        }
+    }
 
     public EditalDeMonitoria recuperarEdital(long id) {
         for (EditalDeMonitoria edital : todosOsEditais) {
@@ -53,7 +55,6 @@ public class CentralDeInformacoes {
         }
         return null;
     }
-
 
     public boolean adicionarEdital(EditalDeMonitoria edital) {
         for (EditalDeMonitoria e : todosOsEditais) {
@@ -66,7 +67,7 @@ public class CentralDeInformacoes {
     }
 
     public boolean isLoginPermitido(String email, String senha) {
-        for (Aluno algum : todosOsAlunos) {
+        for (Aluno algum: todosOsAlunos) {
             if (algum.getEmail().equals(email) && algum.getSenha().equals(senha)) {
                 return true;
             }
@@ -75,7 +76,7 @@ public class CentralDeInformacoes {
     }
 
     public void darBoasVindasUsuario(String email, String senha) {
-        for (Aluno algum : todosOsAlunos) {
+        for (Aluno algum: todosOsAlunos) {
             if (algum.getEmail().equals(email) && algum.getSenha().equals(senha)) {
                 String mensagem = "";
                 if (algum.getGenero() == Sexo.MASCULINO) {
@@ -101,9 +102,8 @@ public class CentralDeInformacoes {
         return;
     }
 
-        public ArrayList<Disciplina> recuperarInscricoesDeUmAlunoEmUmEdital (String matricula,long idEdital){
-            /*pass*/
-            return null;
-        }
-
+    public ArrayList<Disciplina> recuperarInscricoesDeUmAlunoEmUmEdital(String matricula, long idEdital) {
+        /*pass*/
+        return null;
+    }
 }

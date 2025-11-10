@@ -1,20 +1,21 @@
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
+// Mensageiro.java
+import java.util.Properties;
 import javax.mail.Session;
+import javax.mail.Message;
 import javax.mail.Transport;
+import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.util.Properties;
+import javax.mail.PasswordAuthentication;
 
 public class Mensageiro {
 
     private static final boolean MOCK = Boolean.parseBoolean(System.getProperty("mensageiro.mock", "false"));
 
-    private static final String SMTP_HOST = System.getenv("SMTP_HOST");      
-    private static final String SMTP_PORT = System.getenv("SMTP_PORT");      
-    private static final String SENDER_EMAIL = System.getenv("SENDER_EMAIL");
-    private static final String SENDER_PASSWORD = System.getenv("SENDER_PASSWORD");
+    private static final String SMTP_HOST = "smtp.gmail.com";
+    private static final String SMTP_PORT = "587";
+    private static final String SENDER_EMAIL = "testeprojetoemail31@gmail.com";
+    private static final String SENDER_PASSWORD = "wqse lmze pahb eksw";
 
     public static void enviarEmail(String destinatario, String mensagem) {
         String assunto = "Confirmação de inscrição";
@@ -37,8 +38,12 @@ public class Mensageiro {
         String port = (SMTP_PORT != null) ? SMTP_PORT : "587";
 
         Properties props = new Properties();
+
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true"); 
+        props.put("mail.smtp.starttls.enable", "true");       // ativa STARTTLS
+        props.put("mail.smtp.starttls.required", "true");     // exige upgrade para TLS
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2");      // força TLSv1.2
+        props.put("mail.smtp.ssl.trust", host);
         props.put("mail.smtp.host", host);
         props.put("mail.smtp.port", port);
 

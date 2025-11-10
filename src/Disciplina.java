@@ -4,6 +4,7 @@ public class Disciplina {
     private String nomeDisciplina;
     private int vagas;
     private ArrayList<Aluno> alunosInscritos;
+    //vai ter que fazer uma atualização no futuro para setVagas em que vai ter poder alterar para um número acima do atual.
 
     public Disciplina(String nomeDisciplina, int vagas) {
         this.nomeDisciplina = nomeDisciplina;
@@ -26,5 +27,9 @@ public class Disciplina {
 
     public ArrayList<Aluno> getAlunosInscritos() {
         return alunosInscritos;
+    }
+
+    public String toString() {
+        return nomeDisciplina;
     }
 }

@@ -67,7 +67,7 @@ public class Main {
              2 - Listar todos os alunos
              3 - Exibir info. de um aluno específico
              4 - Novo edital
-             5 - Informar quantidade de editais cadastrados
+             5 - Informar quantidade de editais cadastrados e ID
              6 - Detalhar um edital específico
              7 - Inscrever aluno em vaga de algum edital
              8 - Gerar comprov. das inscrições de um aluno em um edital
@@ -85,7 +85,7 @@ public class Main {
                    do {
                        System.out.print("  Nome completo › ");
                        nome = sc.nextLine().strip();
-                       if (!nome.matches("^[A-ZÀ-Ÿ][a-zà-ÿ]+(?: (?:[dD]e|[dD]a|[dD]os|[dD]as|[eE])? [A-ZÀ-Ÿ][a-zà-ÿ]+)+$")) {
+                       if (!nome.matches("^[A-ZÀ-Ÿ][a-zà-ÿ]+(?: (?:[dD]e|[dD]a|[dD]os|[dD]as|[eE])? ?[A-ZÀ-Ÿ]?[a-zà-ÿ]+)+$")) {
                            System.out.println("  [Erro] Nome inválido; tente novamente.");
                        } else break;
                    } while (true);
@@ -128,7 +128,7 @@ public class Main {
                    }
 
 
-                   Aluno novo = new Aluno(nome, matricula, email, senha, genero);
+                   Aluno novo = new Aluno(nome, matricula, senha, email, genero);
                    boolean flag = central.adicionarAluno(novo);
                    if (!flag) {
                        System.out.println("  [Erro] Já existe um aluno com essa matrícula.\n-------------------------------");
@@ -252,6 +252,7 @@ public class Main {
                        System.out.println("Quantidade de editais cadastrados: " + lista.size());
                        System.out.println(menu);
                    }
+                   central.mostrarIdEditais();
                }
                case "6" -> {
                    long id;
@@ -308,6 +309,9 @@ public class Main {
                    boolean inscrito = edital.inscreverAluno(aluno, nomeDisciplina);
                    if (inscrito) {
                        persistencia.salvarCentral(central, nomeArquivo);
+                       Mensageiro.enviarEmail(aluno.getEmail(), String.format("""
+                               Sua inscrição no Edital de Monitoria n.º %s foi efetuada.
+                               """, edital.getNumero()));
                    } else {
                        System.out.println("[Erro] Não foi possível inscrever o aluno.");
                    }
@@ -335,7 +339,7 @@ public class Main {
                        }
                    System.out.println(menu);
                }
-               case "S", "s" -> System.out.println("Encerrando...");
+               case "S", "s" -> System.out.println("Programa encerrado.");
                default -> System.out.println("[Erro] Opção inválida.");
            }
        } while (!input.strip().equalsIgnoreCase("S"));

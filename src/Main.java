@@ -10,7 +10,7 @@ public class Main {
    public static void main(String[] args) {
        File[] pasta = new File(System.getProperty("user.dir")).listFiles();
        ArrayList<File> arquivos = new ArrayList<>();
-       //assert pasta != null;
+
        for (File arquivo : pasta) {
            if (arquivo.getName().endsWith(".xml")) {
                arquivos.add(arquivo);
@@ -44,6 +44,22 @@ public class Main {
            nomeArquivo = sc.nextLine().strip();
            central = persistencia.recuperarCentral(nomeArquivo);
        }
+
+       //Pensando em colocar em um while, mas o usuário tem que ser cadastro antes.
+       System.out.println("Coloque as seguintes informações para acessar o sistema >>");
+       System.out.print("Digite o seu email: ");
+       String entrada_email = sc.nextLine();
+       System.out.print("Digite sua senha: ");
+       String entrada_senha = sc.nextLine();
+
+       if (central.isLoginPermitido(entrada_email, entrada_senha)) {
+           System.out.println("Login Permitido.");
+           central.darBoasVindasUsuario(entrada_email, entrada_senha);
+       } else {
+           System.out.println("Login não reconhecido.");
+       }
+       // Seria legal a opção de esqueci a senha.
+
        String menu = """
            \nA seguir, escolha uma opção:
            -------------------------------

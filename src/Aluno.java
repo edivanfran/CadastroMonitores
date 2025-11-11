@@ -13,7 +13,9 @@ public class Aluno {
 		email = e;
 		genero = g; // Lembrar de usar um Sexo.valueOf("String".toUpperCase()) na hora de inserir.
 	}
-	
+
+    // isso é um test de commit
+
 	public String toString() {
 		return nome;
 	}

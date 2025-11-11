@@ -5,17 +5,17 @@ public class Aluno {
 	public String senha;
 	public String email;
 	public Sexo genero;
-	
-	public Aluno(String n, String m, String s, String e, Sexo g) {
+    // Colocar uma senha de recuperação para o aluno conseguir mudar o seu email e senha
+    // Fazer a verificação se a senha e o email tem espaço no meio.
+
+    public Aluno(String n, String m, String s, String e, Sexo g) {
 		nome = n;
 		matricula = m; //Vê como a matricula vai ser gerada para inserir aqui, na Central não tem como ter duas matriculas iguais.
 		senha = s;
 		email = e;
 		genero = g; // Lembrar de usar um Sexo.valueOf("String".toUpperCase()) na hora de inserir.
 	}
-
-    // isso é um test de commit
-
+	
 	public String toString() {
 		return nome;
 	}

@@ -1,7 +1,18 @@
 import java.util.ArrayList;
 
 public class CentralDeInformacoes {
+    private Coordenador coordenador;
     private ArrayList<Aluno> todosOsAlunos = new ArrayList<Aluno>();
+
+    public void cadastrarCoordenador(String email, String senha) {
+        this.coordenador = new Coordenador(email, senha);
+    }
+    public Coordenador getCoordenador() {
+        return coordenador;
+    }
+    public boolean temCoordenador() {
+        return coordenador != null;
+    }
 
     public boolean adicionarAluno(Aluno outro) {
         for (Aluno algum : todosOsAlunos) {

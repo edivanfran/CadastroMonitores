@@ -23,4 +23,7 @@ public class Coordenador {
     public void setSenha(String senha) {
         this.senha = senha;
     }
+    public boolean autenticar(String email, String senha) {
+        return this.email.equals(email) && this.senha.equals(senha);
+    }
 }

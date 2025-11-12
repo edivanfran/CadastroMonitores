@@ -33,7 +33,7 @@ public class Main {
            System.out.println("Não foi encontrado nenhum arquivo de Central de Informações de Alunos.\nCriando nova Central...");
            central = new CentralDeInformacoes();
            System.out.print("Forneça um nome para a Central › ");
-           nomeArquivo = sc.nextLine().strip();
+           nomeArquivo = sc.nextLine().strip().toUpperCase();;
        } else {
            System.out.println("Foram encontradas as seguintes Centrais de Informações de Alunos:\n-------------------------------");
            for (File arquivo : arquivos) {
@@ -74,7 +74,7 @@ public class Main {
                central.getCoordenador().autenticar(entrada_email, entrada_senha)) {
 
            System.out.println("Login de Coordenador autorizado!");
-           // Aqui você pode liberar todo o menu normalmente.
+
        }
 
        if (central.isLoginPermitido(entrada_email, entrada_senha)) {
@@ -109,7 +109,7 @@ public class Main {
                    String nome;
                    do {
                        System.out.print("  Nome completo › ");
-                       nome = sc.nextLine().strip();
+                       nome = sc.nextLine().strip().toUpperCase();;
                        if (!nome.matches("^[A-ZÀ-Ÿ][a-zà-ÿ]+(?: (?:[dD]e|[dD]a|[dD]os|[dD]as|[eE])? ?[A-ZÀ-Ÿ]?[a-zà-ÿ]+)+$")) {
                            System.out.println("  [Erro] Nome inválido; tente novamente.");
                        } else break;
@@ -125,7 +125,7 @@ public class Main {
                    String email;
                    do {
                        System.out.print("  E-mail › ");
-                       email = sc.nextLine().strip();
+                       email = sc.nextLine().strip().toUpperCase();;
                        if (!email.matches("(?i)^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$")) {
                            System.out.println("  [Erro] E-mail inválido; tente novamente.");
                        } else break;

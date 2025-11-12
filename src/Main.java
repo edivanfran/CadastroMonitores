@@ -45,12 +45,37 @@ public class Main {
            central = persistencia.recuperarCentral(nomeArquivo);
        }
 
+       // cria coordenador só se ainda não existir
+       if (!central.temCoordenador()) {
+           System.out.println("\nNenhum coordenador cadastrado ainda!");
+           System.out.println("Vamos realizar o primeiro cadastro de Coordenador:");
+
+           System.out.print("E-mail: ");
+           String emailCoord = sc.nextLine();
+
+           System.out.print("Senha: ");
+           String senhaCoord = sc.nextLine();
+
+           central.cadastrarCoordenador(emailCoord, senhaCoord);
+           persistencia.salvarCentral(central, nomeArquivo);
+
+           System.out.println("Coordenador cadastrado com sucesso!\n");
+       }
+
        //Pensando em colocar em um while, mas o usuário tem que ser cadastro antes.
        System.out.println("Coloque as seguintes informações para acessar o sistema >>");
        System.out.print("Digite o seu email: ");
        String entrada_email = sc.nextLine();
        System.out.print("Digite sua senha: ");
        String entrada_senha = sc.nextLine();
+
+       // Verifica se é o coordenador
+       if (central.getCoordenador() != null &&
+               central.getCoordenador().autenticar(entrada_email, entrada_senha)) {
+
+           System.out.println("Login de Coordenador autorizado!");
+           // Aqui você pode liberar todo o menu normalmente.
+       }
 
        if (central.isLoginPermitido(entrada_email, entrada_senha)) {
            System.out.println("Login Permitido.");

@@ -51,40 +51,77 @@ public class Main {
        }
 
        // Cria coordenador só se ainda não existir
+       Usuario secaoAtual;
+           /*TODO|
+              futuramente, servirá para o programa saber se a seção
+              atual é de um aluno — e portanto, só deve mostrar a tela do aluno —,
+              ou se é de um coordenador — e portanto, deve mostrar a tela do coordenador;
+              só terá utilidade quando houver a divisão das atribuições
+            */
        if (!central.temCoordenador()) {
            System.out.println("\nNenhum coordenador cadastrado ainda!");
            System.out.println("Vamos realizar primeiro o cadastro de Coordenador:");
            System.out.print("  E-mail › ");
            String emailCoord = sc.nextLine(); //TODO| adicionar tratamento para o caso de e-mail inválido
-           System.out.print("  Senha › ");
+           System.out.print("  Senha › "); //TODO| adicionar mecanismo simples de confirmação de senha
            String senhaCoord = sc.nextLine(); //TODO| adicionar tratamento para o caso de senha vazia
            central.cadastrarCoordenador(emailCoord, senhaCoord);
            persistencia.salvarCentral(central, nomeArquivo);
            System.out.println("Coordenador cadastrado com sucesso!\n");
+           secaoAtual = Usuario.COORDENADOR;
+       } else { /* se o coordenador acabou de se cadastrar, não há necessidade de pedir login */
+           do {
+               System.out.println("Logando...");
+               System.out.print("  Digite seu e-mail\n  » ");
+               String entrada_email = sc.nextLine();
+               System.out.print("  Digite sua senha | Esqueceu a senha? Deixe vazio e tecle ENTER\n  » ");
+               String entrada_senha = sc.nextLine();
+               // Recuperação de senha
+               if (entrada_senha.isEmpty()) {
+                   String codigo_recuperacao = ((Integer)(int)(Math.random() * 1000000)).toString(); /* número aleatório de 000000 a 999999 */
+                   /*TODO|
+                      colocar um mecanismo para enviar um email pro usuário com o número gerado acima,
+                      aí o usuário tem que pôr o mesmo número, se ele colocar, ele consegue colocar uma nova senha,
+                      senão, o login não reconhece
+                    */
+                   System.out.println("  Um e-mail será enviado em alguns instantes contendo um código de recuperação.");
+                   System.out.println("  Informe o código recebido › ");
+                   String entrada_codigo = sc.nextLine();
+                   if (entrada_codigo.equals(codigo_recuperacao)) {
+                       System.out.println("  Código validado.");
+                       do {
+                           System.out.println("  Informe uma nova senha › ");
+                           entrada_senha = sc.nextLine();
+                           System.out.print("  Confirme a senha › ");
+                           String confirmacao = sc.nextLine();
+                           if (entrada_senha.equals(confirmacao)) break;
+                           else {
+                               System.out.println("  [Erro] As senhas não coincidem; tente novamente.");
+                           }
+                       } while (true);
+                   } else {
+                       System.out.println("  Código inválido; acesso negado — você deverá repetir o processo de login");
+                       continue;
+                   }
+               }
+               // Verifica se é o coordenador
+               if (central.getCoordenador() != null &&
+                       central.getCoordenador().autenticar(entrada_email, entrada_senha)) {
+                   System.out.println("Logou como Coordenador.");
+                   System.out.println("Boas-vindas!");
+                   secaoAtual = Usuario.COORDENADOR;
+                   break;
+               } // Verifica se é aluno
+               if (central.isLoginPermitido(entrada_email, entrada_senha)) {
+                   System.out.println("Logou como Aluno.");
+                   central.darBoasVindasUsuario(entrada_email, entrada_senha);
+                   secaoAtual = Usuario.ALUNO;
+                   break;
+               } else {
+                   System.out.println("Acesso negado — você deverá repetir o processo de login");
+               }
+           } while (true);
        }
-
-       //TODO| Pensando em colocar em um while, mas o usuário tem que ser cadastro antes.
-       System.out.println("Coloque as seguintes informações para acessar o sistema:");
-       System.out.print("  Digite o seu email › ");
-       String entrada_email = sc.nextLine();
-       System.out.print("  Digite sua senha › ");
-       String entrada_senha = sc.nextLine();
-
-       // Verifica se é o coordenador
-       if (central.getCoordenador() != null &&
-               central.getCoordenador().autenticar(entrada_email, entrada_senha)) {
-
-           System.out.println("Logou como Coordenador.");
-
-       }
-
-       if (central.isLoginPermitido(entrada_email, entrada_senha)) {
-           System.out.println("Logou como Aluno.");
-           central.darBoasVindasUsuario(entrada_email, entrada_senha);
-       } else {
-           System.out.println("Login não reconhecido.");
-       }
-       //TODO| Seria legal a opção de esqueci a senha.
 
        String menu = """
            \nA seguir, escolha uma opção:

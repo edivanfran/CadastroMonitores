@@ -50,11 +50,12 @@ public class CentralDeInformacoes {
     private ArrayList<EditalDeMonitoria> todosOsEditais = new ArrayList<EditalDeMonitoria>();
 
     public void mostrarIdEditais() {
-        for (EditalDeMonitoria edital : todosOsEditais) {
-            System.out.printf("Disciplina: %s Id: %s \n", edital.getDisciplinas(), edital.getId());
-        }
         if (todosOsEditais.isEmpty()) {
             System.out.println("Lista vazia");
+            return;
+        }
+        for (EditalDeMonitoria edital : todosOsEditais) {
+            System.out.printf("Disciplina: %s Id: %s \n", edital.getDisciplinas(), edital.getId());
         }
     }
 

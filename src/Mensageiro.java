@@ -17,8 +17,7 @@ public class Mensageiro {
     private static final String SENDER_EMAIL = "testeprojetoemail31@gmail.com";
     private static final String SENDER_PASSWORD = "wqse lmze pahb eksw";
 
-    public static void enviarEmail(String destinatario, String mensagem) {
-        String assunto = "Confirmação de inscrição";
+    public static void enviarEmail(String destinatario, String assunto, String mensagem) {
 
         if (MOCK) {
             System.out.println("=== Mensageiro (MOCK) ===");

@@ -24,7 +24,6 @@ public class CentralDeInformacoes {
         return true;
     }
 
-
     public Aluno recuperarAluno(String matricula) {
         for (Aluno algum : todosOsAlunos) {
             if (algum.getMatricula().equals(matricula)) {
@@ -33,7 +32,6 @@ public class CentralDeInformacoes {
         }
         return null;
     }
-
 
     public ArrayList<Aluno> getTodosOsAlunos(){
         return todosOsAlunos;
@@ -76,6 +74,15 @@ public class CentralDeInformacoes {
         }
         todosOsEditais.add(edital);
         return true;
+    }
+
+    public Aluno retornarAlunoPeloEmail(String email) {
+        for (Aluno algum: todosOsAlunos) {
+            if (algum.getEmail().equals(email)) {
+                return algum;
+            }
+        }
+        return null;
     }
 
     public boolean isLoginPermitido(String email, String senha) {

@@ -78,12 +78,10 @@ public class Main {
                String entrada_senha = sc.nextLine();
                // Recuperação de senha
                if (entrada_senha.isEmpty()) {
-                   String codigo_recuperacao = ((Integer)(int)(Math.random() * 1000000)).toString(); /* número aleatório de 000000 a 999999 */
-                   /*TODO|
-                      colocar um mecanismo para enviar um email pro usuário com o número gerado acima,
-                      aí o usuário tem que pôr o mesmo número, se ele colocar, ele consegue colocar uma nova senha,
-                      senão, o login não reconhece
-                    */
+                   System.out.println("Só um momento estamos enviando o email...");
+                   String codigo_recuperacao = ((Integer)(int)(Math.random() * 100000)).toString(); /* número aleatório de 00000 a 99999 */
+
+                   Mensageiro.enviarEmail(entrada_email, "Recuperação da conta no Cadastro", "O código de recuperação da sua conta é: " + codigo_recuperacao);
                    System.out.println("  Um e-mail será enviado em alguns instantes contendo um código de recuperação.");
                    System.out.println("  Informe o código recebido › ");
                    String entrada_codigo = sc.nextLine();
@@ -94,8 +92,16 @@ public class Main {
                            entrada_senha = sc.nextLine();
                            System.out.print("  Confirme a senha › ");
                            String confirmacao = sc.nextLine();
-                           if (entrada_senha.equals(confirmacao)) break;
-                           else {
+                           if (entrada_senha.equals(confirmacao)) {
+                               Aluno aluno = central.retornarAlunoPeloEmail(entrada_email);
+                               if (aluno == null) {
+                                   System.out.println("Você não está cadastrado no sistema.");
+                                   break;
+                               }
+                               aluno.setSenha(entrada_senha);
+                               System.out.println("Sua senha foi atualizada.");
+                               break;
+                           } else {
                                System.out.println("  [Erro] As senhas não coincidem; tente novamente.");
                            }
                        } while (true);
@@ -382,9 +388,11 @@ public class Main {
                    System.out.print("Digite o nome da disciplina › ");
                    String nomeDisciplina = sc.nextLine().strip();
                    boolean inscrito = edital.inscreverAluno(aluno, nomeDisciplina);
+                   // TODO colocar um anexo do comprovante de inscrição no email
                    if (inscrito) {
                        persistencia.salvarCentral(central, nomeArquivo);
-                       Mensageiro.enviarEmail(aluno.getEmail(), String.format("""
+                       Mensageiro.enviarEmail(aluno.getEmail(), "Confirmação de inscrição",
+                               String.format("""
                                Sua inscrição no Edital de Monitoria n.º %s foi efetuada.
                                """, edital.getNumero()));
                    } else {

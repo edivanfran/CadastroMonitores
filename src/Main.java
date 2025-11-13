@@ -140,7 +140,7 @@ public class Main {
 
        // Rotina principal do programa
        String input;
-       System.out.println(menu); //TODO| trocar println por print
+       System.out.print(menu);
        do {
            input = sc.nextLine();
            switch (input.strip()) {

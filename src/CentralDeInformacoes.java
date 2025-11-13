@@ -89,28 +89,25 @@ public class CentralDeInformacoes {
     public void darBoasVindasUsuario(String email, String senha) {
         for (Aluno algum: todosOsAlunos) {
             if (algum.getEmail().equals(email) && algum.getSenha().equals(senha)) {
-                String mensagem = "";
+                String mensagem;
                 if (algum.getGenero() == Sexo.MASCULINO) {
-                    mensagem += "Bem-vindo ";
+                    mensagem = "Bem-vindo, ";
                 } else if (algum.getGenero() == Sexo.FEMININO) {
-                    mensagem += "Bem-vinda ";
+                    mensagem = "Bem-vinda, ";
                 } else if (algum.getGenero() == Sexo.NAO_BINARIO) {
-                    mensagem += "Bem-vinde ";
+                    mensagem = "Bem-vinde, ";
                 } else {
-                    mensagem += "Bem-vindo ";
+                    mensagem = "Bem-vindo, ";
                 }
-
                 String[] nome = algum.getNome().split(" ");
                 String primeiro_nome = nome[0];
                 mensagem += primeiro_nome;
                 mensagem += "!";
-
                 System.out.println(mensagem);
                 return;
             }
         }
         System.out.println("Olá usuário!");
-        return;
     }
 
     public ArrayList<Disciplina> recuperarInscricoesDeUmAlunoEmUmEdital(String matricula, long idEdital) {

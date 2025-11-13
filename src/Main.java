@@ -8,15 +8,18 @@ import java.util.Scanner;
 
 public class Main {
    public static void main(String[] args) {
-       File[] pasta = new File(System.getProperty("user.dir")).listFiles();
+       // Toma o diretório onde o usuário executa o programa e adiciona todos os arquivos .xml deste em uma lista
+       File[] pasta = new File(System.getProperty("user.dir")).listFiles(); /* "user.dir" → diretório onde o programa é executado */
        ArrayList<File> arquivos = new ArrayList<>();
-
        for (File arquivo : pasta) {
            if (arquivo.getName().endsWith(".xml")) {
                arquivos.add(arquivo);
            }
        }
-       Scanner sc = new Scanner(System.in);
+
+       Scanner sc = new Scanner(System.in); // Inicializa leitor de entrada do usuário
+
+       // Saúda o usuário corretamente dependendo do período do dia em que ele executa o programa
        if (LocalTime.now().getHour() >= 18) {
            System.out.println("Boa noite.");
        } else if (LocalTime.now().getHour() >= 12) {
@@ -26,6 +29,8 @@ public class Main {
        } else {
            System.out.println("Boa madrugada.");
        }
+
+       // Tenta recuperar as centrais diretamente dos arquivos, caso encontradas, ou cria uma nova caso não
        Persistencia persistencia = new Persistencia();
        CentralDeInformacoes central;
        String nomeArquivo;
@@ -33,7 +38,7 @@ public class Main {
            System.out.println("Não foi encontrado nenhum arquivo de Central de Informações de Alunos.\nCriando nova Central...");
            central = new CentralDeInformacoes();
            System.out.print("Forneça um nome para a Central › ");
-           nomeArquivo = sc.nextLine().strip().toUpperCase();;
+           nomeArquivo = sc.nextLine().strip().toUpperCase();
        } else {
            System.out.println("Foram encontradas as seguintes Centrais de Informações de Alunos:\n-------------------------------");
            for (File arquivo : arquivos) {
@@ -45,45 +50,41 @@ public class Main {
            central = persistencia.recuperarCentral(nomeArquivo);
        }
 
-       // cria coordenador só se ainda não existir
+       // Cria coordenador só se ainda não existir
        if (!central.temCoordenador()) {
            System.out.println("\nNenhum coordenador cadastrado ainda!");
-           System.out.println("Vamos realizar o primeiro cadastro de Coordenador:");
-
-           System.out.print("E-mail: ");
-           String emailCoord = sc.nextLine();
-
-           System.out.print("Senha: ");
-           String senhaCoord = sc.nextLine();
-
+           System.out.println("Vamos realizar primeiro o cadastro de Coordenador:");
+           System.out.print("  E-mail › ");
+           String emailCoord = sc.nextLine(); //TODO| adicionar tratamento para o caso de e-mail inválido
+           System.out.print("  Senha › ");
+           String senhaCoord = sc.nextLine(); //TODO| adicionar tratamento para o caso de senha vazia
            central.cadastrarCoordenador(emailCoord, senhaCoord);
            persistencia.salvarCentral(central, nomeArquivo);
-
            System.out.println("Coordenador cadastrado com sucesso!\n");
        }
 
-       //Pensando em colocar em um while, mas o usuário tem que ser cadastro antes.
-       System.out.println("Coloque as seguintes informações para acessar o sistema >>");
-       System.out.print("Digite o seu email: ");
+       //TODO| Pensando em colocar em um while, mas o usuário tem que ser cadastro antes.
+       System.out.println("Coloque as seguintes informações para acessar o sistema:");
+       System.out.print("  Digite o seu email › ");
        String entrada_email = sc.nextLine();
-       System.out.print("Digite sua senha: ");
+       System.out.print("  Digite sua senha › ");
        String entrada_senha = sc.nextLine();
 
        // Verifica se é o coordenador
        if (central.getCoordenador() != null &&
                central.getCoordenador().autenticar(entrada_email, entrada_senha)) {
 
-           System.out.println("Login de Coordenador autorizado!");
+           System.out.println("Logou como Coordenador.");
 
        }
 
        if (central.isLoginPermitido(entrada_email, entrada_senha)) {
-           System.out.println("Login Permitido.");
+           System.out.println("Logou como Aluno.");
            central.darBoasVindasUsuario(entrada_email, entrada_senha);
        } else {
            System.out.println("Login não reconhecido.");
        }
-       // Seria legal a opção de esqueci a senha.
+       //TODO| Seria legal a opção de esqueci a senha.
 
        String menu = """
            \nA seguir, escolha uma opção:
@@ -99,38 +100,48 @@ public class Main {
              S - Sair
            -------------------------------
            »\s""";
+
+       // Rotina principal do programa
        String input;
-       System.out.println(menu);
+       System.out.println(menu); //TODO| trocar println por print
        do {
            input = sc.nextLine();
            switch (input.strip()) {
-               case "1" -> {
+               case "1" -> { /* 1 - Novo aluno */
                    System.out.println("Cadastrando novo aluno...\n-------------------------------");
                    String nome;
                    do {
                        System.out.print("  Nome completo › ");
-                       nome = sc.nextLine().strip().toUpperCase();;
+                       nome = sc.nextLine().strip();
                        if (!nome.matches("^[A-ZÀ-Ÿ][a-zà-ÿ]+(?: (?:[dD]e|[dD]a|[dD]os|[dD]as|[eE])? ?[A-ZÀ-Ÿ]?[a-zà-ÿ]+)+$")) {
                            System.out.println("  [Erro] Nome inválido; tente novamente.");
-                       } else break;
+                           /* nome precisa ser real; depois, nome é passado para caixa baixa */
+                       } else {
+                           nome = nome.toLowerCase();
+                           break;
+                       }
                    } while (true);
-                   String matricula;
+                   String matricula; // Recebe matrícula e verifica se é válida
                    do {
                        System.out.print("  Matrícula › ");
                        matricula = sc.nextLine().strip();
-                       if (!matricula.matches("^\\d+$")) {
-                           System.out.println("  [Erro] Nome inválido; tente novamente.");
+                       if (!matricula.matches("^\\d+$")) /* ← matrícula deve ser numérica */ {
+                           System.out.println("  [Erro] Matrícula inválida; tente novamente.");
                        } else break;
                    } while (true);
-                   String email;
+                   String email; // Recebe e-mail e verifica se é válido
                    do {
                        System.out.print("  E-mail › ");
-                       email = sc.nextLine().strip().toUpperCase();;
+                       email = sc.nextLine().strip();
                        if (!email.matches("(?i)^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$")) {
                            System.out.println("  [Erro] E-mail inválido; tente novamente.");
-                       } else break;
+                           /* e-mail precisa ser real, e deve possuir apenas minúsculas; depois, e-mail é passado para caixa baixa */
+                       } else {
+                           email = email.toLowerCase();
+                           break;
+                       }
                    } while (true);
-                   String senha;
+                   String senha; // Recebe a senha e obriga o usuário a repetí-la para validá-la
                    while (true) {
                        System.out.print("  Senha › ");
                        senha = sc.nextLine();
@@ -151,9 +162,7 @@ public class Main {
                            default -> System.out.println("  [Erro] Opção inválida. Digite 'M', 'F' ou 'NB'.");
                        }
                    }
-
-
-                   Aluno novo = new Aluno(nome, matricula, senha, email, genero);
+                   Aluno novo = new Aluno(nome, matricula, senha, email, genero); // Cria o aluno, e verifica se já existe algum conflitante
                    boolean flag = central.adicionarAluno(novo);
                    if (!flag) {
                        System.out.println("  [Erro] Já existe um aluno com essa matrícula.\n-------------------------------");
@@ -164,7 +173,8 @@ public class Main {
                    }
                    System.out.println(menu);
                }
-               case "2" -> {
+
+               case "2" -> { /* 2 - Listar todos os alunos */
                    ArrayList<Aluno> lista = central.getTodosOsAlunos();
                    if (lista.isEmpty()) {
                        System.out.println("Nenhum aluno cadastrado ainda.");
@@ -181,12 +191,11 @@ public class Main {
                    }
                    System.out.println(menu);
                }
-               case "3" -> {
+
+               case "3" -> { /* 3 - Exibir info. de um aluno específico */
                    System.out.print("Digite a matrícula do aluno › ");
                    String matricula = sc.nextLine().strip();
                    Aluno alunoEncontrado = central.recuperarAluno(matricula);
-
-
                    if (alunoEncontrado == null) {
                        System.out.println("[Erro] Nenhum aluno encontrado com essa matrícula.");
                    } else {
@@ -199,21 +208,22 @@ public class Main {
                    }
                    System.out.println(menu);
                }
-               case "4" -> {
+
+               case "4" -> { /* 4 - Novo edital */
                    System.out.println("Cadastrando novo edital...\n-------------------------------");
                    String numeroEdital;
                    do {
                        System.out.print("  Número do edital › ");
                        numeroEdital = sc.nextLine().strip();
-                       if (!numeroEdital.matches("^\\d+$")) {
+                       if (!numeroEdital.matches("^\\d+$")) /* ← garante que seja numérico */ {
                            System.out.println("  [Erro] Nome inválido; tente novamente.");
                        } else break;
                    } while (true);
                    LocalDate dataInicio;
-                   do {
+                   do { // Recebe a data em formato DD/MM/AAAA e, após validada, converte-a para AAAA-MM-DD (→ LocalDate)
                        System.out.print("  Data de início (DD/MM/AAAA) › ");
                        String temp = sc.nextLine().strip();
-                       if (!temp.matches("^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}$")) {
+                       if (!temp.matches("^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}$")) /* ← valida a data */{
                            System.out.println("  [Erro] Data inválida; tente novamente.");
                        } else {
                            String[] dataDesconstruida = temp.split("/");
@@ -222,7 +232,7 @@ public class Main {
                        }
                    } while (true);
                    LocalDate dataLimite;
-                   do {
+                   do { // Mesmo procedimento
                        System.out.print("  Data de limite (DD/MM/AAAA) › ");
                        String temp = sc.nextLine().strip();
                        if (!temp.matches("^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}$")) {
@@ -235,7 +245,7 @@ public class Main {
                    } while (true);
                    EditalDeMonitoria novoEdital = new EditalDeMonitoria(System.currentTimeMillis(), numeroEdital, dataInicio, dataLimite);
                    boolean flag = false;
-                   do {
+                   do { // Adiciona as disciplinas no edital
                        System.out.println("  Adicionando Disciplina ao edital...\n  -----------------------------");
                        System.out.println("    Nome da Disciplina › ");
                        String nomeDisciplina = sc.nextLine();
@@ -269,7 +279,8 @@ public class Main {
                    }
                    System.out.println(menu);
                }
-               case "5" -> {
+
+               case "5" -> { /* 5 - Informar quantidade de editais cadastrados e ID */
                    ArrayList<EditalDeMonitoria> lista = central.getTodosOsEditais();
                    if (lista.isEmpty()) {
                        System.out.println("Nenhum edital cadastrado ainda.");
@@ -279,7 +290,8 @@ public class Main {
                    }
                    central.mostrarIdEditais();
                }
-               case "6" -> {
+
+               case "6" -> { /* 6 - Detalhar um edital específico */
                    long id;
                    do {
                        System.out.print("Digite o ID do edital › ");
@@ -301,7 +313,8 @@ public class Main {
                    }
                    System.out.println(menu);
                }
-               case "7" -> {
+
+               case "7" -> { /* 7 - Inscrever aluno em vaga de algum edital */
                    System.out.print("Digite a matrícula do aluno › ");
                    String matricula = sc.nextLine().strip();
                    Aluno aluno = central.recuperarAluno(matricula);
@@ -342,7 +355,8 @@ public class Main {
                    }
                    System.out.println(menu);
                }
-               case "8" -> {
+
+               case "8" -> { /* 8 - Gerar comprov. das inscrições de um aluno em um edital */
                    System.out.print("Digite a matrícula do aluno › ");
                    String matricula = sc.nextLine().strip();
                    Aluno alunoEncontrado = central.recuperarAluno(matricula);
@@ -364,7 +378,8 @@ public class Main {
                        }
                    System.out.println(menu);
                }
-               case "S", "s" -> System.out.println("Programa encerrado.");
+
+               case "S", "s" /* S - Sair */ -> System.out.println("Programa encerrado.");
                default -> System.out.println("[Erro] Opção inválida.");
            }
        } while (!input.strip().equalsIgnoreCase("S"));

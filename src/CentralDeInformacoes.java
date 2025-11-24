@@ -85,6 +85,9 @@ public class CentralDeInformacoes {
         return null;
     }
 
+    //Poderia fazer uma Classe Usuário e fazer Alunos e Coordenador herdar dela, assim não precisariamos de um
+    //um métoodo autenticar em Coordenador, poderia mos fazer um polimorfismo nesse métoodo com um Array de Usuários
+    //com isso ele poderia acessar tanto os emails de Coordenador e de Aluno.
     public boolean isLoginPermitido(String email, String senha) {
         for (Aluno algum: todosOsAlunos) {
             if (algum.getEmail().equals(email) && algum.getSenha().equals(senha)) {

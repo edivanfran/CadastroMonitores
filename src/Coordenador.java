@@ -2,8 +2,8 @@ import java.util.ArrayList;
 
 public class Coordenador extends Usuario {
 
-    public Coordenador(String email, String senha) {
-        super(email, senha);
+    public Coordenador(String email, String senha, String nome) {
+        super(email, senha, nome);
     }
 
     public boolean autenticar(String email, String senha) {

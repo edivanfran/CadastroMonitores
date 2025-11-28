@@ -1,12 +1,16 @@
+import excecoes.LoginInvalidoException;
+
 public abstract class Usuario {
     private long id;
+    private String nome;
     public String email;
     public String senha;
 
-    public Usuario(String email, String senha) {
+    public Usuario(String email, String senha, String nome) {
         this.id = System.currentTimeMillis();
         this.email = email;
         this.senha = senha;
+        this.nome = nome;
     }
 
     public String getSenha() {
@@ -15,6 +19,14 @@ public abstract class Usuario {
 
     public void setSenha(String senha) {
         this.senha = senha;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public long getId() {
@@ -29,13 +41,19 @@ public abstract class Usuario {
         this.email = email;
     }
 
-    public boolean fazerLogin(String email, String senha) {
-        return this.email.equals(email) && this.senha.equals(senha);
+    public void fazerLogin(String email, String senha) throws LoginInvalidoException {
+        if (this.email.equals(email) && this.senha.equals(senha)) {
+            throw new LoginInvalidoException();
+        }
     }
 
-    public void editarPerfil(String novoEmail, String novaSenha) {
+    public void editarEmail(String novoEmail) {
         this.email = novoEmail;
+    }
+
+    public void editarSenha(String novaSenha) {
         this.senha = novaSenha;
     }
+
 
 }

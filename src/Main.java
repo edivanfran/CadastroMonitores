@@ -275,7 +275,7 @@ public class Main {
                        }
                    } while (true);
                    LocalDate dataLimite;
-                   do { // Mesmo procedimento
+                   do { // Mesmo procedimento para data limite.
                        System.out.print("  Data de limite (DD/MM/AAAA) › ");
                        String temp = sc.nextLine().strip();
                        if (!temp.matches("^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}$")) {
@@ -292,15 +292,22 @@ public class Main {
                        System.out.println("  Adicionando Disciplina ao edital...\n  -----------------------------");
                        System.out.println("    Nome da Disciplina › ");
                        String nomeDisciplina = sc.nextLine();
-                       String qtdeVagas;
+                       String qtdeVagasVoluntarias = "";
+                       String qtdeVagasRemuneradas = "";
+                       // TODO| Remover a verificação isdigit de vaga e colocá-lo como integer.
                        do {
-                           System.out.println("    Quantidade de vagas › ");
-                           qtdeVagas = sc.nextLine().strip();
-                           if (!qtdeVagas.matches("^\\d+$")) {
+                           System.out.println("    Quantidade de vagas remuneradas › ");
+                           qtdeVagasRemuneradas = sc.nextLine().strip();
+                           if (!qtdeVagasRemuneradas.matches("^\\d+$")) {
+                               System.out.println("  [Erro] Valor inválido; tente novamente.");
+                           } else break;
+                           System.out.println("    Quantidade de vagas voluntarias › ");
+                           qtdeVagasVoluntarias = sc.nextLine().strip();
+                           if (!qtdeVagasVoluntarias.matches("^\\d+$")) {
                                System.out.println("  [Erro] Valor inválido; tente novamente.");
                            } else break;
                        } while (true);
-                       novoEdital.adicionarDisciplina(new Disciplina(nomeDisciplina, Integer.parseInt(qtdeVagas)));
+                       novoEdital.adicionarDisciplina(new Disciplina(nomeDisciplina, Integer.parseInt(qtdeVagasRemuneradas), Integer.parseInt(qtdeVagasVoluntarias)));
                        System.out.print("  -----------------------------\n  Disciplina adicionada. Deseja adicionar outra? (S/N)\n» ");
                        do {
                            String resposta = sc.nextLine();

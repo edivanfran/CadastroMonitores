@@ -1,6 +1,5 @@
 
 public class Aluno extends Usuario{
-	public String nome;
 	public String matricula;
 	public Sexo genero;
 
@@ -8,22 +7,13 @@ public class Aluno extends Usuario{
     // Fazer a verificação se a senha e o email tem espaço no meio.
 
     public Aluno(String email, String senha, String nome, String matricula, Sexo genero) {
-        super(email, senha);
-        this.nome = nome;
+        super(email, senha, nome);
         this.matricula = matricula;
         this.genero = genero;
     }
 
 	public String toString() {
-		return nome;
-	}
-
-	public String getNome() {
-		return nome;
-	}
-
-	public void setNome(String nome) {
-		this.nome = nome;
+		return this.getNome();
 	}
 
 	public String getMatricula() {

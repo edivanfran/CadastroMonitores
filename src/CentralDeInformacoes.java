@@ -4,8 +4,8 @@ public class CentralDeInformacoes {
     private Coordenador coordenador;
     private ArrayList<Aluno> todosOsAlunos = new ArrayList<Aluno>();
 
-    public void cadastrarCoordenador(String email, String senha) {
-        this.coordenador = new Coordenador(email, senha);
+    public void cadastrarCoordenador(String email, String senha, String nome) {
+        this.coordenador = new Coordenador(email, senha, nome);
     }
     public Coordenador getCoordenador() {
         return coordenador;

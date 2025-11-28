@@ -76,6 +76,35 @@ public class CentralDeInformacoes {
         return true;
     }
 
+    /**
+     * Cadastra um novo edital no sistema.
+     * Apenas coordenadores podem executar esta operação.
+     * O coordenador que está executando a operação
+     *  O edital a ser cadastrado
+     *  Retorna true se o edital foi cadastrado com sucesso, false caso contrário
+     */
+    public boolean cadastrarEdital(Coordenador coordenador, EditalDeMonitoria edital) {
+        if (coordenador == null) {
+            System.out.println("[Erro] Apenas coordenadores podem cadastrar editais.");
+            return false;
+        }
+        return adicionarEdital(edital);
+    }
+
+    /**
+     * Lista todos os alunos cadastrados no sistema.
+     * Apenas coordenadores podem executar esta operação.
+     *  O coordenador que está executando a operação
+     * Retorna Lista de alunos, ou null se o usuário não for coordenador
+     */
+    public ArrayList<Aluno> listarAlunos(Coordenador coordenador) {
+        if (coordenador == null) {
+            System.out.println("[Erro] Apenas coordenadores podem listar alunos.");
+            return null;
+        }
+        return new ArrayList<>(todosOsAlunos);
+    }
+
     public Aluno retornarAlunoPeloEmail(String email) {
         for (Aluno algum: todosOsAlunos) {
             if (algum.getEmail().equals(email)) {
@@ -85,9 +114,6 @@ public class CentralDeInformacoes {
         return null;
     }
 
-    //Poderia fazer uma Classe Usuário e fazer Alunos e Coordenador herdar dela, assim não precisariamos de um
-    //um métoodo autenticar em Coordenador, poderia mos fazer um polimorfismo nesse métoodo com um Array de Usuários
-    //com isso ele poderia acessar tanto os emails de Coordenador e de Aluno.
     public boolean isLoginPermitido(String email, String senha) {
         for (Aluno algum: todosOsAlunos) {
             if (algum.getEmail().equals(email) && algum.getSenha().equals(senha)) {

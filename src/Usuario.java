@@ -47,9 +47,13 @@ public abstract class Usuario {
         }
     }
 
-    public void editarPerfil(String novoEmail, String novaSenha) {
+    public void editarEmail(String novoEmail) {
         this.email = novoEmail;
+    }
+
+    public void editarSenha(String novaSenha) {
         this.senha = novaSenha;
     }
+
 
 }

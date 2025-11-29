@@ -1,13 +1,13 @@
 import excecoes.LoginInvalidoException;
 
 public abstract class Usuario {
-    private long id;
+    private long id; //TODO| remover essa bomba de id — já temos matrícula como identificador para objetos Aluno, e Coordenador não precisa de identificador pois só há UM
     private String nome;
     public String email;
     public String senha;
 
     public Usuario(String email, String senha, String nome) {
-        this.id = System.currentTimeMillis();
+        this.id = System.currentTimeMillis(); //TODO| REMOVER JUNTAMENTE À ID
         this.email = email;
         this.senha = senha;
         this.nome = nome;
@@ -16,7 +16,6 @@ public abstract class Usuario {
     public String getSenha() {
         return senha;
     }
-
     public void setSenha(String senha) {
         this.senha = senha;
     }
@@ -24,19 +23,17 @@ public abstract class Usuario {
     public String getNome() {
         return nome;
     }
-
     public void setNome(String nome) {
         this.nome = nome;
     }
 
     public long getId() {
         return id;
-    }
+    } //TODO| REMOVER JUNTAMENTE À ID
 
     public String getEmail() {
         return email;
     }
-
     public void setEmail(String email) {
         this.email = email;
     }
@@ -46,14 +43,4 @@ public abstract class Usuario {
             throw new LoginInvalidoException();
         }
     }
-
-    public void editarEmail(String novoEmail) {
-        this.email = novoEmail;
-    }
-
-    public void editarSenha(String novaSenha) {
-        this.senha = novaSenha;
-    }
-
-
 }

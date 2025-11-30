@@ -1,4 +1,6 @@
-
+/**
+ * Corresponde aos gêneros possíveis.
+ */
 public enum Sexo {
 	MASCULINO, 
 	FEMININO,

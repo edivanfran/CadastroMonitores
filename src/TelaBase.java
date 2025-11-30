@@ -1,0 +1,202 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+
+/**
+ * Classe base para todas as telas da aplicação.
+ * Fornece funcionalidades comuns e garante consistência visual.
+ */
+public abstract class TelaBase extends JFrame {
+    
+    protected JPanel painelPrincipal;
+    protected SessaoUsuario sessao;
+    
+    public TelaBase(String titulo) {
+        super(titulo);
+        this.sessao = SessaoUsuario.getInstancia();
+        configurarJanela();
+        criarPainelPrincipal();
+    }
+    
+    /**
+     * Configura as propriedades básicas da janela.
+     */
+    private void configurarJanela() {
+        setSize(Estilos.LARGURA_TELA, Estilos.ALTURA_TELA);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null); // Centraliza a janela
+        setResizable(true);
+        getContentPane().setBackground(Estilos.COR_FUNDO);
+    }
+    
+    /**
+     * Cria o painel principal com layout e estilo padrão.
+     */
+    private void criarPainelPrincipal() {
+        painelPrincipal = new JPanel();
+        painelPrincipal.setLayout(new BorderLayout());
+        painelPrincipal.setBackground(Estilos.COR_FUNDO);
+        painelPrincipal.setBorder(BorderFactory.createEmptyBorder(
+                Estilos.MARGEM, Estilos.MARGEM, Estilos.MARGEM, Estilos.MARGEM));
+        add(painelPrincipal);
+    }
+    
+    /**
+     * Cria um botão padronizado.
+     * @param texto O texto do botão
+     * @param listener O ActionListener do botão
+     * @return O botão criado
+     */
+    protected JButton criarBotao(String texto, ActionListener listener) {
+        JButton botao = new JButton(texto);
+        botao.setFont(Estilos.FONTE_BOTAO);
+        botao.setPreferredSize(new Dimension(Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO));
+        botao.setBackground(Estilos.COR_PRIMARIA);
+        botao.setForeground(Estilos.COR_BRANCO);
+        botao.setFocusPainted(false);
+        botao.setBorderPainted(false);
+        botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        // Efeito hover
+        botao.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                botao.setBackground(Estilos.COR_SECUNDARIA);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                botao.setBackground(Estilos.COR_PRIMARIA);
+            }
+        });
+        
+        if (listener != null) {
+            botao.addActionListener(listener);
+        }
+        
+        return botao;
+    }
+    
+    /**
+     * Cria um botão secundário (estilo diferente).
+     * @param texto O texto do botão
+     * @param listener O ActionListener do botão
+     * @return O botão criado
+     */
+    protected JButton criarBotaoSecundario(String texto, ActionListener listener) {
+        JButton botao = criarBotao(texto, listener);
+        botao.setBackground(Estilos.COR_SECUNDARIA);
+        return botao;
+    }
+    
+    /**
+     * Cria um label padronizado.
+     * @param texto O texto do label
+     * @param fonte A fonte a ser usada
+     * @return O label criado
+     */
+    protected JLabel criarLabel(String texto, Font fonte) {
+        JLabel label = new JLabel(texto);
+        label.setFont(fonte);
+        label.setForeground(Estilos.COR_TEXTO);
+        return label;
+    }
+    
+    /**
+     * Cria um campo de texto padronizado.
+     * @param colunas Número de colunas do campo
+     * @return O campo de texto criado
+     */
+    protected JTextField criarCampoTexto(int colunas) {
+        JTextField campo = new JTextField(colunas);
+        campo.setFont(Estilos.FONTE_NORMAL);
+        campo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Estilos.COR_SECUNDARIA, 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+        return campo;
+    }
+    
+    /**
+     * Cria um painel de botões com layout organizado.
+     * @param botoes Os botões a serem adicionados
+     * @return O painel com os botões
+     */
+    protected JPanel criarPainelBotoes(JButton... botoes) {
+        JPanel painel = new JPanel();
+        painel.setLayout(new FlowLayout(FlowLayout.CENTER, Estilos.ESPACAMENTO, Estilos.ESPACAMENTO));
+        painel.setBackground(Estilos.COR_FUNDO);
+        
+        for (JButton botao : botoes) {
+            painel.add(botao);
+        }
+        
+        return painel;
+    }
+    
+    /**
+     * Mostra uma mensagem de sucesso.
+     * @param mensagem A mensagem a ser exibida
+     */
+    protected void mostrarSucesso(String mensagem) {
+        JOptionPane.showMessageDialog(this, mensagem, "Sucesso", 
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    /**
+     * Mostra uma mensagem de erro.
+     * @param mensagem A mensagem a ser exibida
+     */
+    protected void mostrarErro(String mensagem) {
+        JOptionPane.showMessageDialog(this, mensagem, "Erro", 
+                JOptionPane.ERROR_MESSAGE);
+    }
+    
+    /**
+     * Mostra uma mensagem de aviso.
+     * @param mensagem A mensagem a ser exibida
+     */
+    protected void mostrarAviso(String mensagem) {
+        JOptionPane.showMessageDialog(this, mensagem, "Aviso", 
+                JOptionPane.WARNING_MESSAGE);
+    }
+    
+    /**
+     * Verifica se o usuário logado é coordenador.
+     * @return true se for coordenador, false caso contrário
+     */
+    protected boolean isCoordenador() {
+        return sessao.isCoordenador();
+    }
+    
+    /**
+     * Verifica se o usuário logado é aluno.
+     * @return true se for aluno, false caso contrário
+     */
+    protected boolean isAluno() {
+        return sessao.isAluno();
+    }
+    
+    /**
+     * Habilita ou desabilita um componente baseado na permissão.
+     * @param componente O componente a ser habilitado/desabilitado
+     * @param habilitar true para habilitar, false para desabilitar
+     */
+    protected void definirPermissao(JComponent componente, boolean habilitar) {
+        componente.setEnabled(habilitar);
+        if (!habilitar) {
+            componente.setToolTipText("Apenas coordenadores podem acessar esta funcionalidade");
+        }
+    }
+    
+    /**
+     * Método abstrato que deve ser implementado por cada tela específica.
+     * Define os componentes e layout da tela.
+     */
+    protected abstract void criarComponentes();
+    
+    /**
+     * Inicializa a tela criando os componentes.
+     */
+    public void inicializar() {
+        criarComponentes();
+        setVisible(true);
+    }
+}
+

@@ -1,0 +1,45 @@
+import java.awt.Color;
+import java.awt.Font;
+
+/**
+ * Classe centralizada para estilos e constantes da interface gráfica.
+ * Facilita a manutenção e garante consistência visual em todas as telas.
+ */
+public class Estilos {
+    
+    // Cores principais
+    public static final Color COR_PRIMARIA = new Color(41, 128, 185);      // Azul
+    public static final Color COR_SECUNDARIA = new Color(52, 73, 94);      // Cinza escuro
+    public static final Color COR_SUCESSO = new Color(39, 174, 96);       // Verde
+    public static final Color COR_ERRO = new Color(231, 76, 60);          // Vermelho
+    public static final Color COR_AVISO = new Color(241, 196, 15);         // Amarelo
+    public static final Color COR_FUNDO = new Color(236, 240, 241);       // Cinza claro
+    public static final Color COR_TEXTO = new Color(44, 62, 80);          // Cinza escuro
+    public static final Color COR_BRANCO = Color.WHITE;
+    public static final Color COR_VERDE_CLARO = new Color(144, 238, 144);  // Verde claro (lightgreen)
+    public static final Color COR_VERDE_CLARO_HOVER = new Color(124, 218, 124); // Verde claro hover
+    
+    // Fontes
+    public static final Font FONTE_TITULO = new Font("Segoe UI", Font.BOLD, 24);
+    public static final Font FONTE_SUBTITULO = new Font("Segoe UI", Font.BOLD, 18);
+    public static final Font FONTE_NORMAL = new Font("Segoe UI", Font.PLAIN, 14);
+    public static final Font FONTE_BOTAO = new Font("Segoe UI", Font.BOLD, 14);
+    public static final Font FONTE_PEQUENA = new Font("Segoe UI", Font.PLAIN, 12);
+    
+    // Tamanhos padrão
+    public static final int LARGURA_TELA = 900;
+    public static final int ALTURA_TELA = 700;
+    public static final int LARGURA_BOTAO = 200;
+    public static final int ALTURA_BOTAO = 40;
+    public static final int ESPACAMENTO = 15;
+    public static final int MARGEM = 20;
+    
+    // Constantes de layout
+    public static final int POS_X_INICIAL = MARGEM;
+    public static final int POS_Y_INICIAL = MARGEM;
+    
+    private Estilos() {
+        // Classe utilitária - não deve ser instanciada
+    }
+}
+

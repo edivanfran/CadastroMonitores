@@ -72,11 +72,13 @@ public class EditalDeMonitoria {
 
     /**
      * Construtor do edital com valores padrão para os pesos (0.5 cada).
+     * <p>Como os pesos padrão somam 1.0, este construtor nunca lança exceção.</p>
      * @param numero O número do edital
      * @param dataInicio A data de início das inscrições
      * @param dataLimite A data limite das inscrições
+     * @throws PesosInvalidosException Se a soma dos pesos não for igual a 1.0 (nunca ocorre com valores padrão)
      */
-    public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite) {
+    public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite) throws PesosInvalidosException {
         this(numero, dataInicio, dataLimite, 0.5, 0.5);
     }
 

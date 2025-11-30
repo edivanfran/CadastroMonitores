@@ -62,6 +62,8 @@ public class Main {
        if (!central.temCoordenador()) {
            System.out.println("\nNenhum coordenador cadastrado ainda!");
            System.out.println("Vamos realizar primeiro o cadastro de Coordenador:");
+           System.out.print("  Nome › ");
+           String nomeCoord = sc.nextLine();
            System.out.print("  E-mail › ");
            String emailCoord = sc.nextLine(); //TODO| adicionar tratamento para o caso de e-mail inválido
            System.out.print("  Senha › "); //TODO| adicionar mecanismo simples de confirmação de senha
@@ -69,7 +71,7 @@ public class Main {
            central.cadastrarCoordenador(emailCoord, senhaCoord, nomeCoord);
            persistencia.salvarCentral(central, nomeArquivo);
            System.out.println("Coordenador cadastrado com sucesso!\n");
-           secaoAtual = Usuario.COORDENADOR;
+           secaoAtual = central.getCoordenador();
        } else { /* se o coordenador acabou de se cadastrar, não há necessidade de pedir login */
            do {
                System.out.println("Logando...");
@@ -112,17 +114,19 @@ public class Main {
                    }
                }
                // Verifica se é o coordenador
-               if (central.getCoordenador() != null &&
-                       central.getCoordenador().autenticar(entrada_email, entrada_senha)) {
+               Coordenador coordenador = central.getCoordenador();
+               if (coordenador != null &&
+                       coordenador.getEmail().equals(entrada_email) && 
+                       coordenador.getSenha().equals(entrada_senha)) {
                    System.out.println("Logou como Coordenador.");
                    System.out.println("Boas-vindas!");
-                   secaoAtual = Usuario.COORDENADOR;
+                   secaoAtual = coordenador;
                    break;
                } // Verifica se é aluno
                if (central.isLoginPermitido(entrada_email, entrada_senha)) {
                    System.out.println("Logou como Aluno.");
                    central.darBoasVindasUsuario(entrada_email, entrada_senha);
-                   secaoAtual = Aluno;
+                   secaoAtual = central.retornarAlunoPeloEmail(entrada_email);
                    break;
                } else {
                    System.out.println("Acesso negado — você deverá repetir o processo de login");

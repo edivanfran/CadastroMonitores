@@ -65,7 +65,7 @@ public class Main {
            String emailCoord = sc.nextLine(); //TODO| adicionar tratamento para o caso de e-mail inválido
            System.out.print("  Senha › "); //TODO| adicionar mecanismo simples de confirmação de senha
            String senhaCoord = sc.nextLine(); //TODO| adicionar tratamento para o caso de senha vazia
-           central.cadastrarCoordenador(emailCoord, senhaCoord);
+           central.cadastrarCoordenador(emailCoord, senhaCoord, nomeCoord);
            persistencia.salvarCentral(central, nomeArquivo);
            System.out.println("Coordenador cadastrado com sucesso!\n");
            secaoAtual = Usuario.COORDENADOR;
@@ -121,7 +121,7 @@ public class Main {
                if (central.isLoginPermitido(entrada_email, entrada_senha)) {
                    System.out.println("Logou como Aluno.");
                    central.darBoasVindasUsuario(entrada_email, entrada_senha);
-                   secaoAtual = Usuario.ALUNO;
+                   secaoAtual = Aluno;
                    break;
                } else {
                    System.out.println("Acesso negado — você deverá repetir o processo de login");
@@ -286,7 +286,51 @@ public class Main {
                            break;
                        }
                    } while (true);
-                   EditalDeMonitoria novoEdital = new EditalDeMonitoria(System.currentTimeMillis(), numeroEdital, dataInicio, dataLimite);
+                   // Solicita os pesos para cálculo de pontuação
+                   double pesoCre;
+                   double pesoNota;
+                   do {
+                       System.out.print("  Peso do CRE no cálculo (ex: 0.5) › ");
+                       String temp = sc.nextLine().strip();
+                       try {
+                           pesoCre = Double.parseDouble(temp);
+                           if (pesoCre < 0 || pesoCre > 1) {
+                               System.out.println("  [Erro] O peso deve estar entre 0 e 1.");
+                               continue;
+                           }
+                       } catch (NumberFormatException e) {
+                           System.out.println("  [Erro] Valor inválido; tente novamente.");
+                           continue;
+                       }
+                       System.out.print("  Peso da Nota (média na disciplina) no cálculo (ex: 0.5) › ");
+                       temp = sc.nextLine().strip();
+                       try {
+                           pesoNota = Double.parseDouble(temp);
+                           if (pesoNota < 0 || pesoNota > 1) {
+                               System.out.println("  [Erro] O peso deve estar entre 0 e 1.");
+                               continue;
+                           }
+                       } catch (NumberFormatException e) {
+                           System.out.println("  [Erro] Valor inválido; tente novamente.");
+                           continue;
+                       }
+                       // Valida que a soma dos pesos seja igual a 1
+                       double soma = pesoCre + pesoNota;
+                       if (Math.abs(soma - 1.0) > 0.0001) {
+                           System.out.println("  [Erro] A soma dos pesos deve ser igual a 1.0. Soma atual: " + soma);
+                           System.out.println("  Por favor, ajuste os valores.");
+                           continue;
+                       }
+                       break;
+                   } while (true);
+                   EditalDeMonitoria novoEdital;
+                   try {
+                       novoEdital = new EditalDeMonitoria(numeroEdital, dataInicio, dataLimite, pesoCre, pesoNota);
+                   } catch (IllegalArgumentException e) {
+                       System.out.println("  [Erro] " + e.getMessage());
+                       System.out.println(menu);
+                       continue;
+                   }
                    boolean flag = false;
                    do { // Adiciona as disciplinas no edital
                        System.out.println("  Adicionando Disciplina ao edital...\n  -----------------------------");
@@ -296,18 +340,21 @@ public class Main {
                        String qtdeVagasRemuneradas = "";
                        // TODO| Remover a verificação isdigit de vaga e colocá-lo como integer.
                        do {
-                           System.out.println("    Quantidade de vagas remuneradas › ");
+                           System.out.print("    Quantidade de vagas remuneradas › ");
                            qtdeVagasRemuneradas = sc.nextLine().strip();
                            if (!qtdeVagasRemuneradas.matches("^\\d+$")) {
                                System.out.println("  [Erro] Valor inválido; tente novamente.");
-                           } else break;
-                           System.out.println("    Quantidade de vagas voluntarias › ");
+                               continue;
+                           }
+                           System.out.print("    Quantidade de vagas voluntarias › ");
                            qtdeVagasVoluntarias = sc.nextLine().strip();
                            if (!qtdeVagasVoluntarias.matches("^\\d+$")) {
                                System.out.println("  [Erro] Valor inválido; tente novamente.");
-                           } else break;
+                               continue;
+                           }
+                           break;
                        } while (true);
-                       novoEdital.adicionarDisciplina(new Disciplina(nomeDisciplina, Integer.parseInt(qtdeVagasRemuneradas), Integer.parseInt(qtdeVagasVoluntarias)));
+                       novoEdital.adicionarDisciplina(new Disciplina(nomeDisciplina, Integer.parseInt(qtdeVagasVoluntarias), Integer.parseInt(qtdeVagasRemuneradas)));
                        System.out.print("  -----------------------------\n  Disciplina adicionada. Deseja adicionar outra? (S/N)\n» ");
                        do {
                            String resposta = sc.nextLine();
@@ -387,21 +434,80 @@ public class Main {
                    EditalDeMonitoria edital = central.recuperarEdital(id);
                    if (edital == null) {
                        System.out.println("[Erro] Nenhum edital encontrado com esse ID.");
-                   } else if (edital.jaAcabou()) {
+                       System.out.println(menu);
+                       break;
+                   }
+                   if (!edital.isAberto()) {
+                       System.out.println("[Erro] Este edital está fechado, não é possível inscrever alunos.");
+                       System.out.println(menu);
+                       break;
+                   }
+                   if (edital.jaAcabou()) {
                        System.out.println("[Erro] Este edital já foi encerrado, não é possível inscrever alunos.");
                        System.out.println(menu);
                        break;
                    }
                    System.out.print("Digite o nome da disciplina › ");
                    String nomeDisciplina = sc.nextLine().strip();
-                   boolean inscrito = edital.inscreverAluno(aluno, nomeDisciplina);
+                   
+                   // Solicita o CRE do aluno
+                   double cre;
+                   do {
+                       System.out.print("Digite o CRE do aluno › ");
+                       String temp = sc.nextLine().strip();
+                       try {
+                           cre = Double.parseDouble(temp);
+                           if (cre < 0 || cre > 10) {
+                               System.out.println("[Erro] O CRE deve estar entre 0 e 10.");
+                           } else break;
+                       } catch (NumberFormatException e) {
+                           System.out.println("[Erro] Valor inválido; tente novamente.");
+                       }
+                   } while (true);
+                   
+                   // Solicita a nota (média na disciplina)
+                   double nota;
+                   do {
+                       System.out.print("Digite a média do aluno na disciplina " + nomeDisciplina + " › ");
+                       String temp = sc.nextLine().strip();
+                       try {
+                           nota = Double.parseDouble(temp);
+                           if (nota < 0 || nota > 10) {
+                               System.out.println("[Erro] A nota deve estar entre 0 e 10.");
+                           } else break;
+                       } catch (NumberFormatException e) {
+                           System.out.println("[Erro] Valor inválido; tente novamente.");
+                       }
+                   } while (true);
+                   
+                   // Solicita o tipo de vaga
+                   Vaga tipoVaga = null;
+                   do {
+                       System.out.print("Tipo de vaga (R=Remunerada, V=Voluntária) › ");
+                       String entrada = sc.nextLine().strip().toUpperCase();
+                       if (entrada.equals("R")) {
+                           tipoVaga = Vaga.REMUNERADA;
+                           break;
+                       } else if (entrada.equals("V")) {
+                           tipoVaga = Vaga.VOLUNTARIA;
+                           break;
+                       } else {
+                           System.out.println("[Erro] Opção inválida. Digite 'R' ou 'V'.");
+                       }
+                   } while (true);
+                   
+                   boolean inscrito = edital.inscreverAluno(aluno, nomeDisciplina, cre, nota, tipoVaga);
                    // TODO colocar um anexo do comprovante de inscrição no email
                    if (inscrito) {
                        persistencia.salvarCentral(central, nomeArquivo);
                        Mensageiro.enviarEmail(aluno.getEmail(), "Confirmação de inscrição",
                                String.format("""
                                Sua inscrição no Edital de Monitoria n.º %s foi efetuada.
-                               """, edital.getNumero()));
+                               Disciplina: %s
+                               CRE: %.2f
+                               Média na disciplina: %.2f
+                               Tipo de vaga: %s
+                               """, edital.getNumero(), nomeDisciplina, cre, nota, tipoVaga));
                    } else {
                        System.out.println("[Erro] Não foi possível inscrever o aluno.");
                    }

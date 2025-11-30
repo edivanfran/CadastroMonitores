@@ -27,24 +27,36 @@ public class GeradorDeRelatorios {
            documento.add(titulo);
 
            // Corpo do documento
-           documento.add(new Paragraph("Nome do Aluno: " + central.recuperarAluno(matricula).getNome()));
+           EditalDeMonitoria edital = central.recuperarEdital(idEdital);
+           Aluno aluno = central.recuperarAluno(matricula);
+           
+           if (aluno == null) {
+               documento.add(new Paragraph("Aluno não encontrado com a matrícula: " + matricula));
+               documento.close();
+               return;
+           }
+           
+           documento.add(new Paragraph("Nome do Aluno: " + aluno.getNome()));
            documento.add(new Paragraph("Matrícula: " + matricula));
-           documento.add(new Paragraph("Edital de nº: " + central.recuperarEdital(idEdital).getNumero()));
+           documento.add(new Paragraph("Edital de nº: " + edital.getNumero()));
            documento.add(new Paragraph("\n"));
-           for (Disciplina disciplina : central.recuperarEdital(idEdital).getDisciplinas()) {
-               boolean flag = false;
-               for (Aluno aluno : disciplina.getAlunosInscritos()) { //TODO| resolver método inválido em Disciplina
-                   if (aluno.getMatricula().equals(matricula)) {
-                       if (!flag) { /* Se o aluno está inscrito em alguma disciplina, acrescenta esse preâmbulo na primeira vez */
-                           documento.add(new Paragraph("Aluno inscrito em:"));
-                           flag = true;
-                       }
-                       documento.add(new Paragraph("    " + disciplina.getNomeDisciplina()));
+           
+           // Busca as inscrições do aluno no edital
+           boolean temInscricao = false;
+           for (Inscricao inscricao : edital.getInscricoes()) {
+               if (inscricao.getAluno().getMatricula().equals(matricula) && !inscricao.isDesistiu()) {
+                   if (!temInscricao) {
+                       documento.add(new Paragraph("Aluno inscrito em:"));
+                       temInscricao = true;
                    }
+                   documento.add(new Paragraph("    " + inscricao.getDisciplina().getNomeDisciplina() + 
+                           " (CRE: " + inscricao.getCre() + ", Nota: " + inscricao.getNota() + 
+                           ", Vaga: " + inscricao.getTipoVaga() + ")"));
                }
-               if (!flag) { /* Do contrário, acrescentar apenas este */
-                   documento.add(new Paragraph("O aluno não está inscrito em nenhuma disciplina."));
-               }
+           }
+           
+           if (!temInscricao) {
+               documento.add(new Paragraph("O aluno não está inscrito em nenhuma disciplina deste edital."));
            }
 
            documento.close(); // Fecha o documento

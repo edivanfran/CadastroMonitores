@@ -6,14 +6,10 @@ import excecoes.LoginInvalidoException;
  * @see CentralDeInformacoes
  */
 public abstract class Usuario {
-    private long id; //TODO| remover essa bomba de id — já temos matrícula como identificador para objetos Aluno, e Coordenador não precisa de identificador pois só há UM
     private String nome;
     public String email;
     public String senha;
 
-    public long getId() {
-        return id;
-    } //TODO| caso remova-se a `id`, isso deverá ser removido juntamente
     public String getNome() {
         return nome;
     }
@@ -34,7 +30,6 @@ public abstract class Usuario {
     }
 
     public Usuario(String email, String senha, String nome) {
-        this.id = System.currentTimeMillis(); //TODO| caso remova-se a `id`, isso deverá ser removido juntamente
         this.email = email;
         this.senha = senha;
         this.nome = nome;

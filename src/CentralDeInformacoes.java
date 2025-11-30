@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import excecoes.*;
 
 /**
  * Descreve o objeto cujas funções são armazenar as alterações feitas na base de informações para posteriormente tê-las serializadas em um arquivo XML por meio de um objeto {@link Persistencia}, assim como receber as informações que forem desserializadas por este para que sejam utilizadas pelo programa.
@@ -119,26 +120,27 @@ public class CentralDeInformacoes {
      * Apenas coordenadores podem executar esta operação.
      * @param coordenador O coordenador que está executando a operação
      * @param edital O edital a ser cadastrado
-     * @return {@code true} se o edital foi cadastrado com sucesso, {@code false} caso contrário
+     * @throws PermissaoNegadaException Se o usuário não for coordenador
      */
-    public boolean cadastrarEdital(Coordenador coordenador, EditalDeMonitoria edital) {
+    public void cadastrarEdital(Coordenador coordenador, EditalDeMonitoria edital) throws PermissaoNegadaException {
         if (coordenador == null) {
-            System.out.println("[Erro] Apenas coordenadores podem cadastrar editais.");
-            return false; //TODO| melhorar lógica — ao invés de fazer esse método chamar `adicionarEdital()`, pode ser que seja mais interessante fundir os dois
-        } //TODO| esse método tá duplicado, `Coordenador.cadastrarEdital()` chama esse lá a toa (o de lá passa os seguintes parâmetros: `central` e `edital`; esse daqui, por sua vez, passa `coordenador`)
-        return adicionarEdital(edital);
+            throw new PermissaoNegadaException("cadastrar editais");
+        }
+        if (!adicionarEdital(edital)) {
+            throw new IllegalArgumentException("Já existe um edital com o mesmo ID.");
+        }
     }
 
     /**
      * Lista todos os alunos cadastrados no sistema.
      * Apenas coordenadores podem executar esta operação.
      * @param coordenador O coordenador que está executando a operação
-     * @return Lista de alunos, ou {@code null} se o usuário não for coordenador
+     * @return Lista de alunos
+     * @throws PermissaoNegadaException Se o usuário não for coordenador
      */
-    public ArrayList<Aluno> listarAlunos(Coordenador coordenador) {
+    public ArrayList<Aluno> listarAlunos(Coordenador coordenador) throws PermissaoNegadaException {
         if (coordenador == null) {
-            System.out.println("[Erro] Apenas coordenadores podem listar alunos.");
-            return null;
+            throw new PermissaoNegadaException("listar alunos");
         }
         return new ArrayList<>(todosOsAlunos);
     }

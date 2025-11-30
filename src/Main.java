@@ -4,6 +4,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import excecoes.*;
 
 
 public class Main {
@@ -326,7 +327,7 @@ public class Main {
                    EditalDeMonitoria novoEdital;
                    try {
                        novoEdital = new EditalDeMonitoria(numeroEdital, dataInicio, dataLimite, pesoCre, pesoNota);
-                   } catch (IllegalArgumentException e) {
+                   } catch (PesosInvalidosException e) {
                        System.out.println("  [Erro] " + e.getMessage());
                        System.out.println(menu);
                        continue;
@@ -496,9 +497,9 @@ public class Main {
                        }
                    } while (true);
                    
-                   boolean inscrito = edital.inscreverAluno(aluno, nomeDisciplina, cre, nota, tipoVaga);
-                   // TODO colocar um anexo do comprovante de inscrição no email
-                   if (inscrito) {
+                   try {
+                       edital.inscreverAluno(aluno, nomeDisciplina, cre, nota, tipoVaga);
+                       // TODO colocar um anexo do comprovante de inscrição no email
                        persistencia.salvarCentral(central, nomeArquivo);
                        Mensageiro.enviarEmail(aluno.getEmail(), "Confirmação de inscrição",
                                String.format("""
@@ -508,8 +509,14 @@ public class Main {
                                Média na disciplina: %.2f
                                Tipo de vaga: %s
                                """, edital.getNumero(), nomeDisciplina, cre, nota, tipoVaga));
-                   } else {
-                       System.out.println("[Erro] Não foi possível inscrever o aluno.");
+                   } catch (EditalFechadoException e) {
+                       System.out.println("[Erro] " + e.getMessage());
+                   } catch (PrazoInscricaoVencidoException e) {
+                       System.out.println("[Erro] " + e.getMessage());
+                   } catch (DisciplinaNaoEncontradaException e) {
+                       System.out.println("[Erro] " + e.getMessage());
+                   } catch (ValoresInvalidosException e) {
+                       System.out.println("[Erro] " + e.getMessage());
                    }
                    System.out.println(menu);
                }

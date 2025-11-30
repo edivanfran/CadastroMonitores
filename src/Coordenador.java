@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import excecoes.*;
 
 /**
  * <p>Representa o usuário atribuído na central de informações como o Coordenador do Curso.
@@ -15,36 +16,41 @@ public class Coordenador extends Usuario {
      * Cadastra um novo edital de monitoria no sistema.
      * @param central A central de informações no qual o edital será cadastrado
      * @param edital O edital a ser cadastrado
-     * @return {@code true} se o edital foi cadastrado com sucesso, {@code false} caso contrário
+     * @throws PermissaoNegadaException Se o usuário não for coordenador
      */
-    public boolean cadastrarEdital(CentralDeInformacoes central, EditalDeMonitoria edital) {
-        return central.cadastrarEdital(this, edital); //TODO| duplicado e não utilizado (mas não recomendo remover logo de cara sem antes analisar qual dos dois manter); vide nota em `CentralDeInformacoes.cadastrarEdital()`
+    public void cadastrarEdital(CentralDeInformacoes central, EditalDeMonitoria edital) throws PermissaoNegadaException {
+        central.cadastrarEdital(this, edital);
     }
 
     /**
      * Calcula o resultado (ranqueamento) de um edital.
      * @param edital O edital cujo resultado será calculado
-     * @return {@code true} se o cálculo foi realizado com sucesso, {@code false} caso contrário
+     * @throws PermissaoNegadaException Se o usuário não for coordenador
+     * @throws EditalAbertoException Se o edital ainda estiver aberto
+     * @throws SemInscricoesException Se não houver inscrições no edital
      */
-    public boolean calcularResultadoEdital(EditalDeMonitoria edital) {
-        return edital.calcularResultado(this);
-    } //TODO| duplicado e não utilizado
+    public void calcularResultadoEdital(EditalDeMonitoria edital) 
+            throws PermissaoNegadaException, EditalAbertoException, SemInscricoesException {
+        edital.calcularResultado(this);
+    }
 
     /**
      * Fecha um edital, impedindo novas inscrições.
      * @param edital O edital a ser fechado
-     * @return {@code true} se o edital foi fechado com sucesso, {@code false} caso contrário
+     * @throws PermissaoNegadaException Se o usuário não for coordenador
+     * @throws EditalFechadoException Se o edital já estiver fechado
      */
-    public boolean fecharEdital(EditalDeMonitoria edital) {
-        return edital.fecharEdital(this);
-    } //TODO| duplicado e não utilizado
+    public void fecharEdital(EditalDeMonitoria edital) throws PermissaoNegadaException, EditalFechadoException {
+        edital.fecharEdital(this);
+    }
 
     /**
      * Lista todos os alunos cadastrados em uma dada central de informações.
      * @param central A central de informações
-     * @return Lista de alunos cadastrados, ou {@code null} em caso de erro
+     * @return Lista de alunos cadastrados
+     * @throws PermissaoNegadaException Se o usuário não for coordenador
      */
-    public ArrayList<Aluno> listarAlunos(CentralDeInformacoes central) {
+    public ArrayList<Aluno> listarAlunos(CentralDeInformacoes central) throws PermissaoNegadaException {
         return central.listarAlunos(this);
-    } //TODO| duplicado e não utilizado
+    }
 }

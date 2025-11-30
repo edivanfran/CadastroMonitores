@@ -2,6 +2,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import excecoes.*;
 
 /**
  * Representa editais de monitoria de disciplinas do Curso, registradas em uma central de informações. Possui ID {@code long}, um número {@code String}, uma data de início e uma de limite — ambas {@link LocalDate} —, uma lista de disciplinas que esse edital compreende em seu processo seletivo, e um booleano determinando se o edital se encontra ainda aberto.
@@ -49,12 +50,12 @@ public class EditalDeMonitoria {
      * @param dataLimite A data limite das inscrições
      * @param pesoCre O peso do CRE no cálculo da pontuação
      * @param pesoNota O peso da nota (média na disciplina) no cálculo da pontuação
-     * @throws IllegalArgumentException Se a soma dos pesos não for igual a 1.0
+     * @throws PesosInvalidosException Se a soma dos pesos não for igual a 1.0
      */
-    public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite, double pesoCre, double pesoNota) {
+    public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite, double pesoCre, double pesoNota) throws PesosInvalidosException {
        // Valida que os pesos somem 1
        if (Math.abs((pesoCre + pesoNota) - 1.0) > 0.0001) { // Usa epsilon para comparação de double
-           throw new IllegalArgumentException("A soma dos pesos (CRE + Nota) deve ser igual a 1.0. Valores fornecidos: CRE=" + pesoCre + ", Nota=" + pesoNota);
+           throw new PesosInvalidosException(pesoCre, pesoNota);
        }
        this.id = System.currentTimeMillis();
        this.numero = numero;
@@ -124,26 +125,37 @@ public class EditalDeMonitoria {
 
     /**
      * Inscreve um aluno em uma disciplina do edital.
-     * <p>Primeiro testa se o edital continua aberto – se não, retorna {@code false};</p>
-     * <p>continuando aberto, verifica se está dentro do prazo de inscrição no edital – se não, retorna {@code false};</p>
+     * <p>Primeiro testa se o edital continua aberto – se não, lança {@link EditalFechadoException};</p>
+     * <p>continuando aberto, verifica se está dentro do prazo de inscrição no edital – se não, lança {@link PrazoInscricaoVencidoException};</p>
      * <p>estando dentro do prazo, cria uma inscrição com o CRE e a nota (média na disciplina) fornecidos pelo aluno.</p>
-     * <p>Caso não encontre a disciplina— retorna {@code false}.</p>
+     * <p>Caso não encontre a disciplina— lança {@link DisciplinaNaoEncontradaException}.</p>
      * @param aluno O aluno que se deseja inscrever no edital
      * @param nomeDisciplina O nome da disciplina do edital a qual aluno deseja concorrer
      * @param cre O CRE do aluno
      * @param nota A média do aluno na disciplina específica
      * @param tipoVaga O tipo de vaga (remunerada ou voluntária)
-     * @return {@code true} se a inscrição foi realizada com sucesso, {@code false} caso contrário
+     * @throws EditalFechadoException Se o edital estiver fechado
+     * @throws PrazoInscricaoVencidoException Se o prazo de inscrição tiver vencido
+     * @throws DisciplinaNaoEncontradaException Se a disciplina não for encontrada no edital
+     * @throws ValoresInvalidosException Se o CRE ou a nota estiverem fora do intervalo válido (0-10)
      */
-   public boolean inscreverAluno(Aluno aluno, String nomeDisciplina, double cre, double nota, Vaga tipoVaga) {
+   public void inscreverAluno(Aluno aluno, String nomeDisciplina, double cre, double nota, Vaga tipoVaga) 
+           throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException {
        if (!aberto) {
-           System.out.println("Este edital está fechado. Não é possível inscrever alunos.");
-           return false;
+           throw new EditalFechadoException(numero);
        }
        if (LocalDate.now().isAfter(dataLimite)) {
-           System.out.println("O prazo para inscrição neste edital já acabou.");
-           return false;
+           throw new PrazoInscricaoVencidoException(dataLimite);
        }
+       
+       // Valida valores de CRE e nota
+       if (cre < 0 || cre > 10) {
+           throw new ValoresInvalidosException("CRE", cre, 0, 10);
+       }
+       if (nota < 0 || nota > 10) {
+           throw new ValoresInvalidosException("Nota", nota, 0, 10);
+       }
+       
        for (Disciplina d : disciplinas) {
            if (d.getNomeDisciplina().equalsIgnoreCase(nomeDisciplina)) {
                // Cria a inscrição
@@ -155,11 +167,10 @@ public class EditalDeMonitoria {
                
                System.out.println("Aluno " + aluno.getNome() + " inscrito na disciplina " + nomeDisciplina + 
                        " (CRE: " + cre + ", Nota: " + nota + ", Vaga: " + tipoVaga + ")");
-               return true;
+               return;
            }
        }
-       System.out.println("Disciplina não encontrada neste edital.");
-       return false;
+       throw new DisciplinaNaoEncontradaException(nomeDisciplina);
    }
 
    public boolean jaAcabou() {
@@ -172,17 +183,22 @@ public class EditalDeMonitoria {
     * <p>PONTUAÇÃO = PESO_CRE * CRE_ALUNO + PESO_NOTA * NOTA_ALUNO</p>
     * <p>Apenas coordenadores podem executar esta operação.</p>
     * @param coordenador O coordenador que está executando a operação
-    * @return {@code true} se o cálculo foi realizado com sucesso, {@code false} caso contrário
+    * @throws PermissaoNegadaException Se o usuário não for coordenador
+    * @throws EditalAbertoException Se o edital ainda estiver aberto
+    * @throws SemInscricoesException Se não houver inscrições no edital
     */
-   public boolean calcularResultado(Coordenador coordenador) {
+   public void calcularResultado(Coordenador coordenador) 
+           throws PermissaoNegadaException, EditalAbertoException, SemInscricoesException {
        if (coordenador == null) {
-           System.out.println("[Erro] Apenas coordenadores podem calcular o resultado do edital.");
-           return false;
+           throw new PermissaoNegadaException("calcular o resultado do edital");
+       }
+
+       if (aberto) {
+           throw new EditalAbertoException(numero);
        }
 
        if (inscricoes.isEmpty()) {
-           System.out.println("[Aviso] Não há inscrições para calcular o resultado.");
-           return false;
+           throw new SemInscricoesException();
        }
 
        System.out.println("Calculando resultado do edital " + numero + "...");
@@ -222,7 +238,6 @@ public class EditalDeMonitoria {
 
        resultadoCalculado = true;
        System.out.println("Resultado calculado com sucesso para " + ranquePorDisciplina.size() + " disciplina(s).");
-       return true;
    }
 
    /**
@@ -272,20 +287,18 @@ public class EditalDeMonitoria {
     * Fecha o edital, impedindo novas inscrições.
     * <p>Apenas coordenadores podem executar esta operação.</p>
     * @param coordenador O Coordenador que está executando a operação
-    * @return {@code true} se o edital foi fechado com sucesso, {@code false} caso contrário
+    * @throws PermissaoNegadaException Se o usuário não for coordenador
+    * @throws EditalFechadoException Se o edital já estiver fechado
     */
-   public boolean fecharEdital(Coordenador coordenador) {
+   public void fecharEdital(Coordenador coordenador) throws PermissaoNegadaException, EditalFechadoException {
        if (coordenador == null) {
-           System.out.println("[Erro] Apenas coordenadores podem fechar o edital.");
-           return false;
+           throw new PermissaoNegadaException("fechar o edital");
        }
        if (!aberto) {
-           System.out.println("[Aviso] Este edital já está fechado.");
-           return false;
+           throw new EditalFechadoException(numero);
        }
        this.aberto = false;
        System.out.println("Edital " + numero + " foi fechado com sucesso.");
-       return true;
    }
 
     /**

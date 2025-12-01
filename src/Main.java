@@ -51,6 +51,7 @@ public class Main {
            central = persistencia.recuperarCentral(nomeArquivo);
        }
 
+       InicializadorGUI.iniciar(central, persistencia, "CENTRAL");
        // Cria coordenador só se ainda não existir
        Usuario secaoAtual;
            /*TODO|

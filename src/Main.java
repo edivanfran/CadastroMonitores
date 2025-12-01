@@ -85,7 +85,7 @@ public class Main {
                    System.out.println("Só um momento estamos enviando o email...");
                    String codigo_recuperacao = ((Integer)(int)(Math.random() * 100000)).toString(); /* número aleatório de 00000 a 99999 */
 
-                   Mensageiro.enviarEmail(entrada_email, "Recuperação da conta no Cadastro", "O código de recuperação da sua conta é: " + codigo_recuperacao);
+                   Mensageiro.enviarEmail(entrada_email, "Recuperação da conta no Cadastro", "O código de recuperação da sua conta é: " + codigo_recuperacao, null);
                    System.out.println("  Um e-mail será enviado em alguns instantes contendo um código de recuperação.");
                    System.out.println("  Informe o código recebido › ");
                    String entrada_codigo = sc.nextLine();
@@ -211,7 +211,8 @@ public class Main {
                            default -> System.out.println("  [Erro] Opção inválida. Digite 'M', 'F' ou 'NB'.");
                        }
                    }
-                   Aluno novo = new Aluno(nome, matricula, senha, email, genero); // Cria o aluno, e verifica se já existe algum conflitante
+                   // TODO | Verificar se já não existe uma conta com o mesmo email e matricula
+                   Aluno novo = new Aluno(email, senha, nome, matricula, genero); // Cria o aluno, e verifica se já existe algum conflitante
                    boolean flag = central.adicionarAluno(novo);
                    if (!flag) {
                        System.out.println("  [Erro] Já existe um aluno com essa matrícula.\n-------------------------------");
@@ -513,7 +514,7 @@ public class Main {
                                CRE: %.2f
                                Média na disciplina: %.2f
                                Tipo de vaga: %s
-                               """, edital.getNumero(), nomeDisciplina, cre, nota, tipoVaga));
+                               """, edital.getNumero(), nomeDisciplina, cre, nota, tipoVaga), null);
                    } catch (EditalFechadoException e) {
                        System.out.println("[Erro] " + e.getMessage());
                    } catch (PrazoInscricaoVencidoException e) {

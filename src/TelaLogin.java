@@ -9,8 +9,7 @@ public class TelaLogin extends TelaBase {
     
     private JTextField campoEmail;
     private JPasswordField campoSenha;
-    private JButton btnLogin;
-    private JButton btnCadastrarCoordenador;
+    private JButton botaoLogin;
     private CentralDeInformacoes central;
     private Persistencia persistencia;
     private String nomeArquivo;
@@ -35,25 +34,18 @@ public class TelaLogin extends TelaBase {
      * Cria o cabeçalho com logo e título.
      */
     private void criarCabecalho() {
-        JPanel painelCabecalho = new JPanel();
-        painelCabecalho.setLayout(new BoxLayout(painelCabecalho, BoxLayout.Y_AXIS));
-        painelCabecalho.setBackground(Estilos.COR_FUNDO);
-        painelCabecalho.setBorder(BorderFactory.createEmptyBorder(30, 20, 20, 20));
-        painelCabecalho.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
         // Logo (se existir)
         JLabel logo = criarLogo();
         if (logo != null) {
-            painelCabecalho.add(logo);
-            painelCabecalho.add(Box.createVerticalStrut(20));
+            logo.setBounds(375, 50, 150, 150); // Centralizado horizontalmente
+            painelPrincipal.add(logo);
         }
-        
+
         // Título
-        JLabel titulo = criarLabel("Login", Estilos.FONTE_TITULO);
-        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        painelCabecalho.add(titulo);
-        
-        painelPrincipal.add(painelCabecalho, BorderLayout.NORTH);
+        JLabel titulo = criarLabel("Login do Sistema", Estilos.FONTE_TITULO);
+        titulo.setBounds(0, 220, Estilos.LARGURA_TELA, 30);
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        painelPrincipal.add(titulo);
     }
     
     /**
@@ -63,16 +55,13 @@ public class TelaLogin extends TelaBase {
     private JLabel criarLogo() {
         try {
             // Tenta carregar a imagem do logo
-            ImageIcon icon = new ImageIcon("logo.png");
+            ImageIcon icon = new ImageIcon("IFPB_icon.jpg");
             if (icon.getIconWidth() > 0) {
-                // Redimensiona o logo se necessário
+                // Redimensiona o logo para um tamanho padrão
                 Image img = icon.getImage();
                 Image scaledImg = img.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
                 icon = new ImageIcon(scaledImg);
-                
-                JLabel logo = new JLabel(icon);
-                logo.setAlignmentX(Component.CENTER_ALIGNMENT);
-                return logo;
+                return new JLabel(icon);
             }
         } catch (Exception e) {
             // Se não encontrar a imagem, continua sem logo
@@ -84,73 +73,52 @@ public class TelaLogin extends TelaBase {
      * Cria o formulário de login.
      */
     private void criarFormularioLogin() {
-        JPanel painelFormulario = new JPanel();
-        painelFormulario.setLayout(new GridBagLayout());
-        painelFormulario.setBackground(Estilos.COR_FUNDO);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 20, 10, 20);
-        gbc.anchor = GridBagConstraints.CENTER;
-        
-        // Email
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.EAST;
-        JLabel lblEmail = criarLabel("E-mail:", Estilos.FONTE_NORMAL);
-        painelFormulario.add(lblEmail, gbc);
-        
-        gbc.gridx = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
+        int yInicial = 300;
+        int alturaCampo = 40;
+        int espacamento = 15;
+        int larguraLabel = 80;
+        int larguraCampo = 350;
+        int xLabel = (Estilos.LARGURA_TELA - larguraLabel - larguraCampo - 10) / 2;
+        int xCampo = xLabel + larguraLabel + 10;
+
+        //Email
+        JLabel lblEmail = criarLabel("Email:", Estilos.FONTE_NORMAL);
+        lblEmail.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        lblEmail.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(lblEmail);
+
         campoEmail = criarCampoTexto(25);
-        painelFormulario.add(campoEmail, gbc);
-        
-        // Senha
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
+        campoEmail.setToolTipText("Insira aqui seu e-mail.");
+        campoEmail.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        painelPrincipal.add(campoEmail);
+
+        //Senha
+        yInicial += alturaCampo + espacamento;
         JLabel lblSenha = criarLabel("Senha:", Estilos.FONTE_NORMAL);
-        painelFormulario.add(lblSenha, gbc);
-        
-        gbc.gridx = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        campoSenha = new JPasswordField(25);
+        lblSenha.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        lblSenha.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(lblSenha);
+
+        campoSenha = new JPasswordField();
+        campoSenha.setToolTipText("Insira aqui sua senha.");
         campoSenha.setFont(Estilos.FONTE_NORMAL);
         campoSenha.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Estilos.COR_SECUNDARIA, 1),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)));
-        painelFormulario.add(campoSenha, gbc);
-        
-        // Botão de Login (verde claro)
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
-        gbc.insets = new Insets(20, 20, 10, 20);
-        btnLogin = criarBotaoLogin("Entrar");
-        painelFormulario.add(btnLogin, gbc);
-        
-        // Botão de Cadastrar Coordenador (se não houver coordenador)
-        if (!central.temCoordenador()) {
-            gbc.gridy = 3;
-            gbc.insets = new Insets(10, 20, 20, 20);
-            btnCadastrarCoordenador = criarBotaoSecundario("Cadastrar Coordenador", e -> abrirTelaCadastroCoordenador());
-            painelFormulario.add(btnCadastrarCoordenador, gbc);
-        }
-        
+        campoSenha.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        painelPrincipal.add(campoSenha);
+
+        // Botão de Login
+        yInicial += alturaCampo + espacamento + 20;
+        botaoLogin = criarBotaoLogin("Entrar");
+        botaoLogin.setBounds((Estilos.LARGURA_TELA - Estilos.LARGURA_BOTAO) / 2, yInicial, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
+        painelPrincipal.add(botaoLogin);
+
         // Adiciona listener para Enter no campo de senha
         campoSenha.addActionListener(e -> realizarLogin());
         
-        // Adiciona listener para Enter no campo de email
+        // Adiciona listener para Enter no campo de email para pular para o campo de senha
         campoEmail.addActionListener(e -> campoSenha.requestFocus());
-        
-        painelPrincipal.add(painelFormulario, BorderLayout.CENTER);
     }
     
     /**
@@ -161,14 +129,13 @@ public class TelaLogin extends TelaBase {
     private JButton criarBotaoLogin(String texto) {
         JButton botao = new JButton(texto);
         botao.setFont(Estilos.FONTE_BOTAO);
-        botao.setPreferredSize(new Dimension(Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO));
         botao.setBackground(Estilos.COR_VERDE_CLARO);
         botao.setForeground(Estilos.COR_TEXTO);
         botao.setFocusPainted(false);
         botao.setBorderPainted(false);
         botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Efeito hover
+        // Efeito hover (O efeito de quando o mouse passa por cima)
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 botao.setBackground(Estilos.COR_VERDE_CLARO_HOVER);
@@ -187,6 +154,13 @@ public class TelaLogin extends TelaBase {
      * Realiza o processo de login.
      */
     private void realizarLogin() {
+        // Primeiro, verifica se o coordenador precisa ser cadastrado
+        if (!central.temCoordenador()) {
+            mostrarAviso("Nenhum coordenador encontrado. É necessário cadastrar um administrador primeiro.");
+            abrirTelaCadastroCoordenador();
+            return;
+        }
+
         String email = campoEmail.getText().trim();
         String senha = new String(campoSenha.getPassword());
         
@@ -197,14 +171,12 @@ public class TelaLogin extends TelaBase {
         }
         
         // Verifica se é coordenador
-        if (central.temCoordenador()) {
-            Coordenador coordenador = central.getCoordenador();
-            if (coordenador.getEmail().equalsIgnoreCase(email) && 
-                coordenador.getSenha().equals(senha)) {
-                sessao.setUsuarioLogado(coordenador);
-                abrirTelaPrincipal();
-                return;
-            }
+        Coordenador coordenador = central.getCoordenador();
+        if (coordenador.getEmail().equalsIgnoreCase(email) && 
+            coordenador.getSenha().equals(senha)) {
+            sessao.setUsuarioLogado(coordenador);
+            abrirTelaPrincipal();
+            return;
         }
         
         // Verifica se é aluno
@@ -241,4 +213,3 @@ public class TelaLogin extends TelaBase {
         this.dispose();
     }
 }
-

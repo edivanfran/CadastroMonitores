@@ -49,7 +49,14 @@ public class TelaPrincipal extends TelaBase {
         
         // Informações do usuário
         String tipoUsuario = isCoordenador() ? "Coordenador" : "Aluno";
-        JLabel labelUsuario = criarLabel("Usuário: " + sessao.getNomeUsuario() + " (" + tipoUsuario + ")",
+        // Mostrar só até o segundo nome
+        String nomeCompleto = sessao.getNomeUsuario();
+        String[] nomeESobrenome = {"Nome", "desconhecido"};
+
+        if (nomeCompleto != null) {
+            nomeESobrenome = nomeCompleto.split(" ");
+        }
+        JLabel labelUsuario = criarLabel("Usuário: " + nomeESobrenome[0] + " " + nomeESobrenome[1] + " (" + tipoUsuario + ")",
                 Estilos.FONTE_NORMAL);
         labelUsuario.setForeground(Estilos.COR_BRANCO);
         labelUsuario.setBounds(600, 0, 280, 60);

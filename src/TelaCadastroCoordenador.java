@@ -11,8 +11,8 @@ public class TelaCadastroCoordenador extends TelaBase {
     private JTextField campoEmail;
     private JPasswordField campoSenha;
     private JPasswordField campoConfirmarSenha;
-    private JButton btnCadastrar;
-    private JButton btnVoltar;
+    private JButton botaoCadastrar;
+    private JButton botaoVoltar;
     private CentralDeInformacoes central;
     private Persistencia persistencia;
     private String nomeArquivo;
@@ -23,8 +23,7 @@ public class TelaCadastroCoordenador extends TelaBase {
         this.persistencia = persistencia;
         this.nomeArquivo = nomeArquivo;
     }
-    
-    @Override
+
     protected void criarComponentes() {
         // Logo e título
         criarCabecalho();
@@ -37,51 +36,43 @@ public class TelaCadastroCoordenador extends TelaBase {
      * Cria o cabeçalho com logo e título.
      */
     private void criarCabecalho() {
-        JPanel painelCabecalho = new JPanel();
-        painelCabecalho.setLayout(new BoxLayout(painelCabecalho, BoxLayout.Y_AXIS));
-        painelCabecalho.setBackground(Estilos.COR_FUNDO);
-        painelCabecalho.setBorder(BorderFactory.createEmptyBorder(30, 20, 20, 20));
-        painelCabecalho.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
         // Logo (se existir)
         JLabel logo = criarLogo();
         if (logo != null) {
-            painelCabecalho.add(logo);
-            painelCabecalho.add(Box.createVerticalStrut(20));
+            logo.setBounds(375, 30, 150, 150); // Centralizado horizontalmente
+            painelPrincipal.add(logo);
         }
         
         // Título
         JLabel titulo = criarLabel("Cadastro do Coordenador", Estilos.FONTE_TITULO);
-        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-        painelCabecalho.add(titulo);
+        titulo.setBounds(0, 200, Estilos.LARGURA_TELA, 30);
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        painelPrincipal.add(titulo);
         
         // Subtítulo
         JLabel subtitulo = criarLabel("O coordenador atua como administrador do sistema", Estilos.FONTE_PEQUENA);
-        subtitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        subtitulo.setBounds(0, 230, Estilos.LARGURA_TELA, 20);
+        subtitulo.setHorizontalAlignment(SwingConstants.CENTER);
         subtitulo.setForeground(Estilos.COR_SECUNDARIA);
-        painelCabecalho.add(Box.createVerticalStrut(5));
-        painelCabecalho.add(subtitulo);
-        
-        painelPrincipal.add(painelCabecalho, BorderLayout.NORTH);
+        painelPrincipal.add(subtitulo);
     }
     
     /**
      * Cria o logo da aplicação.
      * @return JLabel com o logo, ou null se não houver imagem
      */
+    //TODO | Padronizar o símbolo do IFPB em todas as telas e também não colocar a logo só aqui
     private JLabel criarLogo() {
         try {
             // Tenta carregar a imagem do logo
-            ImageIcon icon = new ImageIcon("logo.png");
+            ImageIcon icon = new ImageIcon("IFPB_icon.jpg");
             if (icon.getIconWidth() > 0) {
                 // Redimensiona o logo se necessário
                 Image img = icon.getImage();
                 Image scaledImg = img.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
                 icon = new ImageIcon(scaledImg);
                 
-                JLabel logo = new JLabel(icon);
-                logo.setAlignmentX(Component.CENTER_ALIGNMENT);
-                return logo;
+                return new JLabel(icon);
             }
         } catch (Exception e) {
             // Se não encontrar a imagem, continua sem logo
@@ -93,108 +84,80 @@ public class TelaCadastroCoordenador extends TelaBase {
      * Cria o formulário de cadastro.
      */
     private void criarFormularioCadastro() {
-        JPanel painelFormulario = new JPanel();
-        painelFormulario.setLayout(new GridBagLayout());
-        painelFormulario.setBackground(Estilos.COR_FUNDO);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 20, 10, 20);
-        gbc.anchor = GridBagConstraints.CENTER;
-        
+        int yInicial = 280;
+        int alturaCampo = 40;
+        int espacamento = 15;
+        int larguraLabel = 150;
+        int larguraCampo = 300;
+        int xLabel = (Estilos.LARGURA_TELA - larguraLabel - larguraCampo - 10) / 2;
+        int xCampo = xLabel + larguraLabel + 10;
+
         // Nome
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.EAST;
-        JLabel lblNome = criarLabel("Nome:", Estilos.FONTE_NORMAL);
-        painelFormulario.add(lblNome, gbc);
+        JLabel labelNome = criarLabel("Nome:", Estilos.FONTE_NORMAL);
+        labelNome.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        labelNome.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(labelNome);
         
-        gbc.gridx = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
         campoNome = criarCampoTexto(25);
-        painelFormulario.add(campoNome, gbc);
+        campoNome.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        painelPrincipal.add(campoNome);
         
         // Email
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
-        JLabel lblEmail = criarLabel("E-mail:", Estilos.FONTE_NORMAL);
-        painelFormulario.add(lblEmail, gbc);
+        yInicial += alturaCampo + espacamento;
+        JLabel labelEmail = criarLabel("E-mail:", Estilos.FONTE_NORMAL);
+        labelEmail.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        labelEmail.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(labelEmail);
         
-        gbc.gridx = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
         campoEmail = criarCampoTexto(25);
-        painelFormulario.add(campoEmail, gbc);
+        campoEmail.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        painelPrincipal.add(campoEmail);
         
         // Senha
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
-        JLabel lblSenha = criarLabel("Senha:", Estilos.FONTE_NORMAL);
-        painelFormulario.add(lblSenha, gbc);
+        yInicial += alturaCampo + espacamento;
+        JLabel labelSenha = criarLabel("Senha:", Estilos.FONTE_NORMAL);
+        labelSenha.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        labelSenha.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(labelSenha);
         
-        gbc.gridx = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
         campoSenha = new JPasswordField(25);
         campoSenha.setFont(Estilos.FONTE_NORMAL);
         campoSenha.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Estilos.COR_SECUNDARIA, 1),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)));
-        painelFormulario.add(campoSenha, gbc);
+        campoSenha.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        painelPrincipal.add(campoSenha);
         
         // Confirmar Senha
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
-        JLabel lblConfirmarSenha = criarLabel("Confirmar Senha:", Estilos.FONTE_NORMAL);
-        painelFormulario.add(lblConfirmarSenha, gbc);
+        yInicial += alturaCampo + espacamento;
+        JLabel labelConfirmarSenha = criarLabel("Confirmar Senha:", Estilos.FONTE_NORMAL);
+        labelConfirmarSenha.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        labelConfirmarSenha.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(labelConfirmarSenha);
         
-        gbc.gridx = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
         campoConfirmarSenha = new JPasswordField(25);
         campoConfirmarSenha.setFont(Estilos.FONTE_NORMAL);
         campoConfirmarSenha.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Estilos.COR_SECUNDARIA, 1),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)));
-        painelFormulario.add(campoConfirmarSenha, gbc);
+        campoConfirmarSenha.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        painelPrincipal.add(campoConfirmarSenha);
         
         // Botões
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0;
-        gbc.insets = new Insets(20, 20, 10, 20);
+        yInicial += alturaCampo + espacamento + 20;
+        int larguraTotalBotoes = Estilos.LARGURA_BOTAO * 2 + Estilos.ESPACAMENTO;
+        int xBotoes = (Estilos.LARGURA_TELA - larguraTotalBotoes) / 2;
+
+        botaoCadastrar = criarBotao("Cadastrar", e -> realizarCadastro());
+        botaoCadastrar.setBounds(xBotoes, yInicial, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
+        painelPrincipal.add(botaoCadastrar);
         
-        JPanel painelBotoes = new JPanel();
-        painelBotoes.setLayout(new FlowLayout(FlowLayout.CENTER, Estilos.ESPACAMENTO, 0));
-        painelBotoes.setBackground(Estilos.COR_FUNDO);
-        
-        btnCadastrar = criarBotao("Cadastrar", e -> realizarCadastro());
-        painelBotoes.add(btnCadastrar);
-        
-        btnVoltar = criarBotaoSecundario("Voltar", e -> voltarParaLogin());
-        painelBotoes.add(btnVoltar);
-        
-        painelFormulario.add(painelBotoes, gbc);
+        botaoVoltar = criarBotaoSecundario("Voltar", e -> voltarParaLogin());
+        botaoVoltar.setBounds(xBotoes + Estilos.LARGURA_BOTAO + Estilos.ESPACAMENTO, yInicial, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
+        painelPrincipal.add(botaoVoltar);
         
         // Adiciona listener para Enter no campo de confirmar senha
         campoConfirmarSenha.addActionListener(e -> realizarCadastro());
-        
-        painelPrincipal.add(painelFormulario, BorderLayout.CENTER);
     }
     
     /**
@@ -257,4 +220,3 @@ public class TelaCadastroCoordenador extends TelaBase {
         this.dispose();
     }
 }
-

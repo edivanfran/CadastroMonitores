@@ -25,7 +25,8 @@ public abstract class TelaBase extends JFrame {
         setSize(Estilos.LARGURA_TELA, Estilos.ALTURA_TELA);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null); // Centraliza a janela
-        setResizable(true);
+        setLayout(null);
+        setResizable(false); // Tirar o resizable para manter a tela menos proprícia a erros.
         getContentPane().setBackground(Estilos.COR_FUNDO);
     }
     
@@ -34,10 +35,9 @@ public abstract class TelaBase extends JFrame {
      */
     private void criarPainelPrincipal() {
         painelPrincipal = new JPanel();
-        painelPrincipal.setLayout(new BorderLayout());
+        painelPrincipal.setLayout(null);
         painelPrincipal.setBackground(Estilos.COR_FUNDO);
-        painelPrincipal.setBorder(BorderFactory.createEmptyBorder(
-                Estilos.MARGEM, Estilos.MARGEM, Estilos.MARGEM, Estilos.MARGEM));
+        painelPrincipal.setBounds(0, 0, Estilos.LARGURA_TELA, Estilos.ALTURA_TELA);
         add(painelPrincipal);
     }
     
@@ -57,7 +57,7 @@ public abstract class TelaBase extends JFrame {
         botao.setBorderPainted(false);
         botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Efeito hover
+        // Efeito hover (Quando o mouse passa por cima do botão)
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 botao.setBackground(Estilos.COR_SECUNDARIA);
@@ -107,9 +107,11 @@ public abstract class TelaBase extends JFrame {
     protected JTextField criarCampoTexto(int colunas) {
         JTextField campo = new JTextField(colunas);
         campo.setFont(Estilos.FONTE_NORMAL);
+        // Criar a borda do Campo
         campo.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Estilos.COR_SECUNDARIA, 1),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
         return campo;
     }
     
@@ -152,6 +154,7 @@ public abstract class TelaBase extends JFrame {
      * Mostra uma mensagem de aviso.
      * @param mensagem A mensagem a ser exibida
      */
+    // Vai ser muito útil
     protected void mostrarAviso(String mensagem) {
         JOptionPane.showMessageDialog(this, mensagem, "Aviso", 
                 JOptionPane.WARNING_MESSAGE);
@@ -199,4 +202,3 @@ public abstract class TelaBase extends JFrame {
         setVisible(true);
     }
 }
-

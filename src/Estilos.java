@@ -32,14 +32,8 @@ public class Estilos {
     public static final int LARGURA_BOTAO = 200;
     public static final int ALTURA_BOTAO = 40;
     public static final int ESPACAMENTO = 15;
-    public static final int MARGEM = 20;
-    
-    // Constantes de layout
-    public static final int POS_X_INICIAL = MARGEM;
-    public static final int POS_Y_INICIAL = MARGEM;
     
     private Estilos() {
         // Classe utilitária - não deve ser instanciada
     }
 }
-

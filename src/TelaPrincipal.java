@@ -3,19 +3,18 @@ import java.awt.*;
 
 /**
  * Tela principal do sistema.
- * Demonstra como uma mesma tela pode ter diferentes funcionalidades
- * baseadas no tipo de usuário (Coordenador ou Aluno).
+ * Apresenta as funcionalidades em um menu lateral com abas.
  */
 public class TelaPrincipal extends TelaBase {
     
-    private JButton btnCadastrarEdital;
-    private JButton btnListarEditais;
-    private JButton btnCalcularResultado;
-    private JButton btnFecharEdital;
-    private JButton btnListarAlunos;
-    private JButton btnInscreverMonitoria;
-    private JButton btnVerRanque;
-    private JButton btnSair;
+    private JButton botaoCadastrarEdital;
+    private JButton botaoListarEditais;
+    private JButton botaoCalcularResultado;
+    private JButton botaoFecharEdital;
+    private JButton botaoListarAlunos;
+    private JButton botaoInscreverMonitoria;
+    private JButton botaoVerRanque;
+    private JButton botaoSair;
     
     public TelaPrincipal() {
         super("Sistema de Cadastro de Monitores");
@@ -26,8 +25,8 @@ public class TelaPrincipal extends TelaBase {
         // Cabeçalho
         criarCabecalho();
         
-        // Área de conteúdo
-        criarAreaConteudo();
+        // Menu lateral com abas
+        criarMenuLateral();
         
         // Rodapé
         criarRodape();
@@ -38,117 +37,95 @@ public class TelaPrincipal extends TelaBase {
      */
     private void criarCabecalho() {
         JPanel painelCabecalho = new JPanel();
-        painelCabecalho.setLayout(new BorderLayout());
+        painelCabecalho.setLayout(null);
         painelCabecalho.setBackground(Estilos.COR_PRIMARIA);
-        painelCabecalho.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        painelCabecalho.setBounds(0, 0, Estilos.LARGURA_TELA, 60);
         
         // Título
         JLabel titulo = criarLabel("Sistema de Cadastro de Monitores", Estilos.FONTE_TITULO);
         titulo.setForeground(Estilos.COR_BRANCO);
-        painelCabecalho.add(titulo, BorderLayout.WEST);
+        titulo.setBounds(20, 0, 600, 60);
+        painelCabecalho.add(titulo);
         
         // Informações do usuário
-        JPanel painelUsuario = new JPanel();
-        painelUsuario.setBackground(Estilos.COR_PRIMARIA);
-        painelUsuario.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        
         String tipoUsuario = isCoordenador() ? "Coordenador" : "Aluno";
-        JLabel lblUsuario = criarLabel("Usuário: " + sessao.getNomeUsuario() + " (" + tipoUsuario + ")", 
+        JLabel labelUsuario = criarLabel("Usuário: " + sessao.getNomeUsuario() + " (" + tipoUsuario + ")",
                 Estilos.FONTE_NORMAL);
-        lblUsuario.setForeground(Estilos.COR_BRANCO);
-        painelUsuario.add(lblUsuario);
+        labelUsuario.setForeground(Estilos.COR_BRANCO);
+        labelUsuario.setBounds(600, 0, 280, 60);
+        labelUsuario.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelCabecalho.add(labelUsuario);
         
-        painelCabecalho.add(painelUsuario, BorderLayout.EAST);
-        
-        painelPrincipal.add(painelCabecalho, BorderLayout.NORTH);
+        painelPrincipal.add(painelCabecalho);
     }
     
     /**
-     * Cria a área de conteúdo com os botões de funcionalidades.
+     * Cria o menu lateral com abas para as funcionalidades.
      */
-    private void criarAreaConteudo() {
-        JPanel painelConteudo = new JPanel();
-        painelConteudo.setLayout(new GridBagLayout());
-        painelConteudo.setBackground(Estilos.COR_FUNDO);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.anchor = GridBagConstraints.CENTER;
+    private void criarMenuLateral() {
+        JTabbedPane menuAbas = new JTabbedPane();
+        menuAbas.setTabPlacement(JTabbedPane.TOP);
+        menuAbas.setFont(Estilos.FONTE_NORMAL);
         
-        // Título da seção
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        JLabel lblTituloSecao = criarLabel("Funcionalidades Disponíveis", Estilos.FONTE_SUBTITULO);
-        painelConteudo.add(lblTituloSecao, gbc);
+        // Painel para a aba de Editais
+        JPanel painelEditais = criarPainelAba();
+        menuAbas.addTab("Editais", null, painelEditais, "Funcionalidades relacionadas a editais");
         
-        // Botões - Funcionalidades do Coordenador
-        gbc.gridwidth = 1;
-        gbc.gridy = 1;
+        // Painel para a aba de Alunos
+        JPanel painelAlunos = criarPainelAba();
+        menuAbas.addTab("Alunos", null, painelAlunos, "Funcionalidades relacionadas a alunos");
+
+        // Adicionar botões à aba de Editais
+        botaoCadastrarEdital = criarBotao("Cadastrar Edital",
+                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+        definirPermissao(botaoCadastrarEdital, isCoordenador());
+        painelEditais.add(botaoCadastrarEdital);
         
-        // Cadastrar Edital (apenas coordenador)
-        btnCadastrarEdital = criarBotao("Cadastrar Edital", e -> {
-            // TODO: Implementar ação
-            mostrarSucesso("Funcionalidade em desenvolvimento");
-        });
-        gbc.gridx = 0;
-        painelConteudo.add(btnCadastrarEdital, gbc);
-        definirPermissao(btnCadastrarEdital, isCoordenador());
+        botaoListarEditais = criarBotao("Listar Editais",
+                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+        painelEditais.add(botaoListarEditais);
         
-        // Listar Editais (todos)
-        btnListarEditais = criarBotao("Listar Editais", e -> {
-            // TODO: Implementar ação
-            mostrarSucesso("Funcionalidade em desenvolvimento");
-        });
-        gbc.gridx = 1;
-        painelConteudo.add(btnListarEditais, gbc);
+        botaoCalcularResultado = criarBotao("Calcular Resultado",
+                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+        definirPermissao(botaoCalcularResultado, isCoordenador());
+        painelEditais.add(botaoCalcularResultado);
         
-        // Calcular Resultado (apenas coordenador)
-        btnCalcularResultado = criarBotao("Calcular Resultado", e -> {
-            // TODO: Implementar ação
-            mostrarSucesso("Funcionalidade em desenvolvimento");
-        });
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        painelConteudo.add(btnCalcularResultado, gbc);
-        definirPermissao(btnCalcularResultado, isCoordenador());
+        botaoFecharEdital = criarBotao("Fechar Edital",
+                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+        definirPermissao(botaoFecharEdital, isCoordenador());
+        painelEditais.add(botaoFecharEdital);
+
+        // Adicionar botões à aba de Alunos
+        botaoListarAlunos = criarBotao("Listar Alunos",
+                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+        definirPermissao(botaoListarAlunos, isCoordenador());
+        painelAlunos.add(botaoListarAlunos);
         
-        // Fechar Edital (apenas coordenador)
-        btnFecharEdital = criarBotao("Fechar Edital", e -> {
-            // TODO: Implementar ação
-            mostrarSucesso("Funcionalidade em desenvolvimento");
-        });
-        gbc.gridx = 1;
-        painelConteudo.add(btnFecharEdital, gbc);
-        definirPermissao(btnFecharEdital, isCoordenador());
+        botaoInscreverMonitoria = criarBotao("Inscrever em Monitoria",
+                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+        painelAlunos.add(botaoInscreverMonitoria);
         
-        // Listar Alunos (apenas coordenador)
-        btnListarAlunos = criarBotao("Listar Alunos", e -> {
-            // TODO: Implementar ação
-            mostrarSucesso("Funcionalidade em desenvolvimento");
-        });
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        painelConteudo.add(btnListarAlunos, gbc);
-        definirPermissao(btnListarAlunos, isCoordenador());
+        botaoVerRanque = criarBotao("Ver Ranque",
+                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+        painelAlunos.add(botaoVerRanque);
         
-        // Inscrever em Monitoria (todos)
-        btnInscreverMonitoria = criarBotao("Inscrever em Monitoria", e -> {
-            // TODO: Implementar ação
-            mostrarSucesso("Funcionalidade em desenvolvimento");
-        });
-        gbc.gridx = 1;
-        painelConteudo.add(btnInscreverMonitoria, gbc);
-        
-        // Ver Ranque (todos, mas apenas após cálculo)
-        btnVerRanque = criarBotao("Ver Ranque", e -> {
-            // TODO: Implementar ação
-            mostrarSucesso("Funcionalidade em desenvolvimento");
-        });
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        painelConteudo.add(btnVerRanque, gbc);
-        
-        painelPrincipal.add(painelConteudo, BorderLayout.CENTER);
+        // Posicionar o JTabbedPane na tela
+        // A largura precisa acomodar o texto da aba + os botões
+        menuAbas.setBounds(0, 70, 200, Estilos.ALTURA_TELA - 150);
+        painelPrincipal.add(menuAbas);
+    }
+
+    /**
+     * Cria um painel padronizado para ser usado em uma aba.
+     * @return O painel configurado.
+     */
+    private JPanel criarPainelAba() {
+        JPanel painel = new JPanel();
+        // Usar GridLayout para empilhar os botões verticalmente
+        painel.setLayout(new GridLayout(0, 1, 10, 10)); 
+        painel.setBackground(Estilos.COR_FUNDO);
+        painel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        return painel;
     }
     
     /**
@@ -158,9 +135,9 @@ public class TelaPrincipal extends TelaBase {
         JPanel painelRodape = new JPanel();
         painelRodape.setLayout(new FlowLayout(FlowLayout.RIGHT));
         painelRodape.setBackground(Estilos.COR_FUNDO);
-        painelRodape.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        painelRodape.setBounds(0, Estilos.ALTURA_TELA - 80, Estilos.LARGURA_TELA - 20, 60);
         
-        btnSair = criarBotaoSecundario("Sair", e -> {
+        botaoSair = criarBotaoSecundario("Sair", e -> {
             int opcao = JOptionPane.showConfirmDialog(
                     this,
                     "Deseja realmente sair do sistema?",
@@ -174,8 +151,7 @@ public class TelaPrincipal extends TelaBase {
             }
         });
         
-        painelRodape.add(btnSair);
-        painelPrincipal.add(painelRodape, BorderLayout.SOUTH);
+        painelRodape.add(botaoSair);
+        painelPrincipal.add(painelRodape);
     }
 }
-

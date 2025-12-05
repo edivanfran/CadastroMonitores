@@ -1,6 +1,8 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tela principal do sistema.
@@ -28,7 +30,10 @@ public class TelaPrincipal extends TelaBase {
         
         // Menu lateral com abas
         criarMenuLateral();
-        
+
+        // Criar tabela na interface
+        criarTabelasEditais();
+
         // Rodapé
         criarRodape();
     }
@@ -123,14 +128,36 @@ public class TelaPrincipal extends TelaBase {
         painelPrincipal.add(menuAbas);
     }
 
-    private JTable criarTabelasEditais() {
+    private void criarTabelasEditais() {
         if (getCentral().getTodosOsEditais().isEmpty()) {
             mostrarAviso("Não há editais cadastrados");
+            return; // Retorna para não tentar criar uma tabela vazia
         }
-        JTable tabela = new JTable();
-        DefaultTableModel modelo = new DefaultTableModel();
 
-        return tabela;
+        DefaultTableModel modelo = new DefaultTableModel(){
+            // Não deixar nenhuma célula ser editável
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        String[] colunas = {"id", "numero", "dataInicio", "dataLimite", "disciplinas", "aberto"};
+        // Criar as colunas
+        for (String coluna: colunas) {
+            modelo.addColumn(coluna);
+        }
+
+        for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
+            modelo.addRow(new Object[] {item.getId(), item.getNumero(), item.getDataInicio(), item.getDataLimite(), item.getDisciplinas(), item.isAberto()});
+        }
+
+        JTable tabela = new JTable(modelo);
+        
+        // Para a tabela aparecer, ela precisa estar dentro de um JScrollPane
+        JScrollPane painelTabela = new JScrollPane(tabela);
+
+        painelTabela.setBounds(210, 125, 650, 400); // Ajuste a posição e o tamanho conforme necessário
+        painelPrincipal.add(painelTabela);
     }
 
     /**

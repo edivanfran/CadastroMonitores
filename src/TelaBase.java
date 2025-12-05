@@ -10,14 +10,20 @@ public abstract class TelaBase extends JFrame {
     
     protected JPanel painelPrincipal;
     protected SessaoUsuario sessao;
-    
-    public TelaBase(String titulo) {
+    private CentralDeInformacoes central;
+    private Persistencia persistencia;
+    private String nomeArquivo;
+
+    public TelaBase(String titulo, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
         super(titulo);
+        this.central = central;
+        this.persistencia = persistencia;
+        this.nomeArquivo = nomeArquivo;
         this.sessao = SessaoUsuario.getInstancia();
         configurarJanela();
         criarPainelPrincipal();
     }
-    
+
     /**
      * Configura as propriedades básicas da janela.
      */
@@ -29,7 +35,7 @@ public abstract class TelaBase extends JFrame {
         setResizable(false); // Tirar o resizable para manter a tela menos proprícia a erros.
         getContentPane().setBackground(Estilos.COR_FUNDO);
     }
-    
+
     /**
      * Cria o painel principal com layout e estilo padrão.
      */
@@ -40,7 +46,7 @@ public abstract class TelaBase extends JFrame {
         painelPrincipal.setBounds(0, 0, Estilos.LARGURA_TELA, Estilos.ALTURA_TELA);
         add(painelPrincipal);
     }
-    
+
     /**
      * Cria um botão padronizado.
      * @param texto O texto do botão
@@ -56,7 +62,7 @@ public abstract class TelaBase extends JFrame {
         botao.setFocusPainted(false);
         botao.setBorderPainted(false);
         botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         // Efeito hover (Quando o mouse passa por cima do botão)
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -66,14 +72,14 @@ public abstract class TelaBase extends JFrame {
                 botao.setBackground(Estilos.COR_PRIMARIA);
             }
         });
-        
+
         if (listener != null) {
             botao.addActionListener(listener);
         }
-        
+
         return botao;
     }
-    
+
     /**
      * Cria um botão secundário (estilo diferente).
      * @param texto O texto do botão
@@ -85,7 +91,7 @@ public abstract class TelaBase extends JFrame {
         botao.setBackground(Estilos.COR_SECUNDARIA);
         return botao;
     }
-    
+
     /**
      * Cria um label padronizado.
      * @param texto O texto do label
@@ -98,7 +104,7 @@ public abstract class TelaBase extends JFrame {
         label.setForeground(Estilos.COR_TEXTO);
         return label;
     }
-    
+
     /**
      * Cria um campo de texto padronizado.
      * @param colunas Número de colunas do campo
@@ -114,7 +120,7 @@ public abstract class TelaBase extends JFrame {
         ));
         return campo;
     }
-    
+
     /**
      * Cria um painel de botões com layout organizado.
      * @param botoes Os botões a serem adicionados
@@ -124,42 +130,42 @@ public abstract class TelaBase extends JFrame {
         JPanel painel = new JPanel();
         painel.setLayout(new FlowLayout(FlowLayout.CENTER, Estilos.ESPACAMENTO, Estilos.ESPACAMENTO));
         painel.setBackground(Estilos.COR_FUNDO);
-        
+
         for (JButton botao : botoes) {
             painel.add(botao);
         }
-        
+
         return painel;
     }
-    
+
     /**
      * Mostra uma mensagem de sucesso.
      * @param mensagem A mensagem a ser exibida
      */
     protected void mostrarSucesso(String mensagem) {
-        JOptionPane.showMessageDialog(this, mensagem, "Sucesso", 
+        JOptionPane.showMessageDialog(this, mensagem, "Sucesso",
                 JOptionPane.INFORMATION_MESSAGE);
     }
-    
+
     /**
      * Mostra uma mensagem de erro.
      * @param mensagem A mensagem a ser exibida
      */
     protected void mostrarErro(String mensagem) {
-        JOptionPane.showMessageDialog(this, mensagem, "Erro", 
+        JOptionPane.showMessageDialog(this, mensagem, "Erro",
                 JOptionPane.ERROR_MESSAGE);
     }
-    
+
     /**
      * Mostra uma mensagem de aviso.
      * @param mensagem A mensagem a ser exibida
      */
     // Vai ser muito útil
     protected void mostrarAviso(String mensagem) {
-        JOptionPane.showMessageDialog(this, mensagem, "Aviso", 
+        JOptionPane.showMessageDialog(this, mensagem, "Aviso",
                 JOptionPane.WARNING_MESSAGE);
     }
-    
+
     /**
      * Verifica se o usuário logado é coordenador.
      * @return true se for coordenador, false caso contrário
@@ -167,7 +173,7 @@ public abstract class TelaBase extends JFrame {
     protected boolean isCoordenador() {
         return sessao.isCoordenador();
     }
-    
+
     /**
      * Verifica se o usuário logado é aluno.
      * @return true se for aluno, false caso contrário
@@ -175,7 +181,7 @@ public abstract class TelaBase extends JFrame {
     protected boolean isAluno() {
         return sessao.isAluno();
     }
-    
+
     /**
      * Habilita ou desabilita um componente baseado na permissão.
      * @param componente O componente a ser habilitado/desabilitado
@@ -187,18 +193,30 @@ public abstract class TelaBase extends JFrame {
             componente.setToolTipText("Apenas coordenadores podem acessar esta funcionalidade");
         }
     }
-    
+
     /**
      * Método abstrato que deve ser implementado por cada tela específica.
      * Define os componentes e layout da tela.
      */
     protected abstract void criarComponentes();
-    
+
     /**
      * Inicializa a tela criando os componentes.
      */
     public void inicializar() {
         criarComponentes();
         setVisible(true);
+    }
+
+    public CentralDeInformacoes getCentral() {
+        return central;
+    }
+
+    public Persistencia getPersistencia() {
+        return persistencia;
+    }
+
+    public String getNomeArquivo() {
+        return nomeArquivo;
     }
 }

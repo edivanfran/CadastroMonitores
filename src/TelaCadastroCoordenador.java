@@ -13,15 +13,12 @@ public class TelaCadastroCoordenador extends TelaBase {
     private JPasswordField campoConfirmarSenha;
     private JButton botaoCadastrar;
     private JButton botaoVoltar;
-    private CentralDeInformacoes central;
-    private Persistencia persistencia;
-    private String nomeArquivo;
-    
+
     public TelaCadastroCoordenador(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Cadastro de Coordenador");
-        this.central = central;
-        this.persistencia = persistencia;
-        this.nomeArquivo = nomeArquivo;
+        super("Cadastro de Coordenador",
+                central,
+                persistencia,
+                nomeArquivo);
     }
 
     protected void criarComponentes() {
@@ -192,17 +189,17 @@ public class TelaCadastroCoordenador extends TelaBase {
         
         // Cadastra o coordenador
         try {
-            central.cadastrarCoordenador(email, senha, nome);
-            persistencia.salvarCentral(central, nomeArquivo);
+            getCentral().cadastrarCoordenador(email, senha, nome);
+            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
             
             // Define o coordenador como usuário logado
-            Coordenador coordenador = central.getCoordenador();
+            Coordenador coordenador = getCentral().getCoordenador();
             sessao.setUsuarioLogado(coordenador);
             
             mostrarSucesso("Coordenador cadastrado com sucesso!");
             
             // Abre a tela principal
-            TelaPrincipal telaPrincipal = new TelaPrincipal();
+            TelaPrincipal telaPrincipal = new TelaPrincipal(getCentral(), getPersistencia(), getNomeArquivo());
             telaPrincipal.inicializar();
             this.dispose();
             
@@ -215,7 +212,7 @@ public class TelaCadastroCoordenador extends TelaBase {
      * Volta para a tela de login.
      */
     private void voltarParaLogin() {
-        TelaLogin telaLogin = new TelaLogin(central, persistencia, nomeArquivo);
+        TelaLogin telaLogin = new TelaLogin(getCentral(), getPersistencia(), getNomeArquivo());
         telaLogin.inicializar();
         this.dispose();
     }

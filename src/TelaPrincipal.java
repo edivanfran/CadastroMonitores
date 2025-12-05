@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 /**
@@ -16,8 +17,8 @@ public class TelaPrincipal extends TelaBase {
     private JButton botaoVerRanque;
     private JButton botaoSair;
     
-    public TelaPrincipal() {
-        super("Sistema de Cadastro de Monitores");
+    public TelaPrincipal(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
+        super("Sistema de Cadastro de Monitores", central, persistencia, nomeArquivo);
     }
     
     @Override
@@ -53,7 +54,7 @@ public class TelaPrincipal extends TelaBase {
         String nomeCompleto = sessao.getNomeUsuario();
         String[] nomeESobrenome = {"Nome", "desconhecido"};
 
-        if (nomeCompleto != null) {
+        if (nomeCompleto != null && nomeCompleto.contains(" ")) {
             nomeESobrenome = nomeCompleto.split(" ");
         }
         JLabel labelUsuario = criarLabel("Usuário: " + nomeESobrenome[0] + " " + nomeESobrenome[1] + " (" + tipoUsuario + ")",
@@ -120,6 +121,16 @@ public class TelaPrincipal extends TelaBase {
         // A largura precisa acomodar o texto da aba + os botões
         menuAbas.setBounds(0, 70, 200, Estilos.ALTURA_TELA - 150);
         painelPrincipal.add(menuAbas);
+    }
+
+    private JTable criarTabelasEditais() {
+        if (getCentral().getTodosOsEditais().isEmpty()) {
+            mostrarAviso("Não há editais cadastrados");
+        }
+        JTable tabela = new JTable();
+        DefaultTableModel modelo = new DefaultTableModel();
+
+        return tabela;
     }
 
     /**

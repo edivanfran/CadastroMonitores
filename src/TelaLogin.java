@@ -10,18 +10,14 @@ public class TelaLogin extends TelaBase {
     private JTextField campoEmail;
     private JPasswordField campoSenha;
     private JButton botaoLogin;
-    private CentralDeInformacoes central;
-    private Persistencia persistencia;
-    private String nomeArquivo;
     
     public TelaLogin(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Sistema de Cadastro de Monitores - Login");
-        this.central = central;
-        this.persistencia = persistencia;
-        this.nomeArquivo = nomeArquivo;
+        super("Sistema de Cadastro de Monitores - Login",
+                central,
+                persistencia,
+                nomeArquivo);
     }
-    
-    @Override
+
     protected void criarComponentes() {
         // Logo e título
         criarCabecalho();
@@ -155,7 +151,7 @@ public class TelaLogin extends TelaBase {
      */
     private void realizarLogin() {
         // Primeiro, verifica se o coordenador precisa ser cadastrado
-        if (!central.temCoordenador()) {
+        if (!getCentral().temCoordenador()) {
             mostrarAviso("Nenhum coordenador encontrado. É necessário cadastrar um administrador primeiro.");
             abrirTelaCadastroCoordenador();
             return;
@@ -171,7 +167,7 @@ public class TelaLogin extends TelaBase {
         }
         
         // Verifica se é coordenador
-        Coordenador coordenador = central.getCoordenador();
+        Coordenador coordenador = getCentral().getCoordenador();
         if (coordenador.getEmail().equalsIgnoreCase(email) && 
             coordenador.getSenha().equals(senha)) {
             sessao.setUsuarioLogado(coordenador);
@@ -180,8 +176,8 @@ public class TelaLogin extends TelaBase {
         }
         
         // Verifica se é aluno
-        if (central.isLoginPermitido(email, senha)) {
-            Aluno aluno = central.retornarAlunoPeloEmail(email);
+        if (getCentral().isLoginPermitido(email, senha)) {
+            Aluno aluno = getCentral().retornarAlunoPeloEmail(email);
             if (aluno != null) {
                 sessao.setUsuarioLogado(aluno);
                 abrirTelaPrincipal();
@@ -199,7 +195,7 @@ public class TelaLogin extends TelaBase {
      * Abre a tela de cadastro de coordenador.
      */
     private void abrirTelaCadastroCoordenador() {
-        TelaCadastroCoordenador telaCadastro = new TelaCadastroCoordenador(central, persistencia, nomeArquivo);
+        TelaCadastroCoordenador telaCadastro = new TelaCadastroCoordenador(getCentral(), getPersistencia(), getNomeArquivo());
         telaCadastro.inicializar();
         this.dispose();
     }
@@ -208,7 +204,7 @@ public class TelaLogin extends TelaBase {
      * Abre a tela principal após login bem-sucedido.
      */
     private void abrirTelaPrincipal() {
-        TelaPrincipal telaPrincipal = new TelaPrincipal();
+        TelaPrincipal telaPrincipal = new TelaPrincipal(getCentral(), getPersistencia(), getNomeArquivo());
         telaPrincipal.inicializar();
         this.dispose();
     }

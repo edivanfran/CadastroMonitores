@@ -15,6 +15,11 @@
 ### Inicializador
 - **InicializadorGUI.java**: Inicializa a interface gráfica
 
+## Refatoração Recente
+*   **Herança de Dependências:** Os atributos `CentralDeInformacoes`, `Persistencia` e `nomeArquivo`, que são comuns a várias telas, foram movidos para a classe `TelaBase`.
+*   **Injeção de Dependência:** As classes filhas (`TelaLogin`, `TelaCadastroCoordenador`, `TelaPrincipal`, etc.) agora recebem essas dependências em seus construtores e as repassam para a `TelaBase` através de `super()`.
+*   **Acesso via Getters:** O acesso a esses objetos compartilhados agora é feito de forma segura através de métodos `getters` (`getCentral()`, `getPersistencia()`), melhorando o encapsulamento e a manutenibilidade do código.
+
 ## Como Usar
 
 ### 1. Adicionar Logo

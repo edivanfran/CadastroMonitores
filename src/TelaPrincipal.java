@@ -3,6 +3,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Tela principal do sistema.
@@ -38,9 +39,8 @@ public class TelaPrincipal extends TelaBase {
         criarRodape();
 
         // Criar tabela na interface
-        if (SessaoUsuario.getInstancia().isCoordenador()) {
-            criarTabelasEditais();
-        }
+        criarTabelasEditais();
+
     }
 
     /**
@@ -153,10 +153,13 @@ public class TelaPrincipal extends TelaBase {
         for (String coluna: colunas) {
             modelo.addColumn(coluna);
         }
+        // Colocar data em formato DD/MM/AAAA
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         //Filtra as colunas que deseja colocar na tabela
         for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
-            modelo.addRow(new Object[] {item.getId(), item.getNumero(), item.getDataInicio(), item.getDataLimite(), item.getDisciplinas(), item.isAberto()});
+            modelo.addRow(new Object[] {item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
+                    item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto()});
         }
         JTable tabela = new JTable(modelo);
 

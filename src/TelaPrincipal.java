@@ -1,15 +1,18 @@
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Tela principal do sistema.
  * Apresenta as funcionalidades em um menu lateral com abas.
  */
 public class TelaPrincipal extends TelaBase {
-    
+
+    private JTabbedPane menuAbas;
+    private JScrollPane painelTabelaEditais;
+    private JScrollPane painelTabelaAlunos;
     private JButton botaoCadastrarEdital;
     private JButton botaoListarEditais;
     private JButton botaoCalcularResultado;
@@ -31,13 +34,15 @@ public class TelaPrincipal extends TelaBase {
         // Menu lateral com abas
         criarMenuLateral();
 
-        // Criar tabela na interface
-        criarTabelasEditais();
-
         // Rodapé
         criarRodape();
+
+        // Criar tabela na interface
+        if (SessaoUsuario.getInstancia().isCoordenador()) {
+            criarTabelasEditais();
+        }
     }
-    
+
     /**
      * Cria o cabeçalho da tela com informações do usuário.
      */
@@ -76,7 +81,7 @@ public class TelaPrincipal extends TelaBase {
      * Cria o menu lateral com abas para as funcionalidades.
      */
     private void criarMenuLateral() {
-        JTabbedPane menuAbas = new JTabbedPane();
+        menuAbas = new JTabbedPane();
         menuAbas.setTabPlacement(JTabbedPane.TOP);
         menuAbas.setFont(Estilos.FONTE_NORMAL);
         
@@ -121,7 +126,10 @@ public class TelaPrincipal extends TelaBase {
         botaoVerRanque = criarBotao("Ver Ranque",
                 e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
         painelAlunos.add(botaoVerRanque);
-        
+
+        // Adicionar um Listener para quando a aba trocar exibir tabelas diferentes.
+        menuAbas.addChangeListener(new OuvinteTrocaDeAba());
+
         // Posicionar o JTabbedPane na tela
         // A largura precisa acomodar o texto da aba + os botões
         menuAbas.setBounds(0, 70, 200, Estilos.ALTURA_TELA - 150);
@@ -140,24 +148,51 @@ public class TelaPrincipal extends TelaBase {
                 return false;
             }
         };
-
         String[] colunas = {"id", "numero", "dataInicio", "dataLimite", "disciplinas", "aberto"};
         // Criar as colunas
         for (String coluna: colunas) {
             modelo.addColumn(coluna);
         }
 
+        //Filtra as colunas que deseja colocar na tabela
         for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
             modelo.addRow(new Object[] {item.getId(), item.getNumero(), item.getDataInicio(), item.getDataLimite(), item.getDisciplinas(), item.isAberto()});
         }
-
         JTable tabela = new JTable(modelo);
-        
-        // Para a tabela aparecer, ela precisa estar dentro de um JScrollPane
-        JScrollPane painelTabela = new JScrollPane(tabela);
 
-        painelTabela.setBounds(210, 125, 650, 400); // Ajuste a posição e o tamanho conforme necessário
-        painelPrincipal.add(painelTabela);
+        // Para a tabela aparecer, ela precisa estar dentro de um JScrollPane
+        painelTabelaEditais = new JScrollPane(tabela);
+
+        painelTabelaEditais.setBounds(210, 125, 650, 400); // Ajuste a posição e o tamanho conforme necessário
+        painelPrincipal.add(painelTabelaEditais);
+    }
+
+    private void criarTabelasAlunos() {
+        if (getCentral().getTodosOsAlunos().isEmpty()) {
+            mostrarAviso("Não há alunos cadastrados");
+        }
+
+        DefaultTableModel modelo = new DefaultTableModel() {
+            // Não deixar as células ser editáveis
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        String[] colunas = {"matricula", "nome", "email", "gênero"};
+        for (String coluna: colunas) {
+            modelo.addColumn(coluna);
+        }
+
+        //Filtra as colunas que deseja colocar na tabela
+        for (Aluno alguem : getCentral().getTodosOsAlunos()) {
+            modelo.addRow(new Object[] {alguem.getMatricula(), alguem.getNome(), alguem.getEmail(), alguem.getGenero()});
+        }
+        JTable tabela = new JTable(modelo);
+
+        painelTabelaAlunos = new JScrollPane(tabela);
+        painelTabelaAlunos.setBounds(210, 125, 650, 400);
+        painelPrincipal.add(painelTabelaAlunos);
     }
 
     /**
@@ -171,6 +206,39 @@ public class TelaPrincipal extends TelaBase {
         painel.setBackground(Estilos.COR_FUNDO);
         painel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         return painel;
+    }
+
+    private class OuvinteTrocaDeAba implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
+            int numeroAba = menuAbas.getSelectedIndex();
+
+            switch (numeroAba) {
+                case 0: {
+                    //mudar para tornar uma visivel e outra invisivel ou alternar os valores dentro painel
+                    criarTabelasEditais();
+                    // Sem esse if ele pode lançar um NullPointerException
+                    if (painelTabelaAlunos.isVisible()) {
+                        painelTabelaAlunos.setVisible(false);
+                    }
+                    painelTabelaEditais.setVisible(true);
+                    repaint();
+                    break;
+                }
+                case 1: {
+                    //mudar para tornar uma visivel e outra invisivel ou alternar os valores dentro painel
+                    criarTabelasAlunos();
+                    // Sem esse if ele pode lançar um NullPointerException
+                    if (painelTabelaEditais.isVisible()) {
+                        painelTabelaEditais.setVisible(false);
+                    }
+                    painelTabelaAlunos.setVisible(true);
+                    repaint();
+                    break;
+                }
+            }
+
+        }
     }
     
     /**

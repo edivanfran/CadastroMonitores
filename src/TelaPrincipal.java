@@ -3,7 +3,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 /**
  * Tela principal do sistema.
@@ -14,11 +17,15 @@ public class TelaPrincipal extends TelaBase {
     private JTabbedPane menuAbas;
     private JScrollPane painelTabelaEditais;
     private JScrollPane painelTabelaAlunos;
+    private JTable tabelaEditais;
+    private JTable tabelaAlunos;
     private JButton botaoCadastrarEdital;
     private JButton botaoListarEditais;
+    private JButton botaoDetalharEdital;
     private JButton botaoCalcularResultado;
     private JButton botaoFecharEdital;
     private JButton botaoListarAlunos;
+    private JButton botaoDetalharAluno;
     private JButton botaoInscreverMonitoria;
     private JButton botaoVerRanque;
     private JButton botaoSair;
@@ -39,8 +46,9 @@ public class TelaPrincipal extends TelaBase {
         criarRodape();
 
         // Criar tabela na interface
-        criarTabelasEditais();
-
+        criarPainelTabelaEditais();
+        criarPainelTabelaAlunos();
+        painelTabelaAlunos.setVisible(false); // Começa invisível
     }
 
     /**
@@ -51,13 +59,13 @@ public class TelaPrincipal extends TelaBase {
         painelCabecalho.setLayout(null);
         painelCabecalho.setBackground(Estilos.COR_PRIMARIA);
         painelCabecalho.setBounds(0, 0, Estilos.LARGURA_TELA, 60);
-        
+
         // Título
         JLabel titulo = criarLabel("Sistema de Cadastro de Monitores", Estilos.FONTE_TITULO);
         titulo.setForeground(Estilos.COR_BRANCO);
         titulo.setBounds(20, 0, 600, 60);
         painelCabecalho.add(titulo);
-        
+
         // Informações do usuário
         String tipoUsuario = isCoordenador() ? "Coordenador" : "Aluno";
         // Mostrar só até o segundo nome
@@ -73,10 +81,10 @@ public class TelaPrincipal extends TelaBase {
         labelUsuario.setBounds(600, 0, 280, 60);
         labelUsuario.setHorizontalAlignment(SwingConstants.RIGHT);
         painelCabecalho.add(labelUsuario);
-        
+
         painelPrincipal.add(painelCabecalho);
     }
-    
+
     /**
      * Cria o menu lateral com abas para as funcionalidades.
      */
@@ -84,11 +92,11 @@ public class TelaPrincipal extends TelaBase {
         menuAbas = new JTabbedPane();
         menuAbas.setTabPlacement(JTabbedPane.TOP);
         menuAbas.setFont(Estilos.FONTE_NORMAL);
-        
+
         // Painel para a aba de Editais
         JPanel painelEditais = criarPainelAba();
         menuAbas.addTab("Editais", null, painelEditais, "Funcionalidades relacionadas a editais");
-        
+
         // Painel para a aba de Alunos
         JPanel painelAlunos = criarPainelAba();
         menuAbas.addTab("Alunos", null, painelAlunos, "Funcionalidades relacionadas a alunos");
@@ -98,16 +106,20 @@ public class TelaPrincipal extends TelaBase {
                 e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
         definirPermissao(botaoCadastrarEdital, isCoordenador());
         painelEditais.add(botaoCadastrarEdital);
-        
+
         botaoListarEditais = criarBotao("Listar Editais",
                 e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
         painelEditais.add(botaoListarEditais);
-        
+
+        botaoDetalharEdital = criarBotao("Detalhar Edital",
+                new OuvinteBotaoDetalharEdital());
+        painelEditais.add(botaoDetalharEdital);
+
         botaoCalcularResultado = criarBotao("Calcular Resultado",
                 e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
         definirPermissao(botaoCalcularResultado, isCoordenador());
         painelEditais.add(botaoCalcularResultado);
-        
+
         botaoFecharEdital = criarBotao("Fechar Edital",
                 e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
         definirPermissao(botaoFecharEdital, isCoordenador());
@@ -118,11 +130,16 @@ public class TelaPrincipal extends TelaBase {
                 e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
         definirPermissao(botaoListarAlunos, isCoordenador());
         painelAlunos.add(botaoListarAlunos);
-        
+
+        botaoDetalharAluno = criarBotao("Detalhar Aluno",
+                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+        definirPermissao(botaoDetalharAluno, isCoordenador());
+        painelAlunos.add(botaoDetalharAluno);
+
         botaoInscreverMonitoria = criarBotao("Inscrever em Monitoria",
                 e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
         painelAlunos.add(botaoInscreverMonitoria);
-        
+
         botaoVerRanque = criarBotao("Ver Ranque",
                 e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
         painelAlunos.add(botaoVerRanque);
@@ -136,64 +153,68 @@ public class TelaPrincipal extends TelaBase {
         painelPrincipal.add(menuAbas);
     }
 
-    private void criarTabelasEditais() {
+    private void criarPainelTabelaEditais() {
         if (getCentral().getTodosOsEditais().isEmpty()) {
-            mostrarAviso("Não há editais cadastrados");
-            return; // Retorna para não tentar criar uma tabela vazia
-        }
-
-        DefaultTableModel modelo = new DefaultTableModel(){
-            // Não deixar nenhuma célula ser editável
-            public boolean isCellEditable(int row, int column) {
-                return false;
+            // Cria um painel vazio para evitar NullPointerException
+            painelTabelaEditais = new JScrollPane();
+        } else {
+            DefaultTableModel modelo = new DefaultTableModel() {
+                // Não deixar nenhuma célula ser editável
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+            String[] colunas = {"id", "numero", "dataInicio", "dataLimite", "disciplinas", "aberto"};
+            // Criar as colunas
+            for (String coluna : colunas) {
+                modelo.addColumn(coluna);
             }
-        };
-        String[] colunas = {"id", "numero", "dataInicio", "dataLimite", "disciplinas", "aberto"};
-        // Criar as colunas
-        for (String coluna: colunas) {
-            modelo.addColumn(coluna);
-        }
-        // Colocar data em formato DD/MM/AAAA
-        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            // Colocar data em formato DD/MM/AAAA
+            DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        //Filtra as colunas que deseja colocar na tabela
-        for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
-            modelo.addRow(new Object[] {item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
-                    item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto()});
-        }
-        JTable tabela = new JTable(modelo);
+            //Filtra as colunas que deseja colocar na tabela
+            for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
+                modelo.addRow(new Object[]{item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
+                        item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto()});
+            }
+            tabelaEditais = new JTable(modelo);
+            mudarVisualDeTabela(tabelaEditais);
 
-        // Para a tabela aparecer, ela precisa estar dentro de um JScrollPane
-        painelTabelaEditais = new JScrollPane(tabela);
+            // Para a tabela aparecer, ela precisa estar dentro de um JScrollPane
+            painelTabelaEditais = new JScrollPane(tabelaEditais);
+        }
 
         painelTabelaEditais.setBounds(210, 125, 650, 400); // Ajuste a posição e o tamanho conforme necessário
         painelPrincipal.add(painelTabelaEditais);
     }
 
-    private void criarTabelasAlunos() {
+    private void criarPainelTabelaAlunos() {
         if (getCentral().getTodosOsAlunos().isEmpty()) {
-            mostrarAviso("Não há alunos cadastrados");
-        }
+            // Cria um painel vazio para evitar NullPointerException
+            painelTabelaAlunos = new JScrollPane();
+        } else {
+            DefaultTableModel modelo = new DefaultTableModel() {
+                // Não deixar as células ser editáveis
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
 
-        DefaultTableModel modelo = new DefaultTableModel() {
-            // Não deixar as células ser editáveis
-            public boolean isCellEditable(int row, int column) {
-                return false;
+            String[] colunas = {"matricula", "nome", "email", "gênero"};
+            for (String coluna : colunas) {
+                modelo.addColumn(coluna);
             }
-        };
 
-        String[] colunas = {"matricula", "nome", "email", "gênero"};
-        for (String coluna: colunas) {
-            modelo.addColumn(coluna);
+            //Filtra as colunas que deseja colocar na tabela
+            for (Aluno alguem : getCentral().getTodosOsAlunos()) {
+                modelo.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail(), alguem.getGenero()});
+            }
+            tabelaAlunos = new JTable(modelo);
+            mudarVisualDeTabela(tabelaAlunos);
+
+            painelTabelaAlunos = new JScrollPane(tabelaAlunos);
         }
 
-        //Filtra as colunas que deseja colocar na tabela
-        for (Aluno alguem : getCentral().getTodosOsAlunos()) {
-            modelo.addRow(new Object[] {alguem.getMatricula(), alguem.getNome(), alguem.getEmail(), alguem.getGenero()});
-        }
-        JTable tabela = new JTable(modelo);
-
-        painelTabelaAlunos = new JScrollPane(tabela);
         painelTabelaAlunos.setBounds(210, 125, 650, 400);
         painelPrincipal.add(painelTabelaAlunos);
     }
@@ -205,7 +226,7 @@ public class TelaPrincipal extends TelaBase {
     private JPanel criarPainelAba() {
         JPanel painel = new JPanel();
         // Usar GridLayout para empilhar os botões verticalmente
-        painel.setLayout(new GridLayout(0, 1, 10, 10)); 
+        painel.setLayout(new GridLayout(0, 1, 10, 10));
         painel.setBackground(Estilos.COR_FUNDO);
         painel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         return painel;
@@ -218,32 +239,68 @@ public class TelaPrincipal extends TelaBase {
 
             switch (numeroAba) {
                 case 0: {
-                    //mudar para tornar uma visivel e outra invisivel ou alternar os valores dentro painel
-                    criarTabelasEditais();
-                    // Sem esse if ele pode lançar um NullPointerException
-                    if (painelTabelaAlunos.isVisible()) {
-                        painelTabelaAlunos.setVisible(false);
-                    }
+                    // Aba Editais
+                    painelTabelaAlunos.setVisible(false);
                     painelTabelaEditais.setVisible(true);
-                    repaint();
                     break;
                 }
                 case 1: {
-                    //mudar para tornar uma visivel e outra invisivel ou alternar os valores dentro painel
-                    criarTabelasAlunos();
-                    // Sem esse if ele pode lançar um NullPointerException
-                    if (painelTabelaEditais.isVisible()) {
-                        painelTabelaEditais.setVisible(false);
-                    }
+                    // Aba Alunos
+                    painelTabelaEditais.setVisible(false);
                     painelTabelaAlunos.setVisible(true);
-                    repaint();
                     break;
                 }
+            }
+            painelPrincipal.repaint();
+
+        }
+    }
+
+    private class OuvinteBotaoDetalharEdital implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            int linhaSelecionada = tabelaEditais.getSelectedRow();
+            
+            if (linhaSelecionada == -1) {
+                mostrarErro("Selecione uma linha!");
+            }
+            long id = (long) tabelaEditais.getValueAt(linhaSelecionada, 0);
+
+            EditalDeMonitoria edital = getCentral().recuperarEdital(id);
+
+            if (edital != null) {
+                mostrarSucesso(edital.toString());
+            } else {
+                mostrarErro("Edital não encontrado");
             }
 
         }
     }
-    
+
+    public void mudarVisualDeTabela(JTable tabela) {
+        if (tabela != null) {
+            // Cor de fundo e texto
+            tabela.setBackground(Color.LIGHT_GRAY);
+            tabela.setForeground(Color.BLACK);
+
+            // Cor do cabeçalho
+            tabela.getTableHeader().setBackground(Color.DARK_GRAY);
+            tabela.getTableHeader().setForeground(Estilos.COR_TEXTO);
+
+            // Fonte
+            tabela.setFont(new Font("Arial", Font.PLAIN, 15));
+            tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 17));
+
+            tabela.setRowHeight(25);
+            tabela.setShowGrid(true);
+            tabela.setGridColor(Color.GRAY);
+
+            // Ajustar largura de colunas
+            tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
+            tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
+        }
+    }
+
     /**
      * Cria o rodapé da tela com botão de sair.
      */

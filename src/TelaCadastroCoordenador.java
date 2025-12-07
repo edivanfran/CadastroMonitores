@@ -81,39 +81,29 @@ public class TelaCadastroCoordenador extends TelaBase {
      * Cria o formulário de cadastro.
      */
     private void criarFormularioCadastro() {
-        int yInicial = 280;
-        int alturaCampo = 40;
-        int espacamento = 15;
-        int larguraLabel = 150;
-        int larguraCampo = 300;
-        int xLabel = (Estilos.LARGURA_TELA - larguraLabel - larguraCampo - 10) / 2;
-        int xCampo = xLabel + larguraLabel + 10;
-
         // Nome
         JLabel labelNome = criarLabel("Nome:", Estilos.FONTE_NORMAL);
-        labelNome.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        labelNome.setBounds(220, 280, 150, 40);
         labelNome.setHorizontalAlignment(SwingConstants.RIGHT);
         painelPrincipal.add(labelNome);
         
         campoNome = criarCampoTexto(25);
-        campoNome.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        campoNome.setBounds(380, 280, 300, 40);
         painelPrincipal.add(campoNome);
         
         // Email
-        yInicial += alturaCampo + espacamento;
         JLabel labelEmail = criarLabel("E-mail:", Estilos.FONTE_NORMAL);
-        labelEmail.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        labelEmail.setBounds(220, 335, 150, 40);
         labelEmail.setHorizontalAlignment(SwingConstants.RIGHT);
         painelPrincipal.add(labelEmail);
         
         campoEmail = criarCampoTexto(25);
-        campoEmail.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        campoEmail.setBounds(380, 335, 300, 40);
         painelPrincipal.add(campoEmail);
         
         // Senha
-        yInicial += alturaCampo + espacamento;
         JLabel labelSenha = criarLabel("Senha:", Estilos.FONTE_NORMAL);
-        labelSenha.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        labelSenha.setBounds(220, 390, 150, 40);
         labelSenha.setHorizontalAlignment(SwingConstants.RIGHT);
         painelPrincipal.add(labelSenha);
         
@@ -122,13 +112,12 @@ public class TelaCadastroCoordenador extends TelaBase {
         campoSenha.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Estilos.COR_SECUNDARIA, 1),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)));
-        campoSenha.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        campoSenha.setBounds(380, 390, 300, 40);
         painelPrincipal.add(campoSenha);
         
         // Confirmar Senha
-        yInicial += alturaCampo + espacamento;
         JLabel labelConfirmarSenha = criarLabel("Confirmar Senha:", Estilos.FONTE_NORMAL);
-        labelConfirmarSenha.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        labelConfirmarSenha.setBounds(220, 445, 150, 40);
         labelConfirmarSenha.setHorizontalAlignment(SwingConstants.RIGHT);
         painelPrincipal.add(labelConfirmarSenha);
         
@@ -137,20 +126,16 @@ public class TelaCadastroCoordenador extends TelaBase {
         campoConfirmarSenha.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Estilos.COR_SECUNDARIA, 1),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)));
-        campoConfirmarSenha.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        campoConfirmarSenha.setBounds(380, 445, 300, 40);
         painelPrincipal.add(campoConfirmarSenha);
         
         // Botões
-        yInicial += alturaCampo + espacamento + 20;
-        int larguraTotalBotoes = Estilos.LARGURA_BOTAO * 2 + Estilos.ESPACAMENTO;
-        int xBotoes = (Estilos.LARGURA_TELA - larguraTotalBotoes) / 2;
-
         botaoCadastrar = criarBotao("Cadastrar", e -> realizarCadastro());
-        botaoCadastrar.setBounds(xBotoes, yInicial, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
+        botaoCadastrar.setBounds(320, 510, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
         painelPrincipal.add(botaoCadastrar);
         
         botaoVoltar = criarBotaoSecundario("Voltar", e -> voltarParaLogin());
-        botaoVoltar.setBounds(xBotoes + Estilos.LARGURA_BOTAO + Estilos.ESPACAMENTO, yInicial, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
+        botaoVoltar.setBounds(535, 510, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
         painelPrincipal.add(botaoVoltar);
         
         // Adiciona listener para Enter no campo de confirmar senha

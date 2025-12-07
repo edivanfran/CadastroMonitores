@@ -16,6 +16,7 @@ public class Estilos {
     public static final Color COR_FUNDO = new Color(236, 240, 241);
     public static final Color COR_TEXTO = new Color(44, 62, 80);
     public static final Color COR_BRANCO = Color.WHITE;
+    public static final Color COR_CINZA = new Color(136, 136, 136);
     public static final Color COR_VERDE_CLARO = new Color(144, 238, 144);
     public static final Color COR_VERDE_CLARO_HOVER = new Color(124, 218, 124);
     

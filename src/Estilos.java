@@ -8,7 +8,7 @@ import java.awt.Font;
 public class Estilos {
     
     // Cores principais
-    public static final Color COR_PRIMARIA = new Color(41, 128, 185);
+    public static final Color COR_PRIMARIA = new Color(46, 125, 50); // Verde
     public static final Color COR_SECUNDARIA = new Color(52, 73, 94);
     public static final Color COR_SUCESSO = new Color(39, 174, 96);
     public static final Color COR_PERIGO = new Color(231, 76, 60);

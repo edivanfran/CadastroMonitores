@@ -20,6 +20,7 @@ public class EditalDeMonitoria {
     // Nome da disciplina -> Lista ordenada de inscrições
     private Map<String, ArrayList<Inscricao>> ranquePorDisciplina;
     private boolean resultadoCalculado;
+    private boolean periodoDesistenciaEncerrado;
 
     public long getId() {
         return id;
@@ -92,6 +93,7 @@ public class EditalDeMonitoria {
        this.inscricoes = new ArrayList<>();
        this.ranquePorDisciplina = new HashMap<>();
        this.resultadoCalculado = false;
+       this.periodoDesistenciaEncerrado = false;
    }
 
     /**
@@ -132,6 +134,10 @@ public class EditalDeMonitoria {
 
     public boolean isResultadoCalculado() {
         return resultadoCalculado;
+    }
+
+    public boolean isPeriodoDesistenciaEncerrado() {
+        return periodoDesistenciaEncerrado;
     }
 
     /**
@@ -253,16 +259,11 @@ public class EditalDeMonitoria {
 
            // Calcula a pontuação para cada inscrição
            for (Inscricao inscricao : inscricoesDisciplina) {
-               double pontuacao = inscricao.calcularPontuacao(pesoCre, pesoNota);
-               // Armazena a pontuação temporariamente (poderia adicionar um campo em Inscricao)
+               inscricao.calcularPontuacao(pesoCre, pesoNota);
            }
 
            // Ordena as inscrições por pontuação (decrescente)
-           inscricoesDisciplina.sort((i1, i2) -> {
-               double pontuacao1 = i1.calcularPontuacao(pesoCre, pesoNota);
-               double pontuacao2 = i2.calcularPontuacao(pesoCre, pesoNota);
-               return Double.compare(pontuacao2, pontuacao1); // Ordem decrescente
-           });
+           inscricoesDisciplina.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
 
            ranquePorDisciplina.put(nomeDisciplina, inscricoesDisciplina);
        }
@@ -270,6 +271,81 @@ public class EditalDeMonitoria {
        resultadoCalculado = true;
        System.out.println("Resultado calculado com sucesso para " + ranquePorDisciplina.size() + " disciplina(s).");
    }
+
+    /**
+     * Processa a desistência de um aluno de uma vaga.
+     * @param aluno O aluno que está desistindo
+     * @param disciplina A disciplina da qual o aluno está desistindo
+     * @throws InscricaoNaoEncontradaException Se a inscrição não for encontrada
+     * @throws EditalFechadoException Se o período de desistência já estiver encerrado
+     */
+    public void processarDesistencia(Aluno aluno, Disciplina disciplina) throws InscricaoNaoEncontradaException, EditalFechadoException {
+        if (periodoDesistenciaEncerrado) {
+            throw new EditalFechadoException(numero, "O período de desistências já foi encerrado.");
+        }
+
+        Inscricao inscricaoAlvo = null;
+        for (Inscricao inscricao : inscricoes) {
+            if (inscricao.getAluno().equals(aluno) && inscricao.getDisciplina().equals(disciplina)) {
+                inscricaoAlvo = inscricao;
+                break;
+            }
+        }
+
+        if (inscricaoAlvo == null) {
+            throw new InscricaoNaoEncontradaException();
+        }
+
+        inscricaoAlvo.setDesistiu(true);
+        System.out.println("Aluno " + aluno.getNome() + " desistiu da vaga em " + disciplina.getNomeDisciplina());
+
+        // Recalcula o resultado para refletir a desistência
+        recalcularResultado();
+    }
+
+    /**
+     * Recalcula o ranqueamento do edital.
+     * Este método é chamado internamente após uma desistência.
+     */
+    private void recalcularResultado() {
+        System.out.println("Recalculando resultado do edital " + numero + " após desistência...");
+        ranquePorDisciplina.clear();
+
+        Map<String, ArrayList<Inscricao>> inscricoesPorDisciplina = new HashMap<>();
+        for (Inscricao inscricao : inscricoes) {
+            if (inscricao.isDesistiu()) {
+                continue; // Ignora inscrições desistidas
+            }
+            String nomeDisciplina = inscricao.getDisciplina().getNomeDisciplina();
+            inscricoesPorDisciplina.putIfAbsent(nomeDisciplina, new ArrayList<>());
+            inscricoesPorDisciplina.get(nomeDisciplina).add(inscricao);
+        }
+
+        for (Map.Entry<String, ArrayList<Inscricao>> entry : inscricoesPorDisciplina.entrySet()) {
+            String nomeDisciplina = entry.getKey();
+            ArrayList<Inscricao> inscricoesDisciplina = entry.getValue();
+
+            // A pontuação já foi calculada, apenas reordenamos
+            inscricoesDisciplina.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
+
+            ranquePorDisciplina.put(nomeDisciplina, inscricoesDisciplina);
+        }
+        System.out.println("Resultado recalculado com sucesso.");
+    }
+
+    /**
+     * Encerra o período de desistências, tornando o resultado final.
+     * Apenas coordenadores podem executar esta operação.
+     * @param coordenador O coordenador que está executando a operação
+     * @throws PermissaoNegadaException Se o usuário não for coordenador
+     */
+    public void encerrarPeriodoDesistencia(Coordenador coordenador) throws PermissaoNegadaException {
+        if (coordenador == null) {
+            throw new PermissaoNegadaException("encerrar o período de desistências");
+        }
+        this.periodoDesistenciaEncerrado = true;
+        System.out.println("Período de desistências do edital " + numero + " foi encerrado.");
+    }
 
    /**
     * Retorna o ranque de uma disciplina específica.
@@ -302,7 +378,7 @@ public class EditalDeMonitoria {
 
        int posicao = 1;
        for (Inscricao inscricao : ranque) {
-           double pontuacao = inscricao.calcularPontuacao(pesoCre, pesoNota);
+           double pontuacao = inscricao.getPontuacaoFinal();
            sb.append(String.format("%-5d %-30s %-10.2f %-10.2f %-10.2f\n",
                    posicao++,
                    inscricao.getAluno().getNome(),

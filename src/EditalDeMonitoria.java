@@ -17,7 +17,8 @@ public class EditalDeMonitoria {
     private double pesoCre;
     private double pesoNota;
     private ArrayList<Inscricao> inscricoes;
-    private Map<String, ArrayList<Inscricao>> ranquePorDisciplina; // Nome da disciplina -> Lista ordenada de inscrições
+    // Nome da disciplina -> Lista ordenada de inscrições
+    private Map<String, ArrayList<Inscricao>> ranquePorDisciplina;
     private boolean resultadoCalculado;
 
     public long getId() {
@@ -34,6 +35,12 @@ public class EditalDeMonitoria {
     }
     public ArrayList<Disciplina> getDisciplinas() {
         return disciplinas;
+    }
+    public void setDataInicio(LocalDate dataInicio) {
+        this.dataInicio = dataInicio;
+    }
+    public void setDataLimite(LocalDate dataLimite) {
+        this.dataLimite = dataLimite;
     }
     public boolean isAberto() {
         return aberto;

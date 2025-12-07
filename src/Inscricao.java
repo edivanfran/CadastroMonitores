@@ -11,6 +11,7 @@ public class Inscricao {
     private double nota;
     private Vaga tipoVaga;
     private boolean desistiu;
+    private double pontuacaoFinal; // Armazena a pontuação calculada
 
     /**
      * Construtor da inscrição.
@@ -44,6 +45,8 @@ public class Inscricao {
         this.nota = nota;
         this.tipoVaga = tipoVaga;
         this.desistiu = false;
+        // A pontuação final será calculada quando o resultado do edital for processado.
+        this.pontuacaoFinal = 0; 
     }
 
     public Aluno getAluno() {
@@ -74,23 +77,25 @@ public class Inscricao {
         this.desistiu = desistiu;
     }
 
+    public double getPontuacaoFinal() {
+        return pontuacaoFinal;
+    }
+
     /**
-     * Calcula a pontuação do aluno usando a fórmula: PONTUAÇÃO = PESO_CRE * CRE + PESO_NOTA * NOTA
+     * Calcula e define a pontuação final do aluno usando a fórmula: PONTUAÇÃO = PESO_CRE * CRE + PESO_NOTA * NOTA
      * @param pesoCre O peso do CRE no cálculo
      * @param pesoNota O peso da nota no cálculo
-     * @return A pontuação calculada
      */
-    public double calcularPontuacao(double pesoCre, double pesoNota) {
-        return (pesoCre * cre) + (pesoNota * nota);
+    public void calcularPontuacao(double pesoCre, double pesoNota) {
+        this.pontuacaoFinal = (pesoCre * cre) + (pesoNota * nota);
     }
 
     /**
      * Retorna o nome do aluno através da referência ao objeto Aluno.
-     * Exemplo de como a Inscricao acessa informações do Aluno sem herdar dele.
      * @return O nome do aluno
      */
     public String getNomeAluno() {
-        return aluno.getNome(); // Acessa método do Aluno através da referência
+        return aluno.getNome();
     }
 
     /**
@@ -98,7 +103,7 @@ public class Inscricao {
      * @return A matrícula do aluno
      */
     public String getMatriculaAluno() {
-        return aluno.getMatricula(); // Acessa atributo do Aluno através da referência
+        return aluno.getMatricula();
     }
 
     /**
@@ -106,7 +111,6 @@ public class Inscricao {
      * @return O email do aluno
      */
     public String getEmailAluno() {
-        return aluno.getEmail(); // Acessa atributo do Aluno através da referência
+        return aluno.getEmail();
     }
 }
-

@@ -21,6 +21,7 @@ public class TelaDetalharEdital extends TelaBase {
         private JButton botaoEncerrarEdital;
         private JButton botaoEditarEdital;
         private JButton botaoClonarEdital;
+        private JButton botaoEditarDisciplina;
         private JButton botaoSalvar;
         private JButton botaoCancelar;
         private EditalDeMonitoria edital;
@@ -44,7 +45,7 @@ public class TelaDetalharEdital extends TelaBase {
         }
 
         public void criarBotoes(){
-            botaoSelecionarDisciplina = criarBotao("Selecionar Disciplina", e ->
+            botaoSelecionarDisciplina = criarBotao("Ver Lista da Disciplina", e ->
                     mostrarAviso("Funcionalidade em desenvolvimento"));
             botaoSelecionarDisciplina.setBounds(430, 170, 180, 40);
             botaoSelecionarDisciplina.setBackground(Estilos.COR_AVISO);
@@ -65,6 +66,13 @@ public class TelaDetalharEdital extends TelaBase {
             botaoClonarEdital.setBounds(440, 390, 120, 40);
             botaoClonarEdital.setBackground(Estilos.COR_AVISO);
             painelPrincipal.add(botaoClonarEdital);
+
+            botaoEditarDisciplina = criarBotao("Editar Disciplina", e ->
+                    mostrarAviso("Funcionalidade em desenvolvimento"));
+            botaoEditarDisciplina.setBounds(430, 170, 180, 40);
+            botaoEditarDisciplina.setBackground(Estilos.COR_AVISO);
+            botaoEditarDisciplina.setVisible(false);
+            painelPrincipal.add(botaoEditarDisciplina);
 
             botaoSalvar = criarBotao("Salvar", new OuvinteBotaoSalvar());
             botaoSalvar.setBounds(200, 390, 120, 40);
@@ -167,12 +175,18 @@ public class TelaDetalharEdital extends TelaBase {
             campoDeDisciplina.setEnabled(true);
             pesoCRE.setEnabled(false);
             pesoNota.setEnabled(false);
+        }
 
-            botaoEncerrarEdital.setVisible(true);
-            botaoEditarEdital.setVisible(true);
-            botaoClonarEdital.setVisible(true);
-            botaoSalvar.setVisible(false);
-            botaoCancelar.setVisible(false);
+        private void mudarVisibilidadeBotoes(boolean editando) {
+
+            botaoEncerrarEdital.setVisible(!editando);
+            botaoEditarEdital.setVisible(!editando);
+            botaoClonarEdital.setVisible(!editando);
+            botaoSelecionarDisciplina.setVisible(!editando);
+
+            botaoEditarDisciplina.setVisible(editando);
+            botaoSalvar.setVisible(editando);
+            botaoCancelar.setVisible(editando);
         }
 
         private class OuvinteBotaoEditar implements ActionListener {
@@ -184,12 +198,7 @@ public class TelaDetalharEdital extends TelaBase {
                 pesoCRE.setEnabled(true);
                 pesoNota.setEnabled(true);
 
-                botaoEncerrarEdital.setVisible(false);
-                botaoEditarEdital.setVisible(false);
-                botaoClonarEdital.setVisible(false);
-
-                botaoSalvar.setVisible(true);
-                botaoCancelar.setVisible(true);
+                mudarVisibilidadeBotoes(true);
             }
 
         }
@@ -200,6 +209,7 @@ public class TelaDetalharEdital extends TelaBase {
                 preencherCamposComDados(edital);
 
                 tornarCamposNaoEditaveis();
+                mudarVisibilidadeBotoes(false);
             }
         }
 
@@ -244,6 +254,7 @@ public class TelaDetalharEdital extends TelaBase {
                 mostrarSucesso("Edital salvo com sucesso!");
 
                 tornarCamposNaoEditaveis();
+                mudarVisibilidadeBotoes(false);
             }
 
         }

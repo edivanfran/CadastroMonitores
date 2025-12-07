@@ -162,6 +162,7 @@ public class TelaDetalharEdital extends TelaBase {
         }
 
         private void tornarCamposNaoEditaveis() {
+            dataInicio.setEditable(false);
             dataFinal.setEditable(false);
             campoDeDisciplina.setEnabled(true);
             pesoCRE.setEnabled(false);
@@ -177,6 +178,7 @@ public class TelaDetalharEdital extends TelaBase {
         private class OuvinteBotaoEditar implements ActionListener {
 
             public void actionPerformed(ActionEvent e) {
+                dataInicio.setEditable(true);
                 dataFinal.setEditable(true);
                 campoDeDisciplina.setEnabled(true);
                 pesoCRE.setEnabled(true);
@@ -220,6 +222,10 @@ public class TelaDetalharEdital extends TelaBase {
                     return;
                 }
 
+                if (dataInicioFormatada.isBefore(LocalDate.now())) {
+                    mostrarErro("A data inicial não pode ser uma data que já passou.");
+                    return;
+                }
                 if (dataFinalFormatada.isBefore(dataInicioFormatada)) {
                     mostrarErro("A data final não pode ser antes da data inicial.");
                     return;

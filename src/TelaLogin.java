@@ -69,29 +69,20 @@ public class TelaLogin extends TelaBase {
      * Cria o formulário de login.
      */
     private void criarFormularioLogin() {
-        int yInicial = 300;
-        int alturaCampo = 40;
-        int espacamento = 15;
-        int larguraLabel = 80;
-        int larguraCampo = 350;
-        int xLabel = (Estilos.LARGURA_TELA - larguraLabel - larguraCampo - 10) / 2;
-        int xCampo = xLabel + larguraLabel + 10;
-
         //Email
         JLabel lblEmail = criarLabel("Email:", Estilos.FONTE_NORMAL);
-        lblEmail.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        lblEmail.setBounds(225, 300, 80, 40);
         lblEmail.setHorizontalAlignment(SwingConstants.RIGHT);
         painelPrincipal.add(lblEmail);
 
         campoEmail = criarCampoTexto(25);
         campoEmail.setToolTipText("Insira aqui seu e-mail.");
-        campoEmail.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        campoEmail.setBounds(315, 300, 350, 40);
         painelPrincipal.add(campoEmail);
 
         //Senha
-        yInicial += alturaCampo + espacamento;
         JLabel lblSenha = criarLabel("Senha:", Estilos.FONTE_NORMAL);
-        lblSenha.setBounds(xLabel, yInicial, larguraLabel, alturaCampo);
+        lblSenha.setBounds(225, 355, 80, 40);
         lblSenha.setHorizontalAlignment(SwingConstants.RIGHT);
         painelPrincipal.add(lblSenha);
 
@@ -101,14 +92,19 @@ public class TelaLogin extends TelaBase {
         campoSenha.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Estilos.COR_SECUNDARIA, 1),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)));
-        campoSenha.setBounds(xCampo, yInicial, larguraCampo, alturaCampo);
+        campoSenha.setBounds(315, 355, 350, 40);
         painelPrincipal.add(campoSenha);
 
+        // Link para esqueci senha
+        criarLinkEsqueciSenha();
+
         // Botão de Login
-        yInicial += alturaCampo + espacamento + 20;
         botaoLogin = criarBotaoLogin("Entrar");
-        botaoLogin.setBounds((Estilos.LARGURA_TELA - Estilos.LARGURA_BOTAO) / 2, yInicial, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
+        botaoLogin.setBounds(350, 430, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
         painelPrincipal.add(botaoLogin);
+
+        // Link para cadastro de aluno
+        criarLinkCadastroAluno();
 
         // Adiciona listener para Enter no campo de senha
         campoSenha.addActionListener(e -> realizarLogin());
@@ -196,6 +192,78 @@ public class TelaLogin extends TelaBase {
      */
     private void abrirTelaCadastroCoordenador() {
         TelaCadastroCoordenador telaCadastro = new TelaCadastroCoordenador(getCentral(), getPersistencia(), getNomeArquivo());
+        telaCadastro.inicializar();
+        this.dispose();
+    }
+    
+    /**
+     * Cria um link para esqueci senha.
+     */
+    private void criarLinkEsqueciSenha() {
+        JLabel linkEsqueciSenha = new JLabel("<html><u>Esqueci minha senha</u></html>");
+        linkEsqueciSenha.setFont(Estilos.FONTE_PEQUENA);
+        linkEsqueciSenha.setForeground(Estilos.COR_PRIMARIA);
+        linkEsqueciSenha.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        linkEsqueciSenha.setHorizontalAlignment(SwingConstants.RIGHT);
+        linkEsqueciSenha.setBounds(315, 400, 350, 20);
+        
+        // Efeito hover
+        linkEsqueciSenha.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                linkEsqueciSenha.setForeground(Estilos.COR_PRIMARIA.darker());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                linkEsqueciSenha.setForeground(Estilos.COR_PRIMARIA);
+            }
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                abrirTelaEsqueciSenha();
+            }
+        });
+        
+        painelPrincipal.add(linkEsqueciSenha);
+    }
+    
+    /**
+     * Cria um link para cadastro de aluno.
+     */
+    private void criarLinkCadastroAluno() {
+        JLabel linkCadastro = new JLabel("<html><u>Não tem conta? Cadastre-se aqui</u></html>");
+        linkCadastro.setFont(Estilos.FONTE_PEQUENA);
+        linkCadastro.setForeground(Estilos.COR_PRIMARIA);
+        linkCadastro.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        linkCadastro.setHorizontalAlignment(SwingConstants.CENTER);
+        linkCadastro.setBounds(350, 485, 200, 25);
+        
+        // Efeito hover
+        linkCadastro.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                linkCadastro.setForeground(Estilos.COR_PRIMARIA.darker());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                linkCadastro.setForeground(Estilos.COR_PRIMARIA);
+            }
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                abrirTelaCadastroAluno();
+            }
+        });
+        
+        painelPrincipal.add(linkCadastro);
+    }
+    
+    /**
+     * Abre a tela de esqueci senha.
+     */
+    private void abrirTelaEsqueciSenha() {
+        TelaEsqueciSenha telaEsqueciSenha = new TelaEsqueciSenha(getCentral(), getPersistencia(), getNomeArquivo());
+        telaEsqueciSenha.inicializar();
+        this.dispose();
+    }
+    
+    /**
+     * Abre a tela de cadastro de aluno.
+     */
+    private void abrirTelaCadastroAluno() {
+        TelaCadastroAluno telaCadastro = new TelaCadastroAluno(getCentral(), getPersistencia(), getNomeArquivo());
         telaCadastro.inicializar();
         this.dispose();
     }

@@ -181,6 +181,8 @@ public class TelaPrincipal extends TelaBase {
                         item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto()});
             }
             tabelaEditais = new JTable(modelo);
+            // Não deixa que as colunas sejam reordenadas, isso evita bugs no código.
+            tabelaEditais.getTableHeader().setReorderingAllowed(false);
             mudarVisualDeTabela(tabelaEditais);
 
             // Para a tabela aparecer, ela precisa estar dentro de um JScrollPane
@@ -213,6 +215,8 @@ public class TelaPrincipal extends TelaBase {
                 modelo.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail()});
             }
             tabelaAlunos = new JTable(modelo);
+            // Não deixa que as colunas sejam reordenadas, isso evita bugs no código.
+            tabelaAlunos.getTableHeader().setReorderingAllowed(false);
             mudarVisualDeTabela(tabelaAlunos);
 
             painelTabelaAlunos = new JScrollPane(tabelaAlunos);

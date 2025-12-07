@@ -1,8 +1,10 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -19,7 +21,7 @@ public class TelaResultadoEdital extends TelaBase {
     public TelaResultadoEdital(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
         super("Resultado do Edital: " + edital.getNumero(), central, persistencia, nomeArquivo);
         this.edital = edital;
-        setSize(800, 600);
+        setSize(900, 700); // Aumentar a largura para melhor visualização
         setLocationRelativeTo(null);
     }
 
@@ -46,62 +48,101 @@ public class TelaResultadoEdital extends TelaBase {
             painelAviso.add(aviso);
             abasDisciplinas.addTab("Aviso", painelAviso);
         } else {
-            Map<String, ArrayList<Inscricao>> ranques = edital.getRanquePorDisciplina();
-            if (ranques.isEmpty() && edital.getInscricoes().isEmpty()) {
-                JPanel painelAviso = new JPanel(new GridBagLayout());
-                JLabel aviso = criarLabel("Não há inscrições neste edital para exibir.", Estilos.FONTE_NORMAL);
-                painelAviso.add(aviso);
-                abasDisciplinas.addTab("Aviso", painelAviso);
-            } else {
-                for (Disciplina disciplina : edital.getDisciplinas()) {
-                    ArrayList<Inscricao> ranque = ranques.get(disciplina.getNomeDisciplina());
-                    JPanel painelDisciplina = new JPanel(new BorderLayout());
-                    JTable tabelaRanque = criarTabelaRanque(ranque, disciplina);
+            // Agrupa todas as inscrições (ativas e desistentes) por disciplina
+            Map<String, ArrayList<Inscricao>> todasInscricoesPorDisciplina = new HashMap<>();
+            for (Inscricao inscricao : edital.getInscricoes()) {
+                String nomeDisciplina = inscricao.getDisciplina().getNomeDisciplina();
+                todasInscricoesPorDisciplina.putIfAbsent(nomeDisciplina, new ArrayList<>());
+                todasInscricoesPorDisciplina.get(nomeDisciplina).add(inscricao);
+            }
+
+            for (Disciplina disciplina : edital.getDisciplinas()) {
+                ArrayList<Inscricao> inscricoesDaDisciplina = todasInscricoesPorDisciplina.get(disciplina.getNomeDisciplina());
+                JPanel painelDisciplina = new JPanel(new BorderLayout());
+
+                // Se não houver inscrições para uma disciplina, mostra um aviso
+                if (inscricoesDaDisciplina == null || inscricoesDaDisciplina.isEmpty()) {
+                    JPanel painelAviso = new JPanel(new GridBagLayout());
+                    JLabel aviso = criarLabel("Não há inscrições para esta disciplina.", Estilos.FONTE_NORMAL);
+                    painelAviso.add(aviso);
+                    painelDisciplina.add(painelAviso, BorderLayout.CENTER);
+                } else {
+                    JTable tabelaRanque = criarTabelaRanque(inscricoesDaDisciplina, disciplina);
                     painelDisciplina.add(new JScrollPane(tabelaRanque), BorderLayout.CENTER);
-                    abasDisciplinas.addTab(disciplina.getNomeDisciplina(), painelDisciplina);
                 }
+                abasDisciplinas.addTab(disciplina.getNomeDisciplina(), painelDisciplina);
             }
         }
         painelPrincipal.add(abasDisciplinas, BorderLayout.CENTER);
     }
 
-    private JTable criarTabelaRanque(ArrayList<Inscricao> ranque, Disciplina disciplina) {
-        String[] colunas = {"Pos.", "Aluno", "Pontuação", "Status", "Ação"};
+    private JTable criarTabelaRanque(ArrayList<Inscricao> inscricoes, Disciplina disciplina) {
+        String[] colunas = {"Pos.", "Aluno", "Matrícula", "Pontuação", "Status", "Ação"};
         DefaultTableModel modeloTabela = new DefaultTableModel(colunas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 4;
+                return column == 5; // Ação
             }
         };
 
-        if (ranque != null) {
-            int pos = 1;
-            for (Inscricao inscricao : ranque) {
-                String status = (pos <= disciplina.getVagasRemuneradas()) ? "Contemplado (Bolsa)" :
-                                (pos <= disciplina.getVagasRemuneradas() + disciplina.getVagasVoluntarias()) ? "Contemplado (Voluntário)" : "Não Contemplado";
-                
-                modeloTabela.addRow(new Object[]{
-                    pos,
-                    inscricao.getNomeAluno(),
-                    String.format("%.2f", inscricao.getPontuacaoFinal()),
-                    status,
-                    "Desistir"
-                });
-                pos++;
+        ArrayList<Inscricao> ranqueAtivo = edital.getRanquePorDisciplina().get(disciplina.getNomeDisciplina());
+        if (ranqueAtivo == null) ranqueAtivo = new ArrayList<>();
+
+        // Ordena a lista completa para garantir consistência na exibição
+        inscricoes.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
+
+        for (Inscricao inscricao : inscricoes) {
+            String status;
+            int pos = ranqueAtivo.indexOf(inscricao) + 1;
+
+            if (inscricao.isDesistiu()) {
+                status = "Desistente";
+                pos = 0;
+            } else {
+                if (pos > 0 && pos <= disciplina.getVagasRemuneradas()) {
+                    status = "Contemplado (Bolsa)";
+                } else if (pos > 0 && pos <= disciplina.getVagasRemuneradas() + disciplina.getVagasVoluntarias()) {
+                    status = "Contemplado (Voluntário)";
+                } else {
+                    status = "Não Contemplado";
+                }
             }
+
+            modeloTabela.addRow(new Object[]{
+                (pos > 0) ? String.valueOf(pos) : "-",
+                inscricao.getNomeAluno(),
+                inscricao.getMatriculaAluno(),
+                String.format("%.2f", inscricao.getPontuacaoFinal()),
+                status,
+                "Desistir"
+            });
         }
 
         JTable tabela = new JTable(modeloTabela);
         tabela.setRowHeight(30);
-        
-        // Configura a coluna "Ação" para ter um botão
-        tabela.getColumn("Ação").setCellRenderer(new BotaoRenderer());
-        tabela.getColumn("Ação").setCellEditor(new BotaoEditor(new JCheckBox(), edital, disciplina, this));
+        tabela.setFont(Estilos.FONTE_NORMAL);
+        tabela.getTableHeader().setFont(Estilos.FONTE_BOTAO);
 
-        // Oculta a coluna de ação se o usuário for Coordenador ou se o período de desistência estiver encerrado
-        if (isCoordenador() || edital.isPeriodoDesistenciaEncerrado()) {
-             tabela.getColumnModel().getColumn(4).setMinWidth(0);
-             tabela.getColumnModel().getColumn(4).setMaxWidth(0);
+        TableColumn colunaAcao = tabela.getColumn("Ação");
+        colunaAcao.setCellRenderer(new BotaoRenderer());
+        colunaAcao.setCellEditor(new BotaoEditor(new JCheckBox(), edital, disciplina, this));
+
+        Usuario usuarioLogado = sessao.getUsuarioLogado();
+        for (int i = 0; i < tabela.getRowCount(); i++) {
+            String matriculaNaTabela = (String) tabela.getValueAt(i, 2);
+            boolean isUsuarioDaLinha = usuarioLogado instanceof Aluno && ((Aluno) usuarioLogado).getMatricula().equals(matriculaNaTabela);
+            boolean podeDesistir = isUsuarioDaLinha && !edital.isPeriodoDesistenciaEncerrado() && !((String)tabela.getValueAt(i, 4)).equals("Desistente");
+
+            if (!podeDesistir) {
+                tabela.setValueAt(null, i, 5);
+            }
+        }
+        
+        if (!isCoordenador()) {
+            TableColumn colunaMatricula = tabela.getColumn("Matrícula");
+            colunaMatricula.setMinWidth(0);
+            colunaMatricula.setMaxWidth(0);
+            colunaMatricula.setPreferredWidth(0);
         }
 
         return tabela;
@@ -111,13 +152,14 @@ public class TelaResultadoEdital extends TelaBase {
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         
         if (isCoordenador()) {
-            if (!edital.isResultadoCalculado()) {
-                botaoAcaoCoordenador = criarBotao("Calcular Resultado", e -> calcularResultado());
-            } else if (!edital.isPeriodoDesistenciaEncerrado()) {
-                botaoAcaoCoordenador = criarBotao("Encerrar Período de Desistência", e -> encerrarPeriodo());
-            }
-            if (botaoAcaoCoordenador != null) {
+            if (edital.isResultadoCalculado() && !edital.isPeriodoDesistenciaEncerrado()) {
+                botaoAcaoCoordenador = criarBotao("Fechar Edital", e -> encerrarPeriodo());
+                botaoAcaoCoordenador.setToolTipText("Encerra o período de desistências e torna o resultado final.");
                 painelBotoes.add(botaoAcaoCoordenador);
+            } else if (edital.isPeriodoDesistenciaEncerrado()) {
+                JLabel resultadoFinalLabel = criarLabel("Resultado Final", Estilos.FONTE_BOTAO);
+                resultadoFinalLabel.setForeground(Estilos.COR_VERDE_CLARO);
+                painelBotoes.add(resultadoFinalLabel);
             }
         }
 
@@ -127,25 +169,21 @@ public class TelaResultadoEdital extends TelaBase {
         painelPrincipal.add(painelBotoes, BorderLayout.SOUTH);
     }
 
-    private void calcularResultado() {
-        try {
-            edital.calcularResultado();
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-            mostrarSucesso("Resultado calculado com sucesso!");
-            recarregarTela();
-        } catch (Exception e) {
-            mostrarErro("Erro ao calcular resultado: " + e.getMessage());
-        }
-    }
-
     private void encerrarPeriodo() {
-        try {
-            edital.encerrarPeriodoDesistencia(getCentral().getCoordenador());
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-            mostrarSucesso("Período de desistências encerrado. O resultado agora é final.");
-            recarregarTela();
-        } catch (Exception e) {
-            mostrarErro("Erro ao encerrar período: " + e.getMessage());
+        int resposta = JOptionPane.showConfirmDialog(this,
+                "Tem certeza que deseja fechar o edital? Esta ação é irreversível\n" +
+                "e tornará o resultado atual em final.",
+                "Confirmar Encerramento", JOptionPane.YES_NO_OPTION);
+
+        if (resposta == JOptionPane.YES_OPTION) {
+            try {
+                edital.encerrarPeriodoDesistencia((Coordenador) sessao.getUsuarioLogado());
+                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                mostrarSucesso("Edital fechado com sucesso. O resultado agora é final.");
+                recarregarTela();
+            } catch (Exception e) {
+                mostrarErro("Erro ao fechar o edital: " + e.getMessage());
+            }
         }
     }
 
@@ -162,23 +200,21 @@ public class TelaResultadoEdital extends TelaBase {
     }
 }
 
-/**
- * Renderizador que desenha um botão na célula da tabela.
- */
 class BotaoRenderer extends JButton implements TableCellRenderer {
     public BotaoRenderer() {
         setOpaque(true);
+        setFont(Estilos.FONTE_PEQUENA);
+        setBackground(new Color(220, 53, 69));
+        setForeground(Color.WHITE);
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         setText((value == null) ? "" : value.toString());
+        setVisible(value != null && !value.toString().isEmpty());
         return this;
     }
 }
 
-/**
- * Editor que trata o clique no botão da célula da tabela.
- */
 class BotaoEditor extends DefaultCellEditor {
     protected JButton button;
     private String label;
@@ -187,6 +223,7 @@ class BotaoEditor extends DefaultCellEditor {
     private Disciplina disciplina;
     private TelaResultadoEdital tela;
     private int row;
+    private JTable table;
 
     public BotaoEditor(JCheckBox checkBox, EditalDeMonitoria edital, Disciplina disciplina, TelaResultadoEdital tela) {
         super(checkBox);
@@ -195,14 +232,18 @@ class BotaoEditor extends DefaultCellEditor {
         this.tela = tela;
         button = new JButton();
         button.setOpaque(true);
+        button.setFont(Estilos.FONTE_PEQUENA);
+        button.setBackground(new Color(220, 53, 69));
+        button.setForeground(Color.WHITE);
         button.addActionListener(e -> fireEditingStopped());
     }
 
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+        this.table = table;
         this.row = row;
         label = (value == null) ? "" : value.toString();
         button.setText(label);
-        isPushed = true;
+        isPushed = (value != null && !value.toString().isEmpty());
         return button;
     }
 
@@ -214,11 +255,20 @@ class BotaoEditor extends DefaultCellEditor {
 
             if (resposta == JOptionPane.YES_OPTION) {
                 try {
-                    Inscricao inscricaoAlvo = edital.getRanquePorDisciplina().get(disciplina.getNomeDisciplina()).get(this.row);
-                    edital.processarDesistencia(inscricaoAlvo.getAluno(), disciplina);
-                    tela.getPersistencia().salvarCentral(tela.getCentral(), tela.getNomeArquivo());
-                    JOptionPane.showMessageDialog(tela, "Desistência registrada com sucesso. O resultado será recalculado.");
-                    tela.recarregarTela();
+                    // LÓGICA CORRIGIDA E SIMPLIFICADA
+                    DefaultTableModel model = (DefaultTableModel) this.table.getModel();
+                    String matriculaAlvo = (String) model.getValueAt(this.row, 2); // Pega a matrícula da coluna 2
+
+                    Aluno alunoAlvo = tela.getCentral().recuperarAluno(matriculaAlvo);
+
+                    if (alunoAlvo != null) {
+                        edital.processarDesistencia(alunoAlvo, disciplina);
+                        tela.getPersistencia().salvarCentral(tela.getCentral(), tela.getNomeArquivo());
+                        JOptionPane.showMessageDialog(tela, "Desistência registrada com sucesso. O resultado foi recalculado.");
+                        tela.recarregarTela();
+                    } else {
+                        throw new Exception("Não foi possível encontrar o aluno para processar a desistência.");
+                    }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(tela, "Erro ao processar desistência: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }

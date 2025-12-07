@@ -203,14 +203,14 @@ public class TelaPrincipal extends TelaBase {
                 }
             };
 
-            String[] colunas = {"matricula", "nome", "email", "gênero"};
+            String[] colunas = {"matricula", "nome", "email"};
             for (String coluna : colunas) {
                 modelo.addColumn(coluna);
             }
 
             //Filtra as colunas que deseja colocar na tabela
             for (Aluno alguem : getCentral().getTodosOsAlunos()) {
-                modelo.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail(), alguem.getGenero()});
+                modelo.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail()});
             }
             tabelaAlunos = new JTable(modelo);
             mudarVisualDeTabela(tabelaAlunos);

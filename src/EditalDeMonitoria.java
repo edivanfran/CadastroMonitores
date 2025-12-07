@@ -50,23 +50,6 @@ public class EditalDeMonitoria {
         this.aberto = aberto;
     }
 
-    public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite, ArrayList<Disciplina> disciplinas,
-                             boolean aberto, double pesoCre, double pesoNota,
-                             ArrayList<Inscricao> inscricoes, Map<String, ArrayList<Inscricao>> ranque,
-                             boolean resultadoCalculado) {
-        this.id = System.currentTimeMillis();
-        this.numero = numero;
-        this.dataInicio = dataInicio;
-        this.dataLimite = dataLimite;
-        this.disciplinas = disciplinas;
-        this.aberto = aberto;
-        this.pesoCre = pesoCre;
-        this.pesoNota = pesoNota;
-        this.inscricoes = inscricoes;
-        this.ranquePorDisciplina = ranque;
-        this.resultadoCalculado = resultadoCalculado;
-    }
-
     /**
      * Construtor completo do edital com pesos para cálculo de pontuação.
      * <p>Os pesos devem obrigatoriamente somar 1.0.</p>
@@ -205,11 +188,6 @@ public class EditalDeMonitoria {
        throw new DisciplinaNaoEncontradaException(nomeDisciplina);
    }
 
-   public EditalDeMonitoria clonar() {
-       return new EditalDeMonitoria(numero, dataInicio, dataLimite, disciplinas,aberto, pesoCre, pesoNota,
-               inscricoes, ranquePorDisciplina, resultadoCalculado);
-   }
-
    public boolean jaAcabou() {
        return LocalDate.now().isAfter(dataLimite);
    }
@@ -218,18 +196,12 @@ public class EditalDeMonitoria {
     * Calcula o resultado do edital (ranqueamento dos alunos).
     * <p>Para cada disciplina, gera um ranque ordenado pela pontuação obtida usando a fórmula:</p>
     * <p>PONTUAÇÃO = PESO_CRE * CRE_ALUNO + PESO_NOTA * NOTA_ALUNO</p>
-    * <p>Apenas coordenadores podem executar esta operação.</p>
-    * @param coordenador O coordenador que está executando a operação
-    * @throws PermissaoNegadaException Se o usuário não for coordenador
+    * <p>A verificação de permissão (se o usuário é Coordenador) deve ser feita antes de chamar este método.</p>
     * @throws EditalAbertoException Se o edital ainda estiver aberto
     * @throws SemInscricoesException Se não houver inscrições no edital
     */
-   public void calcularResultado(Coordenador coordenador) 
-           throws PermissaoNegadaException, EditalAbertoException, SemInscricoesException {
-       if (coordenador == null) {
-           throw new PermissaoNegadaException("calcular o resultado do edital");
-       }
-
+   public void calcularResultado() 
+           throws EditalAbertoException, SemInscricoesException {
        if (aberto) {
            throw new EditalAbertoException(numero);
        }

@@ -3,160 +3,119 @@ import java.awt.*;
 
 /**
  * Tela para o cadastro de um novo aluno no sistema.
- * Utiliza gerenciadores de layout BoxLayout e FlowLayout para organizar os componentes.
+ * Utiliza posicionamento absoluto (setLayout(null)) para organizar os componentes.
  * Permite ao usuário inserir nome, matrícula, e-mail, gênero e senha.
  *
  * @author Seu Nome
- * @version 1.1
+ * @version 1.3
  */
 public class TelaCadastroAluno extends TelaBase {
 
-    /** Campo de texto para o nome do aluno. */
     private JTextField campoNome;
-    /** Campo de texto para a matrícula do aluno. */
     private JTextField campoMatricula;
-    /** Campo de texto para o e-mail do aluno. */
     private JTextField campoEmail;
-    /** Caixa de seleção para o gênero do aluno. */
     private JComboBox<Sexo> campoSexo;
-    /** Campo de senha para a senha do aluno. */
     private JPasswordField campoSenha;
-    /** Campo de senha para confirmação da senha. */
     private JPasswordField campoConfirmarSenha;
-    /** Botão para confirmar e realizar o cadastro. */
     private JButton botaoCadastrar;
-    /** Botão para cancelar a operação e voltar à tela de login. */
     private JButton botaoVoltar;
 
-    /**
-     * Construtor da tela de cadastro de aluno.
-     *
-     * @param central      A instância da CentralDeInformacoes para manipulação dos dados.
-     * @param persistencia A instância da Persistencia para salvar os dados.
-     * @param nomeArquivo  O nome do arquivo onde os dados são salvos.
-     */
     public TelaCadastroAluno(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
         super("Cadastro de Aluno", central, persistencia, nomeArquivo);
     }
 
-    /**
-     * Monta a estrutura principal da tela, organizando os componentes.
-     * O painel principal é configurado com BoxLayout para empilhamento vertical.
-     */
     @Override
     protected void criarComponentes() {
-        // Altera o layout do painel principal para BoxLayout vertical
-        painelPrincipal.setLayout(new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
-        painelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Adiciona um espaçamento nas bordas
+        painelPrincipal.setLayout(null);
 
-        // 1. Adiciona o cabeçalho
-        criarCabecalho();
-
-        // Adiciona um espaçamento vertical
-        painelPrincipal.add(Box.createVerticalStrut(20));
-
-        // 2. Adiciona o formulário
-        criarFormularioCadastro();
-
-        // Adiciona um espaçamento flexível para empurrar os botões para baixo
-        painelPrincipal.add(Box.createVerticalGlue());
-
-        // 3. Adiciona os botões
-        criarPainelDeBotoes();
-    }
-
-    /**
-     * Cria e adiciona o título principal na parte superior da tela.
-     */
-    private void criarCabecalho() {
+        // Título
         JLabel titulo = criarLabel("Cadastro de Aluno", Estilos.FONTE_TITULO);
-        titulo.setAlignmentX(Component.CENTER_ALIGNMENT); // Centraliza no BoxLayout
+        titulo.setBounds(0, 50, Estilos.LARGURA_TELA, 30);
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
         painelPrincipal.add(titulo);
+
+        // Campos e Rótulos
+        criarFormulario();
+
+        // Botões
+        criarBotoes();
     }
 
-    /**
-     * Cria e adiciona o painel do formulário contendo todos os campos de entrada de dados.
-     */
-    private void criarFormularioCadastro() {
-        // Painel para o formulário com BoxLayout vertical
-        JPanel formPanel = new JPanel();
-        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
-        formPanel.setBackground(Estilos.COR_FUNDO);
+    private void criarFormulario() {
+        // Nome
+        JLabel labelNome = criarLabel("Nome:", Estilos.FONTE_NORMAL);
+        labelNome.setBounds(214, 120, 150, 40);
+        labelNome.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(labelNome);
+        
+        campoNome = criarCampoTexto(25);
+        campoNome.setBounds(374, 120, 300, 40);
+        painelPrincipal.add(campoNome);
 
-        // Inicializa os componentes
-        campoNome = criarCampoTexto(20);
-        campoMatricula = criarCampoTexto(20);
-        campoEmail = criarCampoTexto(20);
+        // Matrícula
+        JLabel labelMatricula = criarLabel("Matrícula:", Estilos.FONTE_NORMAL);
+        labelMatricula.setBounds(214, 175, 150, 40);
+        labelMatricula.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(labelMatricula);
+
+        campoMatricula = criarCampoTexto(25);
+        campoMatricula.setBounds(374, 175, 300, 40);
+        painelPrincipal.add(campoMatricula);
+        
+        // Email
+        JLabel labelEmail = criarLabel("E-mail:", Estilos.FONTE_NORMAL);
+        labelEmail.setBounds(214, 230, 150, 40);
+        labelEmail.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(labelEmail);
+        
+        campoEmail = criarCampoTexto(25);
+        campoEmail.setBounds(374, 230, 300, 40);
+        painelPrincipal.add(campoEmail);
+
+        // Sexo
+        JLabel labelSexo = criarLabel("Gênero:", Estilos.FONTE_NORMAL);
+        labelSexo.setBounds(214, 285, 150, 40);
+        labelSexo.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(labelSexo);
+
         campoSexo = new JComboBox<>(Sexo.values());
-        campoSenha = new JPasswordField(20);
-        campoConfirmarSenha = new JPasswordField(20);
-
-        // Adiciona cada linha (label + campo) ao painel do formulário
-        formPanel.add(criarLinhaFormulario("Nome:", campoNome));
-        formPanel.add(Box.createVerticalStrut(10));
-        formPanel.add(criarLinhaFormulario("Matrícula:", campoMatricula));
-        formPanel.add(Box.createVerticalStrut(10));
-        formPanel.add(criarLinhaFormulario("E-mail:", campoEmail));
-        formPanel.add(Box.createVerticalStrut(10));
-        formPanel.add(criarLinhaFormulario("Gênero:", campoSexo));
-        formPanel.add(Box.createVerticalStrut(10));
-        formPanel.add(criarLinhaFormulario("Senha:", campoSenha));
-        formPanel.add(Box.createVerticalStrut(10));
-        formPanel.add(criarLinhaFormulario("Confirmar Senha:", campoConfirmarSenha));
-
-        // Adiciona o painel do formulário ao painel principal
-        painelPrincipal.add(formPanel);
-    }
-
-    /**
-     * Método auxiliar para criar uma linha do formulário (um painel com FlowLayout).
-     * Cada linha contém um rótulo à esquerda e um componente de entrada à direita.
-     *
-     * @param textoLabel O texto do rótulo.
-     * @param componente O componente de entrada (ex: JTextField, JComboBox).
-     * @return Um JPanel configurado que representa uma linha do formulário.
-     */
-    private JPanel criarLinhaFormulario(String textoLabel, JComponent componente) {
-        JPanel linhaPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        linhaPanel.setBackground(Estilos.COR_FUNDO);
-
-        JLabel label = criarLabel(textoLabel, Estilos.FONTE_NORMAL);
-        label.setPreferredSize(new Dimension(120, 30));
-        label.setHorizontalAlignment(SwingConstants.RIGHT);
-
-        componente.setPreferredSize(new Dimension(250, 30));
-        // Garante que a fonte seja a padrão para os campos de senha
-        if (componente instanceof JPasswordField) {
-            componente.setFont(Estilos.FONTE_NORMAL);
-        }
-
-        linhaPanel.add(label);
-        linhaPanel.add(componente);
+        campoSexo.setBounds(374, 285, 300, 40);
+        campoSexo.setFont(Estilos.FONTE_NORMAL);
+        painelPrincipal.add(campoSexo);
         
-        // Limita a altura máxima para evitar que estique verticalmente
-        linhaPanel.setMaximumSize(new Dimension(Short.MAX_VALUE, 40));
-
-        return linhaPanel;
+        // Senha
+        JLabel labelSenha = criarLabel("Senha:", Estilos.FONTE_NORMAL);
+        labelSenha.setBounds(214, 340, 150, 40);
+        labelSenha.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(labelSenha);
+        
+        campoSenha = new JPasswordField(25);
+        campoSenha.setBounds(374, 340, 300, 40);
+        painelPrincipal.add(campoSenha);
+        
+        // Confirmar Senha
+        JLabel labelConfirmarSenha = criarLabel("Confirmar Senha:", Estilos.FONTE_NORMAL);
+        labelConfirmarSenha.setBounds(214, 395, 150, 40);
+        labelConfirmarSenha.setHorizontalAlignment(SwingConstants.RIGHT);
+        painelPrincipal.add(labelConfirmarSenha);
+        
+        campoConfirmarSenha = new JPasswordField(25);
+        campoConfirmarSenha.setBounds(374, 395, 300, 40);
+        painelPrincipal.add(campoConfirmarSenha);
     }
 
-    /**
-     * Cria e adiciona o painel inferior com os botões de "Cadastrar" e "Voltar".
-     */
-    private void criarPainelDeBotoes() {
+    private void criarBotoes() {
         botaoCadastrar = criarBotao("Cadastrar", e -> realizarCadastro());
-        botaoVoltar = criarBotaoSecundario("Voltar", e -> voltarParaLogin());
-
-        // Usa o método da classe base que já cria um painel com FlowLayout
-        JPanel painelBotoes = criarPainelBotoes(botaoCadastrar, botaoVoltar);
+        botaoCadastrar.setBounds(324, 475, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
+        painelPrincipal.add(botaoCadastrar);
         
-        painelPrincipal.add(painelBotoes);
+        botaoVoltar = criarBotaoSecundario("Voltar", e -> voltarParaLogin());
+        botaoVoltar.setBounds(494, 475, Estilos.LARGURA_BOTAO, Estilos.ALTURA_BOTAO);
+        painelPrincipal.add(botaoVoltar);
+        
+        campoConfirmarSenha.addActionListener(e -> realizarCadastro());
     }
     
-    /**
-     * Valida os dados inseridos e realiza o cadastro do aluno.
-     * Coleta os dados dos campos, verifica se são válidos, cria um novo objeto Aluno,
-     * o adiciona à central de informações e salva os dados.
-     */
     private void realizarCadastro() {
         String nome = campoNome.getText().trim();
         String matricula = campoMatricula.getText().trim();
@@ -197,9 +156,6 @@ public class TelaCadastroAluno extends TelaBase {
         }
     }
     
-    /**
-     * Fecha a tela de cadastro e retorna para a tela de login.
-     */
     private void voltarParaLogin() {
         TelaLogin telaLogin = new TelaLogin(getCentral(), getPersistencia(), getNomeArquivo());
         telaLogin.inicializar();

@@ -1,6 +1,8 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -106,20 +108,63 @@ public class TelaListagemEditais extends TelaBase {
         }
 
         if (editalSelecionado != null) {
+            // Esconde a tela de listagem atual em vez de fechá-la
+            this.setVisible(false);
+
             // Lógica condicional para abrir a tela correta
             if (editalSelecionado.isResultadoCalculado()) {
                 // Se o resultado já foi calculado, abre a tela de resultados
                 TelaResultadoEdital telaResultado = new TelaResultadoEdital(editalSelecionado, getCentral(), getPersistencia(), getNomeArquivo());
+                telaResultado.addWindowListener(new WindowAdapter() {
+                    public void windowClosed(WindowEvent e) {
+                        // Quando a tela de resultado fechar, apenas reexibe e atualiza a tela de listagem
+                        recarregarDadosETornarVisivel();
+                    }
+                });
+                telaResultado.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 telaResultado.inicializar();
             } else {
                 // Se não, abre a tela de edição de detalhes
                 TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(editalSelecionado, getCentral(), getPersistencia(), getNomeArquivo());
+                telaDetalhes.addWindowListener(new WindowAdapter() {
+                    public void windowClosed(WindowEvent e) {
+                        // Quando a tela de detalhes fechar, apenas reexibe e atualiza a tela de listagem
+                        recarregarDadosETornarVisivel();
+                    }
+                });
+                telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 telaDetalhes.inicializar();
             }
-            this.dispose();
         } else {
             mostrarErro("Não foi possível encontrar o edital selecionado.");
         }
+    }
+
+    /**
+     * Atualiza os dados da tabela e torna a janela visível.
+     * Usado para "voltar" de outra tela.
+     */
+    private void recarregarDadosETornarVisivel() {
+        // Limpa a tabela
+        modeloTabela.setRowCount(0);
+
+        // Preenche novamente com os dados atualizados da central
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        for (EditalDeMonitoria edital : getCentral().getTodosOsEditais()) {
+            String status = edital.isAberto() ? "Aberto" : "Fechado";
+            String resultado = edital.isResultadoCalculado() ? "Calculado" : "Pendente";
+            Object[] linha = {
+                    edital.getNumero(),
+                    edital.getDataInicio().format(formatador),
+                    edital.getDataLimite().format(formatador),
+                    status,
+                    resultado
+            };
+            modeloTabela.addRow(linha);
+        }
+
+        // Reexibe a janela
+        this.setVisible(true);
     }
 
     /**

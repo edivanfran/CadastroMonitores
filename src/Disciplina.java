@@ -31,24 +31,20 @@ public class Disciplina {
     public int getVagasRemuneradas() {
         return vagasRemuneradas;
     }
-    public void setVagasRemuneradas(int vagasRemuneradas) throws TentativaInvalidaReduzirVagasException {
-        if (this.vagasRemuneradas < vagasRemuneradas) {
-            this.vagasRemuneradas = vagasRemuneradas;
-            this.totalAlunos = alunosVoluntariosInscritos.size() + alunosRemuneradosInscritos.size();
-        } else {
-            throw new TentativaInvalidaReduzirVagasException();
+    public void setVagasRemuneradas(int vagasRemuneradas) {
+        if (vagasRemuneradas < 0) {
+            throw new IllegalArgumentException("O número de vagas não pode ser negativo.");
         }
+        this.vagasRemuneradas = vagasRemuneradas;
     }
     public int getVagasVoluntarias() {
         return vagasVoluntarias;
     }
-    public void setVagasVoluntarias(int vagasVoluntarias) throws TentativaInvalidaReduzirVagasException {
-        if (this.vagasVoluntarias < vagasVoluntarias) {
-            this.vagasVoluntarias = vagasVoluntarias;
-            this.totalAlunos = alunosVoluntariosInscritos.size() + alunosRemuneradosInscritos.size();
-        } else  {
-            throw new TentativaInvalidaReduzirVagasException();
+    public void setVagasVoluntarias(int vagasVoluntarias) {
+        if (vagasVoluntarias < 0) {
+            throw new IllegalArgumentException("O número de vagas não pode ser negativo.");
         }
+        this.vagasVoluntarias = vagasVoluntarias;
     }
     public ArrayList<Aluno> getAlunosVoluntariosInscritos() {
         return this.alunosVoluntariosInscritos;

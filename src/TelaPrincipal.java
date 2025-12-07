@@ -9,7 +9,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 
 /**
  * Tela principal do sistema.
@@ -163,30 +162,7 @@ public class TelaPrincipal extends TelaBase {
             // Cria um painel vazio para evitar NullPointerException
             painelTabelaEditais = new JScrollPane();
         } else {
-            DefaultTableModel modelo = new DefaultTableModel() {
-                // Não deixar nenhuma célula ser editável
-                public boolean isCellEditable(int row, int column) {
-                    return false;
-                }
-            };
-            String[] colunas = {"id", "numero", "dataInicio", "dataLimite", "disciplinas", "aberto"};
-            // Criar as colunas
-            for (String coluna : colunas) {
-                modelo.addColumn(coluna);
-            }
-            // Colocar data em formato DD/MM/AAAA
-            DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-            //Filtra as colunas que deseja colocar na tabela
-            for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
-                modelo.addRow(new Object[]{item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
-                        item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto()});
-            }
-            tabelaEditais = new JTable(modelo);
-            // Não deixa que as colunas sejam reordenadas, isso evita bugs no código.
-            tabelaEditais.getTableHeader().setReorderingAllowed(false);
-            mudarVisualDeTabela(tabelaEditais);
-
+            atualizarValoresDaTabelaEdital();
             // Para a tabela aparecer, ela precisa estar dentro de um JScrollPane
             painelTabelaEditais = new JScrollPane(tabelaEditais);
         }
@@ -200,7 +176,7 @@ public class TelaPrincipal extends TelaBase {
             // Cria um painel vazio para evitar NullPointerException
             painelTabelaAlunos = new JScrollPane();
         } else {
-            atualizarValoresDaTabelaEdital();
+            atualizarValoresDaTabelaAluno();
             painelTabelaAlunos = new JScrollPane(tabelaAlunos);
         }
 
@@ -209,6 +185,33 @@ public class TelaPrincipal extends TelaBase {
     }
 
     public void atualizarValoresDaTabelaEdital() {
+        DefaultTableModel modelo = new DefaultTableModel() {
+            // Não deixar nenhuma célula ser editável
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        String[] colunas = {"id", "numero", "dataInicio", "dataLimite", "disciplinas", "aberto"};
+        // Criar as colunas
+        for (String coluna : colunas) {
+            modelo.addColumn(coluna);
+        }
+        // Colocar data em formato DD/MM/AAAA
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        //Filtra as colunas que deseja colocar na tabela
+        for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
+            modelo.addRow(new Object[]{item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
+                    item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto()});
+        }
+        tabelaEditais = new JTable(modelo);
+        // Não deixa que as colunas sejam reordenadas, isso evita bugs no código.
+        tabelaEditais.getTableHeader().setReorderingAllowed(false);
+        mudarVisualDeTabela(tabelaEditais);
+
+    }
+
+    public void atualizarValoresDaTabelaAluno() {
         DefaultTableModel modelo = new DefaultTableModel() {
             // Não deixar as células ser editáveis
             public boolean isCellEditable(int row, int column) {
@@ -304,8 +307,8 @@ public class TelaPrincipal extends TelaBase {
         }
 
         public void windowClosed(WindowEvent e) {
-            atualizarValoresDaTabelaEdital();
-            tabelaEditais.repaint();
+            atualizarValoresDaTabelaAluno();
+            tabelaAlunos.repaint();
         }
 
         public void windowIconified(WindowEvent e) {

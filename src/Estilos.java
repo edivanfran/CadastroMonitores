@@ -8,16 +8,16 @@ import java.awt.Font;
 public class Estilos {
     
     // Cores principais
-    public static final Color COR_PRIMARIA = new Color(41, 128, 185);      // Azul
-    public static final Color COR_SECUNDARIA = new Color(52, 73, 94);      // Cinza escuro
-    public static final Color COR_SUCESSO = new Color(39, 174, 96);       // Verde
-    public static final Color COR_ERRO = new Color(231, 76, 60);          // Vermelho
-    public static final Color COR_AVISO = new Color(241, 196, 15);         // Amarelo
-    public static final Color COR_FUNDO = new Color(236, 240, 241);       // Cinza claro
-    public static final Color COR_TEXTO = new Color(44, 62, 80);          // Cinza escuro
+    public static final Color COR_PRIMARIA = new Color(41, 128, 185);
+    public static final Color COR_SECUNDARIA = new Color(52, 73, 94);
+    public static final Color COR_SUCESSO = new Color(39, 174, 96);
+    public static final Color COR_PERIGO = new Color(231, 76, 60);
+    public static final Color COR_AVISO = new Color(241, 196, 15);
+    public static final Color COR_FUNDO = new Color(236, 240, 241);
+    public static final Color COR_TEXTO = new Color(44, 62, 80);
     public static final Color COR_BRANCO = Color.WHITE;
-    public static final Color COR_VERDE_CLARO = new Color(144, 238, 144);  // Verde claro (lightgreen)
-    public static final Color COR_VERDE_CLARO_HOVER = new Color(124, 218, 124); // Verde claro hover
+    public static final Color COR_VERDE_CLARO = new Color(144, 238, 144);
+    public static final Color COR_VERDE_CLARO_HOVER = new Color(124, 218, 124);
     
     // Fontes
     public static final Font FONTE_TITULO = new Font("Segoe UI", Font.BOLD, 24);

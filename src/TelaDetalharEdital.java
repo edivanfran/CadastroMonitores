@@ -1,18 +1,9 @@
-import java.awt.Color;
 import java.awt.Font;
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-import javax.swing.BorderFactory;
-import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JSpinner;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.*;
 import javax.swing.text.MaskFormatter;
 
 public class TelaDetalharEdital extends TelaBase {
@@ -21,8 +12,11 @@ public class TelaDetalharEdital extends TelaBase {
         private JFormattedTextField DataInicio;
         private JFormattedTextField DataFinal;
         private JComboBox campoDeDisciplina;
-        private JSpinner PesoCRE;
-        private JSpinner pesoNotaSpinner; // Renomeado para evitar conflito com a variável local
+        private JSpinner pesoCRE;
+        private JSpinner pesoNota;
+        private JButton botaoEncerrarEdital;
+        private JButton botaoEditarEdital;
+        private JButton botaoClonarEdital;
         private EditalDeMonitoria edital;
 
         public TelaDetalharEdital(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
@@ -39,6 +33,28 @@ public class TelaDetalharEdital extends TelaBase {
             // Criar Campos na tela
             criarCampos();
 
+            // Criar botoes na tela
+            criarBotoes();
+        }
+
+        public void criarBotoes(){
+            botaoEncerrarEdital = criarBotao("Encerrar Edital", e ->
+                    mostrarAviso("Funcionalidade em desenvolvimento"));
+            botaoEncerrarEdital.setBounds(50, 390, 170, 40);
+            botaoEncerrarEdital.setBackground(Estilos.COR_PERIGO);
+            painelPrincipal.add(botaoEncerrarEdital);
+
+            botaoEditarEdital = criarBotao("Editar Edital", e ->
+                    mostrarAviso("Funcionalidade em desenvolvimento"));
+            botaoEditarEdital.setBounds(270, 390, 120, 40);
+            painelPrincipal.add(botaoEditarEdital);
+
+            botaoClonarEdital = criarBotao("Clonar Edital", e ->
+                    mostrarAviso("Funcionalidade em desenvolvimento"));
+            botaoClonarEdital.setBounds(440, 390, 120, 40);
+            botaoClonarEdital.setBackground(Estilos.COR_AVISO);
+            painelPrincipal.add(botaoClonarEdital);
+
         }
 
         public void criarLabel() {
@@ -54,17 +70,17 @@ public class TelaDetalharEdital extends TelaBase {
 
             JLabel Disciplina = new JLabel("Selecione a Disciplina:");
             Disciplina.setFont(fonteLabel);
-            Disciplina.setBounds(40, 190, 178, 40);
+            Disciplina.setBounds(40, 170, 178, 40);
             painelPrincipal.add(Disciplina);
 
             JLabel pesoCRE = new JLabel("Peso do CRE:");
             pesoCRE.setFont(fonteLabel);
-            pesoCRE.setBounds(40, 270, 120, 40);
+            pesoCRE.setBounds(40, 250, 120, 40);
             painelPrincipal.add(pesoCRE);
 
             JLabel pesoNota = new JLabel("Peso da Nota:");
             pesoNota.setFont(fonteLabel);
-            pesoNota.setBounds(40, 340, 120, 40);
+            pesoNota.setBounds(40, 320, 120, 40);
             painelPrincipal.add(pesoNota);
         }
 
@@ -96,24 +112,24 @@ public class TelaDetalharEdital extends TelaBase {
             for (Disciplina disciplina: disciplinas) {
                 campoDeDisciplina.addItem(disciplina);
             }
-            campoDeDisciplina.setBounds(255, 190, 170, 40);
+            campoDeDisciplina.setBounds(220, 170, 170, 40);
             campoDeDisciplina.setEnabled(true);
             // colocar para detalhar a disciplina selecionada
             painelPrincipal.add(campoDeDisciplina);
 
             SpinnerNumberModel valor = new SpinnerNumberModel(10, 10, 100, 10);
-            PesoCRE = new JSpinner(valor);
-            PesoCRE.setValue(edital.getPesoCre());
-            PesoCRE.setBounds(150, 270, 80, 40);
-            PesoCRE.setEnabled(false);
-            painelPrincipal.add(PesoCRE);
+            pesoCRE = new JSpinner(valor);
+            pesoCRE.setValue(edital.getPesoCre());
+            pesoCRE.setBounds(150, 250, 80, 40);
+            pesoCRE.setEnabled(false);
+            painelPrincipal.add(pesoCRE);
 
             SpinnerNumberModel valor1 = new SpinnerNumberModel(10, 10, 100, 10);
-            pesoNotaSpinner = new JSpinner(valor1);
-            pesoNotaSpinner.setValue(edital.getPesoNota());
-            pesoNotaSpinner.setBounds(150, 340, 80, 40);
-            pesoNotaSpinner.setEnabled(false);
-            painelPrincipal.add(pesoNotaSpinner);
+            pesoNota = new JSpinner(valor1);
+            pesoNota.setValue(edital.getPesoNota());
+            pesoNota.setBounds(150, 320, 80, 40);
+            pesoNota.setEnabled(false);
+            painelPrincipal.add(pesoNota);
         }
 
 }

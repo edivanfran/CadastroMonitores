@@ -29,9 +29,9 @@ public class Coordenador extends Usuario {
      * @throws EditalAbertoException Se o edital ainda estiver aberto
      * @throws SemInscricoesException Se não houver inscrições no edital
      */
-    public void calcularResultadoEdital(EditalDeMonitoria edital) 
+    public void calcularResultadoEdital(EditalDeMonitoria edital)
             throws PermissaoNegadaException, EditalAbertoException, SemInscricoesException {
-        edital.calcularResultado(this);
+        edital.calcularResultado();
     }
 
     /**

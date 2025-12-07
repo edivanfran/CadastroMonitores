@@ -144,7 +144,7 @@ public class TelaCadastroAluno extends TelaBase {
         }
         
         try {
-            Aluno novoAluno = new Aluno(nome, matricula, email, senha, sexo);
+            Aluno novoAluno = new Aluno(email, senha, nome, matricula, sexo);
             getCentral().adicionarAluno(novoAluno);
             getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
             

@@ -11,5 +11,13 @@ public class EditalFechadoException extends Exception {
     public EditalFechadoException() {
         super("Este edital está fechado. Não é possível realizar esta operação.");
     }
-}
 
+    /**
+     * Construtor que permite uma mensagem personalizada.
+     * @param numeroEdital O número do edital.
+     * @param mensagem A mensagem específica a ser exibida.
+     */
+    public EditalFechadoException(String numeroEdital, String mensagem) {
+        super("Edital " + numeroEdital + ": " + mensagem);
+    }
+}

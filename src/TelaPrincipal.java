@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -106,7 +108,7 @@ public class TelaPrincipal extends TelaBase {
 
         // Adicionar botões à aba de Editais
         botaoCadastrarEdital = criarBotao("Cadastrar Edital",
-                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+                new OuvinteBotaoCadastrarEdital());
         definirPermissao(botaoCadastrarEdital, isCoordenador());
         painelEditais.add(botaoCadastrarEdital);
 
@@ -198,32 +200,35 @@ public class TelaPrincipal extends TelaBase {
             // Cria um painel vazio para evitar NullPointerException
             painelTabelaAlunos = new JScrollPane();
         } else {
-            DefaultTableModel modelo = new DefaultTableModel() {
-                // Não deixar as células ser editáveis
-                public boolean isCellEditable(int row, int column) {
-                    return false;
-                }
-            };
-
-            String[] colunas = {"matricula", "nome", "email"};
-            for (String coluna : colunas) {
-                modelo.addColumn(coluna);
-            }
-
-            //Filtra as colunas que deseja colocar na tabela
-            for (Aluno alguem : getCentral().getTodosOsAlunos()) {
-                modelo.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail()});
-            }
-            tabelaAlunos = new JTable(modelo);
-            // Não deixa que as colunas sejam reordenadas, isso evita bugs no código.
-            tabelaAlunos.getTableHeader().setReorderingAllowed(false);
-            mudarVisualDeTabela(tabelaAlunos);
-
+            atualizarValoresDaTabelaEdital();
             painelTabelaAlunos = new JScrollPane(tabelaAlunos);
         }
 
         painelTabelaAlunos.setBounds(210, 125, 650, 400);
         painelPrincipal.add(painelTabelaAlunos);
+    }
+
+    public void atualizarValoresDaTabelaEdital() {
+        DefaultTableModel modelo = new DefaultTableModel() {
+            // Não deixar as células ser editáveis
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        String[] colunas = {"matricula", "nome", "email"};
+        for (String coluna : colunas) {
+            modelo.addColumn(coluna);
+        }
+
+        //Filtra as colunas que deseja colocar na tabela
+        for (Aluno alguem : getCentral().getTodosOsAlunos()) {
+            modelo.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail()});
+        }
+        tabelaAlunos = new JTable(modelo);
+        // Não deixa que as colunas sejam reordenadas, isso evita bugs no código.
+        tabelaAlunos.getTableHeader().setReorderingAllowed(false);
+        mudarVisualDeTabela(tabelaAlunos);
     }
 
     /**
@@ -280,11 +285,55 @@ public class TelaPrincipal extends TelaBase {
                 TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(edital, getCentral(), getPersistencia(), getNomeArquivo());
 
                 telaDetalhes.inicializar();
-                telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Fecha apenas esta janela
+                telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             } else {
                 mostrarErro("Edital não encontrado");
             }
 
+        }
+    }
+
+    public class OuvinteDoFechamentoDaJanela implements WindowListener {
+
+        public void windowOpened(WindowEvent e) {
+
+        }
+
+        public void windowClosing(WindowEvent e) {
+
+        }
+
+        public void windowClosed(WindowEvent e) {
+            atualizarValoresDaTabelaEdital();
+            tabelaEditais.repaint();
+        }
+
+        public void windowIconified(WindowEvent e) {
+
+        }
+
+        public void windowDeiconified(WindowEvent e) {
+
+        }
+
+
+        public void windowActivated(WindowEvent e) {
+
+        }
+
+        public void windowDeactivated(WindowEvent e) {
+
+        }
+    }
+
+    public class OuvinteBotaoCadastrarEdital implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            TelaCadastrarEdital telaCadastrarEdital = new TelaCadastrarEdital(getCentral(), getPersistencia(), getNomeArquivo());
+            telaCadastrarEdital.addWindowListener(new OuvinteDoFechamentoDaJanela());
+
+            telaCadastrarEdital.inicializar();
+            telaCadastrarEdital.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
     }
 

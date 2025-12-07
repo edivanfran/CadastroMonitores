@@ -1,3 +1,5 @@
+import excecoes.TentativaInvalidaReduzirVagasException;
+
 import java.util.ArrayList;
 
 /**
@@ -11,31 +13,42 @@ public class Disciplina {
     private ArrayList<Aluno> alunosRemuneradosInscritos;
     private int totalAlunos;
 
-    //TODO| vai ter que fazer uma atualização no futuro para setVagas em que vai ter poder alterar para um número acima do atual.
+    public Disciplina(String nomeDisciplina, int vagasVoluntarias, int vagasRemuneradas) {
+        this.nomeDisciplina = nomeDisciplina;
+        this.vagasRemuneradas = vagasRemuneradas;
+        this.vagasVoluntarias = vagasVoluntarias;
+        this.alunosVoluntariosInscritos = new ArrayList<>();
+        this.alunosRemuneradosInscritos = new ArrayList<>();
+    }
+
+
     public String getNomeDisciplina() {
         return nomeDisciplina;
+    }
+    public void setNomeDisciplina(String nomeDisciplina) {
+        this.nomeDisciplina = nomeDisciplina;
     }
     public int getVagasRemuneradas() {
         return vagasRemuneradas;
     }
-    public void setVagasRemuneradas(int vagasRemuneradas) {
+    public void setVagasRemuneradas(int vagasRemuneradas) throws TentativaInvalidaReduzirVagasException {
         if (this.vagasRemuneradas < vagasRemuneradas) {
             this.vagasRemuneradas = vagasRemuneradas;
             this.totalAlunos = alunosVoluntariosInscritos.size() + alunosRemuneradosInscritos.size();
-            //TODO| Atualizar a quantidade de total de alunos após mudar redefinir a quantidade.
+        } else {
+            throw new TentativaInvalidaReduzirVagasException();
         }
-        //TODO| Colocar para lançar uma exceção no futuro.
     }
     public int getVagasVoluntarias() {
         return vagasVoluntarias;
     }
-    public void setVagasVoluntarias(int vagasVoluntarias) {
+    public void setVagasVoluntarias(int vagasVoluntarias) throws TentativaInvalidaReduzirVagasException {
         if (this.vagasVoluntarias < vagasVoluntarias) {
             this.vagasVoluntarias = vagasVoluntarias;
             this.totalAlunos = alunosVoluntariosInscritos.size() + alunosRemuneradosInscritos.size();
-            //TODO| Atualizar a quantidade de total de alunos após mudar redefinir a quantidade.
+        } else  {
+            throw new TentativaInvalidaReduzirVagasException();
         }
-        //TODO| Colocar para lançar uma exceção no futuro.
     }
     public ArrayList<Aluno> getAlunosVoluntariosInscritos() {
         return this.alunosVoluntariosInscritos;
@@ -47,13 +60,6 @@ public class Disciplina {
         return totalAlunos;
     }
 
-    public Disciplina(String nomeDisciplina, int vagasVoluntarias, int vagasRemuneradas) {
-        this.nomeDisciplina = nomeDisciplina;
-        this.vagasRemuneradas = vagasRemuneradas;
-        this.vagasVoluntarias = vagasVoluntarias;
-        this.alunosVoluntariosInscritos = new ArrayList<>();
-        this.alunosRemuneradosInscritos = new ArrayList<>();
-    }
 
     /**
      * Verifica se a quantidade de vagas é inferior ao número de alunos já inscritos para a modalidade de vagas que o aluno deseja.

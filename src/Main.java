@@ -85,7 +85,7 @@ public class Main {
                    System.out.println("Só um momento estamos enviando o email...");
                    String codigo_recuperacao = ((Integer)(int)(Math.random() * 100000)).toString(); /* número aleatório de 00000 a 99999 */
 
-                   Mensageiro.enviarEmail(entrada_email, "Recuperação da conta no Cadastro", "O código de recuperação da sua conta é: " + codigo_recuperacao, null);
+                   Mensageiro.enviarEmail(entrada_email, "Recuperação da conta no Cadastro", "O código de recuperação da sua conta é: " + codigo_recuperacao);
                    System.out.println("  Um e-mail será enviado em alguns instantes contendo um código de recuperação.");
                    System.out.println("  Informe o código recebido › ");
                    String entrada_codigo = sc.nextLine();
@@ -369,6 +369,7 @@ public class Main {
                                flag = true;
                                break;
                            } else if (resposta.equalsIgnoreCase("N")) {
+                               flag = false;
                                break;
                            }
                        } while (true);
@@ -514,7 +515,7 @@ public class Main {
                                CRE: %.2f
                                Média na disciplina: %.2f
                                Tipo de vaga: %s
-                               """, edital.getNumero(), nomeDisciplina, cre, nota, tipoVaga), null);
+                               """, edital.getNumero(), nomeDisciplina, cre, nota, tipoVaga));
                    } catch (EditalFechadoException e) {
                        System.out.println("[Erro] " + e.getMessage());
                    } catch (PrazoInscricaoVencidoException e) {

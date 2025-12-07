@@ -5,6 +5,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
@@ -95,11 +96,13 @@ public class TelaPrincipal extends TelaBase {
 
         // Painel para a aba de Editais
         JPanel painelEditais = criarPainelAba();
-        menuAbas.addTab("Editais", null, painelEditais, "Funcionalidades relacionadas a editais");
+        menuAbas.addTab("Editais", null, painelEditais, "Funcionalidades relacionadas a editais, pressione Alt + 1 para abrir essa aba");
+        menuAbas.setMnemonicAt(0, KeyEvent.VK_1);
 
         // Painel para a aba de Alunos
         JPanel painelAlunos = criarPainelAba();
-        menuAbas.addTab("Alunos", null, painelAlunos, "Funcionalidades relacionadas a alunos");
+        menuAbas.addTab("Alunos", null, painelAlunos, "Funcionalidades relacionadas a alunos, pressione Alt + 1 para abrir essa aba");
+        menuAbas.setMnemonicAt(1, KeyEvent.VK_2);
 
         // Adicionar botões à aba de Editais
         botaoCadastrarEdital = criarBotao("Cadastrar Edital",
@@ -263,13 +266,17 @@ public class TelaPrincipal extends TelaBase {
             
             if (linhaSelecionada == -1) {
                 mostrarErro("Selecione uma linha!");
+                return;
             }
             long id = (long) tabelaEditais.getValueAt(linhaSelecionada, 0);
 
             EditalDeMonitoria edital = getCentral().recuperarEdital(id);
 
             if (edital != null) {
-                mostrarSucesso(edital.toString());
+                TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(edital, getCentral(), getPersistencia(), getNomeArquivo());
+
+                telaDetalhes.inicializar();
+                telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Fecha apenas esta janela
             } else {
                 mostrarErro("Edital não encontrado");
             }

@@ -65,11 +65,15 @@ public abstract class TelaBase extends JFrame {
 
         // Efeito hover (Quando o mouse passa por cima do botão)
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
+            // Quando mudar a cor do botao.setBackground ele não voltar para a cor primaria
+            private Color corOriginal;
+
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                botao.setBackground(Estilos.COR_SECUNDARIA);
+                corOriginal = botao.getBackground();
+                botao.setBackground(corOriginal.brighter());
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                botao.setBackground(Estilos.COR_PRIMARIA);
+                botao.setBackground(corOriginal);
             }
         });
 

@@ -1,4 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import excecoes.*;
 
 /**
@@ -12,6 +15,8 @@ public class CentralDeInformacoes {
     private Coordenador coordenador;
     private ArrayList<Aluno> todosOsAlunos = new ArrayList<>();
     private ArrayList<EditalDeMonitoria> todosOsEditais = new ArrayList<>();
+    private transient Map<String, String> codigosRecuperacao = new HashMap<>();
+
 
     public Coordenador getCoordenador() {
         return this.coordenador;
@@ -160,14 +165,55 @@ public class CentralDeInformacoes {
     }
 
     /**
-     * Verifica se as credenciais informadas pelo usuário correspondem a um login válido.
-     * @param email O endereço de e-mail do usuário supostamente cadastrado
-     * @param senha A senha do usuário
-     * @return {@code true} se autorizado, {@code false} caso contrário
+     * Busca um usuário (Aluno ou Coordenador) pelo e-mail.
+     * @param email O e-mail do usuário a ser procurado.
+     * @return O objeto Usuario correspondente, ou null se não for encontrado.
      */
-    public boolean isLoginPermitido(String email, String senha) {
-        for (Aluno algum: todosOsAlunos) {
-            if (algum.getEmail().equals(email) && algum.getSenha().equals(senha)) {
+    public Usuario getUsuarioPorEmail(String email) {
+        if (coordenador != null && coordenador.getEmail().equalsIgnoreCase(email)) {
+            return coordenador;
+        }
+        return retornarAlunoPeloEmail(email);
+    }
+
+    /**
+     * Gera e armazena um código de recuperação para um determinado e-mail.
+     * @param email O e-mail para o qual o código será gerado.
+     * @return O código de 6 dígitos gerado, ou null se o e-mail não for encontrado.
+     */
+    public String gerarCodigoRecuperacao(String email) {
+        Usuario usuario = getUsuarioPorEmail(email);
+        if (usuario == null) {
+            return null; // Usuário não encontrado
+        }
+        
+        if (codigosRecuperacao == null) {
+            codigosRecuperacao = new HashMap<>();
+        }
+
+        String codigo = String.format("%06d", new Random().nextInt(999999));
+        codigosRecuperacao.put(email.toLowerCase(), codigo);
+        return codigo;
+    }
+
+    /**
+     * Redefine a senha de um usuário usando um código de recuperação.
+     * @param email O e-mail do usuário.
+     * @param codigo O código de recuperação enviado ao usuário.
+     * @param novaSenha A nova senha a ser definida.
+     * @return true se a senha foi redefinida com sucesso, false caso contrário.
+     */
+    public boolean redefinirSenhaComCodigo(String email, String codigo, String novaSenha) {
+        if (codigosRecuperacao == null || !codigosRecuperacao.containsKey(email.toLowerCase())) {
+            return false; // Nenhum código foi gerado para este e-mail
+        }
+
+        String codigoArmazenado = codigosRecuperacao.get(email.toLowerCase());
+        if (codigoArmazenado.equals(codigo)) {
+            Usuario usuario = getUsuarioPorEmail(email);
+            if (usuario != null) {
+                usuario.setSenha(novaSenha);
+                codigosRecuperacao.remove(email.toLowerCase()); // Invalida o código após o uso
                 return true;
             }
         }
@@ -175,43 +221,42 @@ public class CentralDeInformacoes {
     }
 
     /**
-     * Tenta obter o gênero e o primeiro nome do usuário, e então compõe uma mensagem de boas‑vindas:
-     * <ul>
-     *     Bem-vind_<sup>[1]</sup>, _____<sup>[2]</sup>
-     * </ul>
-     * onde
-     * <ol>
-     *     1. Corresponde ao gênero do usuário<br>
-     *     2. É o primeiro nome do usuário
-     * </ol>
-     * Caso não consiga obter, resulta em:
-     * <ul>
-     *     Olá, usuário!
-     * </ul>
-     * @param email O endereço de e-mail do usuário
+     * Verifica se as credenciais informadas pelo usuário correspondem a um login válido.
+     * @param email O endereço de e-mail do usuário supostamente cadastrado
      * @param senha A senha do usuário
+     * @return {@code true} se autorizado, {@code false} caso contrário
+     */
+    public boolean isLoginPermitido(String email, String senha) {
+        Usuario usuario = getUsuarioPorEmail(email);
+        return usuario != null && usuario.getSenha().equals(senha);
+    }
+
+    /**
+     * Tenta obter o gênero e o primeiro nome do usuário, e então compõe uma mensagem de boas‑vindas.
      */
     public void darBoasVindasUsuario(String email, String senha) {
-        for (Aluno algum: todosOsAlunos) {
-            if (algum.getEmail().equals(email) && algum.getSenha().equals(senha)) {
-                String mensagem;
-                if (algum.getGenero() == Sexo.MASCULINO) {
-                    mensagem = "Bem-vindo, ";
-                } else if (algum.getGenero() == Sexo.FEMININO) {
-                    mensagem = "Bem-vinda, ";
-                } else if (algum.getGenero() == Sexo.NAO_BINARIO) {
-                    mensagem = "Bem-vinde, ";
-                } else {
-                    mensagem = "Bem-vindo, ";
-                }
-                String[] nome = algum.getNome().split(" ");
-                String primeiro_nome = nome[0];
-                mensagem += primeiro_nome;
-                mensagem += "!";
-                System.out.println(mensagem);
-                return;
+        Usuario usuario = getUsuarioPorEmail(email);
+        if (usuario instanceof Aluno && usuario.getSenha().equals(senha)) {
+            Aluno aluno = (Aluno) usuario;
+            String mensagem;
+            if (aluno.getGenero() == Sexo.MASCULINO) {
+                mensagem = "Bem-vindo, ";
+            } else if (aluno.getGenero() == Sexo.FEMININO) {
+                mensagem = "Bem-vinda, ";
+            } else if (aluno.getGenero() == Sexo.NAO_BINARIO) {
+                mensagem = "Bem-vinde, ";
+            } else {
+                mensagem = "Bem-vindo, ";
             }
+            String[] nome = aluno.getNome().split(" ");
+            String primeiro_nome = nome[0];
+            mensagem += primeiro_nome;
+            mensagem += "!";
+            System.out.println(mensagem);
+        } else if (usuario instanceof Coordenador) {
+            System.out.println("Bem-vindo, Coordenador!");
+        } else {
+            System.out.println("Olá usuário!");
         }
-        System.out.println("Olá usuário!");
     }
 }

@@ -49,8 +49,11 @@ public class TelaPrincipal extends TelaBase {
 
         // Criar tabela na interface
         criarPainelTabelaEditais();
-        criarPainelTabelaAlunos();
-        painelTabelaAlunos.setVisible(false); // Começa invisível
+        // Tabela de alunos só é criada e exibida para coordenadores
+        if (isCoordenador()) {
+            criarPainelTabelaAlunos();
+            painelTabelaAlunos.setVisible(false); // Começa invisível
+        }
     }
 
     /**
@@ -100,53 +103,62 @@ public class TelaPrincipal extends TelaBase {
         menuAbas.addTab("Editais", null, painelEditais, "Funcionalidades relacionadas a editais, pressione Alt + 1 para abrir essa aba");
         menuAbas.setMnemonicAt(0, KeyEvent.VK_1);
 
-        // Painel para a aba de Alunos
-        JPanel painelAlunos = criarPainelAba();
-        menuAbas.addTab("Alunos", null, painelAlunos, "Funcionalidades relacionadas a alunos, pressione Alt + 1 para abrir essa aba");
-        menuAbas.setMnemonicAt(1, KeyEvent.VK_2);
-
         // Adicionar botões à aba de Editais
-        botaoCadastrarEdital = criarBotao("Cadastrar Edital",
+        botaoCadastrarEdital = criarBotaoLateral("Cadastrar Edital",
                 new OuvinteBotaoCadastrarEdital());
-        definirPermissao(botaoCadastrarEdital, isCoordenador());
+        if (!isCoordenador()) {
+            botaoCadastrarEdital.setVisible(false);
+        }
         painelEditais.add(botaoCadastrarEdital);
 
-        botaoListarEditais = criarBotao("Listar Editais",
-                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+        botaoListarEditais = criarBotaoLateral("Listar Editais", e -> abrirTelaListagemEditais());
         painelEditais.add(botaoListarEditais);
 
-        botaoDetalharEdital = criarBotao("Detalhar Edital",
-                new OuvinteBotaoDetalharEdital());
+        botaoDetalharEdital = criarBotaoLateral("Detalhar Edital", new OuvinteBotaoDetalharEdital());
         painelEditais.add(botaoDetalharEdital);
 
-        botaoCalcularResultado = criarBotao("Calcular Resultado",
+        botaoCalcularResultado = criarBotaoLateral("Calcular Resultado",
                 e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
-        definirPermissao(botaoCalcularResultado, isCoordenador());
+        if (!isCoordenador()) {
+            botaoCalcularResultado.setVisible(false);
+        }
         painelEditais.add(botaoCalcularResultado);
 
-        botaoFecharEdital = criarBotao("Fechar Edital",
+        botaoFecharEdital = criarBotaoLateral("Fechar Edital",
                 e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
-        definirPermissao(botaoFecharEdital, isCoordenador());
+        if (!isCoordenador()) {
+            botaoFecharEdital.setVisible(false);
+        }
         painelEditais.add(botaoFecharEdital);
 
-        // Adicionar botões à aba de Alunos
-        botaoListarAlunos = criarBotao("Listar Alunos",
-                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
-        definirPermissao(botaoListarAlunos, isCoordenador());
-        painelAlunos.add(botaoListarAlunos);
+        // Painel para a aba de Alunos (apenas para coordenador)
+        if (isCoordenador()) {
+            JPanel painelAlunos = criarPainelAba();
+            menuAbas.addTab("Alunos", null, painelAlunos, "Funcionalidades relacionadas a alunos, pressione Alt + 2 para abrir essa aba");
+            menuAbas.setMnemonicAt(1, KeyEvent.VK_2);
 
-        botaoDetalharAluno = criarBotao("Detalhar Aluno",
-                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
-        definirPermissao(botaoDetalharAluno, isCoordenador());
-        painelAlunos.add(botaoDetalharAluno);
+            // Adicionar botões à aba de Alunos (apenas coordenador vê)
+            botaoListarAlunos = criarBotaoLateral("Listar Alunos",
+                    e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+            painelAlunos.add(botaoListarAlunos);
 
-        botaoInscreverMonitoria = criarBotao("Inscrever em Monitoria",
-                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
-        painelAlunos.add(botaoInscreverMonitoria);
+            botaoDetalharAluno = criarBotaoLateral("Detalhar Aluno",
+                    e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+            painelAlunos.add(botaoDetalharAluno);
+        } else {
+            // Para alunos, criar uma aba própria com funcionalidades de aluno
+            JPanel painelAluno = criarPainelAba();
+            menuAbas.addTab("Minhas Funcionalidades", null, painelAluno, "Funcionalidades disponíveis para alunos");
+            menuAbas.setMnemonicAt(1, KeyEvent.VK_2);
 
-        botaoVerRanque = criarBotao("Ver Ranque",
-                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
-        painelAlunos.add(botaoVerRanque);
+            botaoInscreverMonitoria = criarBotaoLateral("Inscrever em Monitoria",
+                    e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+            painelAluno.add(botaoInscreverMonitoria);
+
+            botaoVerRanque = criarBotaoLateral("Ver Ranque",
+                    e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+            painelAluno.add(botaoVerRanque);
+        }
 
         // Adicionar um Listener para quando a aba trocar exibir tabelas diferentes.
         menuAbas.addChangeListener(new OuvinteTrocaDeAba());
@@ -241,10 +253,58 @@ public class TelaPrincipal extends TelaBase {
     private JPanel criarPainelAba() {
         JPanel painel = new JPanel();
         // Usar GridLayout para empilhar os botões verticalmente
-        painel.setLayout(new GridLayout(0, 1, 10, 10));
+        painel.setLayout(new GridLayout(0, 1, 8, 8));
         painel.setBackground(Estilos.COR_FUNDO);
-        painel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        painel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         return painel;
+    }
+    
+    /**
+     * Cria um botão lateral moderno e compacto.
+     * @param texto O texto do botão
+     * @param listener O ActionListener do botão
+     * @return O botão criado
+     */
+    private JButton criarBotaoLateral(String texto, ActionListener listener) {
+        JButton botao = new JButton(texto);
+        botao.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        botao.setMaximumSize(new Dimension(160, 35));
+        botao.setMinimumSize(new Dimension(160, 35));
+        botao.setPreferredSize(new Dimension(160, 35));
+        botao.setBackground(Estilos.COR_PRIMARIA);
+        botao.setForeground(Estilos.COR_BRANCO);
+        botao.setOpaque(true);
+        botao.setContentAreaFilled(true);
+        botao.setFocusPainted(false);
+        botao.setBorderPainted(false);
+        botao.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Estilos.COR_PRIMARIA.darker(), 1),
+            BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        ));
+        botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        // Efeito hover moderno
+        botao.addMouseListener(new java.awt.event.MouseAdapter() {
+            private Color corOriginal = Estilos.COR_PRIMARIA;
+            
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                corOriginal = botao.getBackground();
+                botao.setBackground(new Color(
+                    Math.min(255, corOriginal.getRed() + 20),
+                    Math.min(255, corOriginal.getGreen() + 20),
+                    Math.min(255, corOriginal.getBlue() + 20)
+                ));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                botao.setBackground(corOriginal);
+            }
+        });
+        
+        if (listener != null) {
+            botao.addActionListener(listener);
+        }
+        
+        return botao;
     }
 
     private class OuvinteTrocaDeAba implements ChangeListener {
@@ -252,18 +312,30 @@ public class TelaPrincipal extends TelaBase {
         public void stateChanged(ChangeEvent e) {
             int numeroAba = menuAbas.getSelectedIndex();
 
-            switch (numeroAba) {
-                case 0: {
-                    // Aba Editais
-                    painelTabelaAlunos.setVisible(false);
-                    painelTabelaEditais.setVisible(true);
-                    break;
+            if (isCoordenador()) {
+                switch (numeroAba) {
+                    case 0: {
+                        // Aba Editais
+                        if (painelTabelaAlunos != null) {
+                            painelTabelaAlunos.setVisible(false);
+                        }
+                        painelTabelaEditais.setVisible(true);
+                        break;
+                    }
+                    case 1: {
+                        // Aba Alunos
+                        painelTabelaEditais.setVisible(false);
+                        if (painelTabelaAlunos != null) {
+                            painelTabelaAlunos.setVisible(true);
+                        }
+                        break;
+                    }
                 }
-                case 1: {
-                    // Aba Alunos
-                    painelTabelaEditais.setVisible(false);
-                    painelTabelaAlunos.setVisible(true);
-                    break;
+            } else {
+                // Para alunos, sempre mostra a tabela de editais
+                painelTabelaEditais.setVisible(true);
+                if (painelTabelaAlunos != null) {
+                    painelTabelaAlunos.setVisible(false);
                 }
             }
             painelPrincipal.repaint();
@@ -362,6 +434,12 @@ public class TelaPrincipal extends TelaBase {
             tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
             tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
         }
+    }
+
+    private void abrirTelaListagemEditais() {
+        TelaListagemEditais telaListagem = new TelaListagemEditais(getCentral(), getPersistencia(), getNomeArquivo());
+        telaListagem.inicializar();
+        this.dispose();
     }
 
     /**

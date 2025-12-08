@@ -1,7 +1,10 @@
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,7 +25,10 @@ public class TelaPrincipal extends TelaBase {
     private DefaultTableModel modeloTabelaEditais;
     private JTable tabelaEditais;
     private DefaultTableModel modeloTabelaAlunos;
-    private JTable tabelaAlunos;    
+    private TableRowSorter<DefaultTableModel> sorterTabelaAlunos;
+    private JTextField campoFiltro;
+    private JLabel labelFiltro;
+    private JTable tabelaAlunos;
     private JButton botaoCadastrarEdital;
     private JButton botaoListarEditais;
     private JButton botaoDetalharEdital;
@@ -33,16 +39,16 @@ public class TelaPrincipal extends TelaBase {
     private JButton botaoInscreverMonitoria;
     private JButton botaoVerRanque;
     private JButton botaoSair;
-    
+
     public TelaPrincipal(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
         super("Sistema de Cadastro de Monitores", central, persistencia, nomeArquivo);
     }
-    
+
     @Override
     protected void criarComponentes() {
         // Cabeçalho
         criarCabecalho();
-        
+
         // Menu lateral com abas
         criarMenuLateral();
 
@@ -54,7 +60,12 @@ public class TelaPrincipal extends TelaBase {
         // Tabela de alunos só é criada e exibida para coordenadores
         if (isCoordenador()) {
             criarPainelTabelaAlunos();
+            criarCampoFiltro();
             painelTabelaAlunos.setVisible(false); // Começa invisível
+            campoFiltro.setVisible(false);
+            if (labelFiltro != null) {
+                labelFiltro.setVisible(false);
+            }
         }
     }
 
@@ -140,8 +151,7 @@ public class TelaPrincipal extends TelaBase {
             menuAbas.setMnemonicAt(1, KeyEvent.VK_2);
 
             // Adicionar botões à aba de Alunos (apenas coordenador vê)
-            botaoListarAlunos = criarBotaoLateral("Listar Alunos",
-                    e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+            botaoListarAlunos = criarBotaoLateral("Listar Alunos", null);
             painelAlunos.add(botaoListarAlunos);
 
             botaoDetalharAluno = criarBotaoLateral("Detalhar Aluno",
@@ -166,7 +176,6 @@ public class TelaPrincipal extends TelaBase {
         menuAbas.addChangeListener(new OuvinteTrocaDeAba());
 
         // Posicionar o JTabbedPane na tela
-        // A largura precisa acomodar o texto da aba + os botões
         menuAbas.setBounds(0, 70, 200, Estilos.ALTURA_TELA - 150);
         painelPrincipal.add(menuAbas);
     }
@@ -190,7 +199,7 @@ public class TelaPrincipal extends TelaBase {
 
         // Adiciona a tabela (dentro de um JScrollPane) ao painel principal
         painelTabelaEditais = new JScrollPane(tabelaEditais);
-        painelTabelaEditais.setBounds(210, 125, 650, 400); // Ajuste a posição e o tamanho conforme necessário
+        painelTabelaEditais.setBounds(210, 125, 650, 400);
         painelPrincipal.add(painelTabelaEditais);
     }
 
@@ -203,12 +212,49 @@ public class TelaPrincipal extends TelaBase {
             modeloTabelaAlunos.addColumn(coluna);
         }
         tabelaAlunos = new JTable(modeloTabelaAlunos);
+        sorterTabelaAlunos = new TableRowSorter<>(modeloTabelaAlunos);
+        tabelaAlunos.setRowSorter(sorterTabelaAlunos);
+
         mudarVisualDeTabela(tabelaAlunos);
         atualizarValoresDaTabelaAluno();
 
         painelTabelaAlunos = new JScrollPane(tabelaAlunos);
         painelTabelaAlunos.setBounds(210, 125, 650, 400);
         painelPrincipal.add(painelTabelaAlunos);
+    }
+
+    public void criarCampoFiltro() {
+        labelFiltro = new JLabel("Filtrar por nome:");
+        labelFiltro.setBounds(210, 95, 120, 30);
+        painelPrincipal.add(labelFiltro);
+
+        campoFiltro = new JTextField();
+        campoFiltro.setBounds(330, 95, 200, 30);
+        painelPrincipal.add(campoFiltro);
+
+        campoFiltro.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filtrarTabelaAlunos();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filtrarTabelaAlunos();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filtrarTabelaAlunos();
+            }
+        });
+    }
+
+    private void filtrarTabelaAlunos() {
+        String texto = campoFiltro.getText();
+        if (texto.trim().length() == 0) {
+            sorterTabelaAlunos.setRowFilter(null);
+        } else {
+            sorterTabelaAlunos.setRowFilter(RowFilter.regexFilter("(?i)" + texto, 1));
+        }
     }
 
     public void atualizarValoresDaTabelaEdital() {
@@ -224,7 +270,6 @@ public class TelaPrincipal extends TelaBase {
             modeloTabelaEditais.addRow(new Object[]{item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
                     item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto()});
         }
-        
     }
 
     public void atualizarValoresDaTabelaAluno() {
@@ -240,7 +285,6 @@ public class TelaPrincipal extends TelaBase {
         for (Aluno alguem : getCentral().getTodosOsAlunos()) {
             modeloTabelaAlunos.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail()});
         }
-
     }
 
     /**
@@ -255,7 +299,7 @@ public class TelaPrincipal extends TelaBase {
         painel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         return painel;
     }
-    
+
     /**
      * Cria um botão lateral moderno e compacto.
      * @param texto O texto do botão
@@ -279,18 +323,13 @@ public class TelaPrincipal extends TelaBase {
             BorderFactory.createEmptyBorder(6, 10, 6, 10)
         ));
         botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        // Efeito hover moderno
+
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
             private Color corOriginal = Estilos.COR_PRIMARIA;
             
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 corOriginal = botao.getBackground();
-                botao.setBackground(new Color(
-                    Math.min(255, corOriginal.getRed() + 20),
-                    Math.min(255, corOriginal.getGreen() + 20),
-                    Math.min(255, corOriginal.getBlue() + 20)
-                ));
+                botao.setBackground(corOriginal.brighter());
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 botao.setBackground(corOriginal);
@@ -305,7 +344,6 @@ public class TelaPrincipal extends TelaBase {
     }
 
     private class OuvinteTrocaDeAba implements ChangeListener {
-
         public void stateChanged(ChangeEvent e) {
             int numeroAba = menuAbas.getSelectedIndex();
 
@@ -315,6 +353,8 @@ public class TelaPrincipal extends TelaBase {
                         // Aba Editais
                         if (painelTabelaAlunos != null) {
                             painelTabelaAlunos.setVisible(false);
+                            campoFiltro.setVisible(false);
+                            labelFiltro.setVisible(false);
                         }
                         painelTabelaEditais.setVisible(true);
                         break;
@@ -323,25 +363,24 @@ public class TelaPrincipal extends TelaBase {
                         // Aba Alunos
                         painelTabelaEditais.setVisible(false);
                         if (painelTabelaAlunos != null) {
+                            campoFiltro.setVisible(true);
+                            labelFiltro.setVisible(true);
                             painelTabelaAlunos.setVisible(true);
                         }
                         break;
                     }
                 }
             } else {
-                // Para alunos, sempre mostra a tabela de editais
                 painelTabelaEditais.setVisible(true);
                 if (painelTabelaAlunos != null) {
                     painelTabelaAlunos.setVisible(false);
                 }
             }
             painelPrincipal.repaint();
-
         }
     }
 
     private class OuvinteBotaoDetalharEdital implements ActionListener {
-
         public void actionPerformed(ActionEvent e) {
             int linhaSelecionada = tabelaEditais.getSelectedRow();
             
@@ -361,40 +400,22 @@ public class TelaPrincipal extends TelaBase {
             } else {
                 mostrarErro("Edital não encontrado");
             }
-
         }
     }
 
     public class OuvinteDoFechamentoDaJanela implements WindowListener {
-
-        public void windowOpened(WindowEvent e) {
-
-        }
-
-        public void windowClosing(WindowEvent e) {
-
-        }
-
+        public void windowOpened(WindowEvent e) {}
+        public void windowClosing(WindowEvent e) {}
         public void windowClosed(WindowEvent e) {
             atualizarValoresDaTabelaEdital();
-            atualizarValoresDaTabelaAluno();
+            if (isCoordenador()) {
+                atualizarValoresDaTabelaAluno();
+            }
         }
-        public void windowIconified(WindowEvent e) {
-
-        }
-
-        public void windowDeiconified(WindowEvent e) {
-
-        }
-
-
-        public void windowActivated(WindowEvent e) {
-
-        }
-
-        public void windowDeactivated(WindowEvent e) {
-
-        }
+        public void windowIconified(WindowEvent e) {}
+        public void windowDeiconified(WindowEvent e) {}
+        public void windowActivated(WindowEvent e) {}
+        public void windowDeactivated(WindowEvent e) {}
     }
 
     public class OuvinteBotaoCadastrarEdital implements ActionListener {
@@ -402,7 +423,6 @@ public class TelaPrincipal extends TelaBase {
         public void actionPerformed(ActionEvent e) {
             TelaCadastrarEdital telaCadastrarEdital = new TelaCadastrarEdital(getCentral(), getPersistencia(), getNomeArquivo());
             telaCadastrarEdital.addWindowListener(new OuvinteDoFechamentoDaJanela());
-
             telaCadastrarEdital.inicializar();
             telaCadastrarEdital.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
@@ -421,7 +441,6 @@ public class TelaPrincipal extends TelaBase {
             // Fonte
             tabela.setFont(new Font("Arial", Font.PLAIN, 15));
             tabela.getTableHeader().setFont(new Font("Arial", Font.BOLD, 17));
-
             tabela.setRowHeight(25);
             tabela.setShowGrid(true);
             tabela.setGridColor(Color.GRAY);

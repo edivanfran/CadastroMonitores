@@ -56,6 +56,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
         botaoClonarEdital = criarBotao("Clonar Edital", new OuvinteBotaoClonarEdital());
         botaoClonarEdital.setBounds(440, 390, 120, 40);
         botaoClonarEdital.setBackground(Estilos.COR_AVISO);
+        definirPermissao(botaoClonarEdital, isCoordenador());
         painelPrincipal.add(botaoClonarEdital);
 
         // Botões do modo de edição (inicialmente invisíveis)

@@ -1,16 +1,21 @@
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import excecoes.EditalAbertoException;
+import excecoes.EditalFechadoException;
+import excecoes.PermissaoNegadaException;
+import excecoes.PrazoVencidoException;
 
 public class TelaDetalharEdital extends TelaEditalBase {
 
     private JButton botaoSelecionarDisciplina;
-    private JButton botaoEncerrarEdital;
+    private JButton botaoEncerrarReabrir;
     private JButton botaoEditarEdital;
     private JButton botaoClonarEdital;
     private JButton botaoEditarDisciplina;
@@ -21,11 +26,15 @@ public class TelaDetalharEdital extends TelaEditalBase {
         super("Detalhar Edital", edital, central, persistencia, nomeArquivo);
     }
 
+    public void inicializar() {
+        super.inicializar();
+        atualizarBotaoEncerramento();
+    }
+
     protected void criarComponentes() {
         criarLabels();
         criarCampos();
         criarBotoes();
-        // Não deixa os campos serem editáveis
         tornarCamposEditaveis(false);
     }
 
@@ -36,11 +45,9 @@ public class TelaDetalharEdital extends TelaEditalBase {
         botaoSelecionarDisciplina.setBackground(Estilos.COR_AVISO);
         painelPrincipal.add(botaoSelecionarDisciplina);
 
-        botaoEncerrarEdital = criarBotao("Encerrar Edital", e ->
-                mostrarAviso("Funcionalidade em desenvolvimento"));
-        botaoEncerrarEdital.setBounds(50, 390, 170, 40);
-        botaoEncerrarEdital.setBackground(Estilos.COR_PERIGO);
-        painelPrincipal.add(botaoEncerrarEdital);
+        botaoEncerrarReabrir = criarBotao("", new OuvinteBotaoEncerrarReabrir());
+        botaoEncerrarReabrir.setBounds(50, 390, 200, 40);
+        painelPrincipal.add(botaoEncerrarReabrir);
 
         botaoEditarEdital = criarBotao("Editar Edital", new OuvinteBotaoEditar());
         botaoEditarEdital.setBounds(270, 390, 120, 40);
@@ -71,8 +78,24 @@ public class TelaDetalharEdital extends TelaEditalBase {
         painelPrincipal.add(botaoCancelar);
     }
 
+    private void atualizarBotaoEncerramento() {
+        if (edital.jaAcabou()) {
+            botaoEncerrarReabrir.setText("Encerrado Definitivamente");
+            botaoEncerrarReabrir.setBackground(Estilos.COR_CINZA);
+            botaoEncerrarReabrir.setEnabled(false);
+        } else if (edital.isAberto()) {
+            botaoEncerrarReabrir.setText("Encerrar Inscrições");
+            botaoEncerrarReabrir.setBackground(Estilos.COR_PERIGO);
+            botaoEncerrarReabrir.setEnabled(true);
+        } else {
+            botaoEncerrarReabrir.setText("Reabrir Inscrições");
+            botaoEncerrarReabrir.setBackground(Estilos.COR_SUCESSO);
+            botaoEncerrarReabrir.setEnabled(true);
+        }
+    }
+
     private void mudarVisibilidadeBotoes(boolean editando) {
-        botaoEncerrarEdital.setVisible(!editando);
+        botaoEncerrarReabrir.setVisible(!editando);
         botaoEditarEdital.setVisible(!editando);
         botaoClonarEdital.setVisible(!editando);
         botaoSelecionarDisciplina.setVisible(!editando);
@@ -83,17 +106,59 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
 
     private class OuvinteBotaoEditar implements ActionListener {
-
         public void actionPerformed(ActionEvent e) {
             tornarCamposEditaveis(true);
             mudarVisibilidadeBotoes(true);
         }
     }
 
-//    public class OuvinteBotaoEncerrarEdital implements ActionListener {
+    public class OuvinteBotaoEncerrarReabrir implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (!isCoordenador()) {
+                mostrarErro("Apenas coordenadores podem alterar o estado do edital.");
+                return;
+            }
+
+            Coordenador coordenador = (Coordenador) sessao.getUsuarioLogado();
+            
+            if (edital.isAberto()) {
+                // Ação de Encerrar
+                int confirmacao = JOptionPane.showConfirmDialog(TelaDetalharEdital.this,
+                        "Tem certeza que deseja encerrar as inscrições para este edital?",
+                        "Confirmar Encerramento", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+                if (confirmacao == JOptionPane.YES_OPTION) {
+                    try {
+                        edital.fecharEdital(coordenador);
+                        getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                        mostrarSucesso("Edital encerrado com sucesso!");
+                        atualizarBotaoEncerramento();
+                    } catch (PermissaoNegadaException | EditalFechadoException ex) {
+                        mostrarErro(ex.getMessage());
+                    }
+                }
+            } else {
+                // Ação de Reabrir
+                int confirmacao = JOptionPane.showConfirmDialog(TelaDetalharEdital.this,
+                        "Deseja reabrir as inscrições para este edital?",
+                        "Confirmar Reabertura", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+                if (confirmacao == JOptionPane.YES_OPTION) {
+                    try {
+                        edital.reabrirEdital(coordenador);
+                        getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                        mostrarSucesso("Edital reaberto para inscrições!");
+                        atualizarBotaoEncerramento();
+                    } catch (PermissaoNegadaException | EditalAbertoException | PrazoVencidoException ex) {
+                        mostrarErro(ex.getMessage());
+                    }
+                }
+            }
+        }
+    }
 
     public class OuvinteBotaoClonarEdital implements ActionListener {
-
         public void actionPerformed(ActionEvent e) {
             EditalDeMonitoria copiaEdital = edital.clonar();
             getCentral().adicionarEdital(copiaEdital);
@@ -103,46 +168,26 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
     
     private class OuvinteBotaoEditarDisciplina implements ActionListener {
-
         public void actionPerformed(ActionEvent e) {
             TelaGerenciarDisciplinas telaDisciplinas = new TelaGerenciarDisciplinas(edital, getCentral(), getPersistencia(), getNomeArquivo());
             telaDisciplinas.inicializar();
             telaDisciplinas.addWindowListener(
                     new WindowListener() {
-                        public void windowOpened(WindowEvent e) {
-
-                        }
-
-                        public void windowClosing(WindowEvent e) {
-
-                        }
-
+                        public void windowOpened(WindowEvent e) {}
+                        public void windowClosing(WindowEvent e) {}
                         public void windowClosed(WindowEvent e) {
                             preencherCamposComDados(edital);
                         }
-
-                        public void windowIconified(WindowEvent e) {
-
-                        }
-
-                        public void windowDeiconified(WindowEvent e) {
-
-                        }
-
-                        public void windowActivated(WindowEvent e) {
-
-                        }
-
-                        public void windowDeactivated(WindowEvent e) {
-
-                        }
+                        public void windowIconified(WindowEvent e) {}
+                        public void windowDeiconified(WindowEvent e) {}
+                        public void windowActivated(WindowEvent e) {}
+                        public void windowDeactivated(WindowEvent e) {}
                     });
             telaDisciplinas.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
     }
 
     private class OuvinteBotaoCancelar implements ActionListener {
-
         public void actionPerformed(ActionEvent e) {
             preencherCamposComDados(edital);
             tornarCamposEditaveis(false);
@@ -151,7 +196,6 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
 
     private class OuvinteBotaoSalvar implements ActionListener {
-
         public void actionPerformed(ActionEvent e) {
             if (((Double) pesoCRE.getValue() + (Double) pesoNota.getValue()) != 1.0) {
                 mostrarErro("A soma dos valores dos pesos deve ser igual a 1.");
@@ -182,17 +226,14 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 return;
             }
 
-            // Atualiza o edital existente
             edital.setDataInicio(dataInicioFormatada);
             edital.setDataLimite(dataFinalFormatada);
             edital.setPesoCre((Double) pesoCRE.getValue());
             edital.setPesoNota((Double) pesoNota.getValue());
 
-            // Salva as alterações
             getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
             mostrarSucesso("Edital salvo com sucesso!");
 
-            // Retorna ao modo de visualização
             tornarCamposEditaveis(false);
             mudarVisibilidadeBotoes(false);
         }

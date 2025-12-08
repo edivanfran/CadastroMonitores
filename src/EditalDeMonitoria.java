@@ -394,11 +394,33 @@ public class EditalDeMonitoria {
            throw new PermissaoNegadaException("fechar o edital");
        }
        if (!aberto) {
-           throw new EditalFechadoException(numero);
+           throw new EditalFechadoException(numero, "O edital já se encontra fechado.");
        }
        this.aberto = false;
        System.out.println("Edital " + numero + " foi fechado com sucesso.");
    }
+
+    /**
+     * Reabre um edital que foi fechado, permitindo novas inscrições.
+     * <p>Apenas coordenadores podem executar esta operação.</p>
+     * @param coordenador O Coordenador que está executando a operação
+     * @throws PermissaoNegadaException Se o usuário não for coordenador
+     * @throws EditalAbertoException Se o edital já estiver aberto
+     * @throws PrazoVencidoException Se a data limite para inscrições já tiver passado
+     */
+    public void reabrirEdital(Coordenador coordenador) throws PermissaoNegadaException, EditalAbertoException, PrazoVencidoException {
+        if (coordenador == null) {
+            throw new PermissaoNegadaException("reabrir o edital");
+        }
+        if (aberto) {
+            throw new EditalAbertoException(numero);
+        }
+        if (LocalDate.now().isAfter(dataLimite)) {
+            throw new PrazoVencidoException("reabrir o edital", dataLimite);
+        }
+        this.aberto = true;
+        System.out.println("Edital " + numero + " foi reaberto com sucesso.");
+    }
 
     /**
      * Representação em {@code String} do objeto.

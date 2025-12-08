@@ -17,6 +17,7 @@ public class TelaResultadoEdital extends TelaBase {
     private JTabbedPane abasDisciplinas;
     private JButton botaoAcaoCoordenador;
     private JButton botaoVoltar;
+    private JButton botaoExportarPDF;
 
     public TelaResultadoEdital(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
         super("Resultado do Edital: " + edital.getNumero(), central, persistencia, nomeArquivo);
@@ -152,12 +153,19 @@ public class TelaResultadoEdital extends TelaBase {
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         
         if (isCoordenador()) {
+            // Botão para exportar o resultado em PDF
+            if (edital.isResultadoCalculado()) {
+                botaoExportarPDF = criarBotao("Exportar Resultado (PDF)", e -> exportarResultadoPDF());
+                painelBotoes.add(botaoExportarPDF);
+            }
+
+            // Botão para fechar o edital
             if (edital.isResultadoCalculado() && !edital.isPeriodoDesistenciaEncerrado()) {
                 botaoAcaoCoordenador = criarBotao("Fechar Edital", e -> encerrarPeriodo());
                 botaoAcaoCoordenador.setToolTipText("Encerra o período de desistências e torna o resultado final.");
                 painelBotoes.add(botaoAcaoCoordenador);
             } else if (edital.isPeriodoDesistenciaEncerrado()) {
-                JLabel resultadoFinalLabel = criarLabel("Resultado Final", Estilos.FONTE_BOTAO);
+                JLabel resultadoFinalLabel = criarLabel("Resultado Final", Estilos.FONTE_SUBTITULO);
                 resultadoFinalLabel.setForeground(Estilos.COR_VERDE_CLARO);
                 painelBotoes.add(resultadoFinalLabel);
             }
@@ -167,6 +175,15 @@ public class TelaResultadoEdital extends TelaBase {
         painelBotoes.add(botaoVoltar);
 
         painelPrincipal.add(painelBotoes, BorderLayout.SOUTH);
+    }
+
+    private void exportarResultadoPDF() {
+        try {
+            GeradorDeRelatorios.gerarResultadoEdital(edital);
+            mostrarSucesso("Relatório PDF gerado com sucesso na pasta do projeto!");
+        } catch (Exception e) {
+            mostrarErro("Erro ao gerar PDF: " + e.getMessage());
+        }
     }
 
     private void encerrarPeriodo() {

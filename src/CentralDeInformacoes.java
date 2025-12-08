@@ -157,7 +157,7 @@ public class CentralDeInformacoes {
      */
     public Aluno retornarAlunoPeloEmail(String email) {
         for (Aluno algum: todosOsAlunos) {
-            if (algum.getEmail().equals(email)) {
+            if (algum.getEmail().equalsIgnoreCase(email)) {
                 return algum;
             }
         }

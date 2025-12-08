@@ -14,7 +14,7 @@ import excecoes.PrazoVencidoException;
 
 public class TelaDetalharEdital extends TelaEditalBase {
 
-    private JButton botaoSelecionarDisciplina;
+    private JButton botaoVerInscritos;
     private JButton botaoEncerrarReabrir;
     private JButton botaoEditarEdital;
     private JButton botaoClonarEdital;
@@ -26,6 +26,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
         super("Detalhar Edital", edital, central, persistencia, nomeArquivo);
     }
 
+    @Override
     public void inicializar() {
         super.inicializar();
         atualizarBotaoEncerramento();
@@ -39,11 +40,10 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
 
     private void criarBotoes() {
-        botaoSelecionarDisciplina = criarBotao("Ver Lista da Disciplina", e ->
-                mostrarAviso("Funcionalidade em desenvolvimento"));
-        botaoSelecionarDisciplina.setBounds(430, 170, 180, 40);
-        botaoSelecionarDisciplina.setBackground(Estilos.COR_AVISO);
-        painelPrincipal.add(botaoSelecionarDisciplina);
+        botaoVerInscritos = criarBotao("Ver Inscritos", new OuvinteBotaoVerInscritos());
+        botaoVerInscritos.setBounds(430, 170, 180, 40);
+        botaoVerInscritos.setBackground(Estilos.COR_AVISO);
+        painelPrincipal.add(botaoVerInscritos);
 
         botaoEncerrarReabrir = criarBotao("", new OuvinteBotaoEncerrarReabrir());
         botaoEncerrarReabrir.setBounds(50, 390, 200, 40);
@@ -98,7 +98,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
         botaoEncerrarReabrir.setVisible(!editando);
         botaoEditarEdital.setVisible(!editando);
         botaoClonarEdital.setVisible(!editando);
-        botaoSelecionarDisciplina.setVisible(!editando);
+        botaoVerInscritos.setVisible(!editando);
 
         botaoEditarDisciplina.setVisible(editando);
         botaoSalvar.setVisible(editando);
@@ -109,6 +109,26 @@ public class TelaDetalharEdital extends TelaEditalBase {
         public void actionPerformed(ActionEvent e) {
             tornarCamposEditaveis(true);
             mudarVisibilidadeBotoes(true);
+        }
+    }
+
+    private class OuvinteBotaoVerInscritos implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (!isCoordenador()) {
+                mostrarErro("Apenas coordenadores podem visualizar a lista de inscritos.");
+                return;
+            }
+
+            Disciplina disciplinaSelecionada = (Disciplina) campoDeDisciplina.getSelectedItem();
+            if (disciplinaSelecionada == null) {
+                mostrarErro("Por favor, selecione uma disciplina para visualizar os inscritos.");
+                return;
+            }
+
+            TelaListarInscritos telaInscritos = new TelaListarInscritos(edital, disciplinaSelecionada, getCentral(), getPersistencia(), getNomeArquivo());
+            telaInscritos.inicializar();
+            telaInscritos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
     }
 

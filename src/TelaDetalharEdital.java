@@ -46,8 +46,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
         botaoEditarEdital.setBounds(270, 390, 120, 40);
         painelPrincipal.add(botaoEditarEdital);
 
-        botaoClonarEdital = criarBotao("Clonar Edital", e ->
-                mostrarAviso("Funcionalidade em desenvolvimento"));
+        botaoClonarEdital = criarBotao("Clonar Edital", new OuvinteBotaoClonarEdital());
         botaoClonarEdital.setBounds(440, 390, 120, 40);
         botaoClonarEdital.setBackground(Estilos.COR_AVISO);
         painelPrincipal.add(botaoClonarEdital);
@@ -97,6 +96,8 @@ public class TelaDetalharEdital extends TelaEditalBase {
 
         public void actionPerformed(ActionEvent e) {
             EditalDeMonitoria copiaEdital = edital.clonar();
+            getCentral().adicionarEdital(copiaEdital);
+            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
             mostrarSucesso("Edital clonado com sucesso!");
         }
     }

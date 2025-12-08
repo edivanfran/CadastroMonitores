@@ -19,8 +19,10 @@ public class TelaPrincipal extends TelaBase {
     private JTabbedPane menuAbas;
     private JScrollPane painelTabelaEditais;
     private JScrollPane painelTabelaAlunos;
+    private DefaultTableModel modeloTabelaEditais;
     private JTable tabelaEditais;
-    private JTable tabelaAlunos;
+    private DefaultTableModel modeloTabelaAlunos;
+    private JTable tabelaAlunos;    
     private JButton botaoCadastrarEdital;
     private JButton botaoListarEditais;
     private JButton botaoDetalharEdital;
@@ -170,80 +172,75 @@ public class TelaPrincipal extends TelaBase {
     }
 
     private void criarPainelTabelaEditais() {
-        if (getCentral().getTodosOsEditais().isEmpty()) {
-            // Cria um painel vazio para evitar NullPointerException
-            painelTabelaEditais = new JScrollPane();
-        } else {
-            atualizarValoresDaTabelaEdital();
-            // Para a tabela aparecer, ela precisa estar dentro de um JScrollPane
-            painelTabelaEditais = new JScrollPane(tabelaEditais);
+
+        modeloTabelaEditais = new DefaultTableModel() {
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        String[] colunas = {"ID", "Número", "Data Início", "Data Limite", "Disciplinas", "Aberto"};
+        for (String coluna : colunas) {
+            modeloTabelaEditais.addColumn(coluna);
         }
 
+        // Cria a JTable com o modelo
+        tabelaEditais = new JTable(modeloTabelaEditais);
+        mudarVisualDeTabela(tabelaEditais);
+
+        // Preenche os dados iniciais
+        atualizarValoresDaTabelaEdital();
+
+        // Adiciona a tabela (dentro de um JScrollPane) ao painel principal
+        painelTabelaEditais = new JScrollPane(tabelaEditais);
         painelTabelaEditais.setBounds(210, 125, 650, 400); // Ajuste a posição e o tamanho conforme necessário
         painelPrincipal.add(painelTabelaEditais);
     }
 
     private void criarPainelTabelaAlunos() {
-        if (getCentral().getTodosOsAlunos().isEmpty()) {
-            // Cria um painel vazio para evitar NullPointerException
-            painelTabelaAlunos = new JScrollPane();
-        } else {
-            atualizarValoresDaTabelaAluno();
-            painelTabelaAlunos = new JScrollPane(tabelaAlunos);
+        modeloTabelaAlunos = new DefaultTableModel() {
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        String[] colunas = {"Matrícula", "Nome", "Email"};
+        for (String coluna : colunas) {
+            modeloTabelaAlunos.addColumn(coluna);
         }
+        tabelaAlunos = new JTable(modeloTabelaAlunos);
+        mudarVisualDeTabela(tabelaAlunos);
+        atualizarValoresDaTabelaAluno();
 
+        painelTabelaAlunos = new JScrollPane(tabelaAlunos);
         painelTabelaAlunos.setBounds(210, 125, 650, 400);
         painelPrincipal.add(painelTabelaAlunos);
     }
 
     public void atualizarValoresDaTabelaEdital() {
-        DefaultTableModel modelo = new DefaultTableModel() {
-            // Não deixar nenhuma célula ser editável
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        String[] colunas = {"id", "numero", "dataInicio", "dataLimite", "disciplinas", "aberto"};
-        // Criar as colunas
-        for (String coluna : colunas) {
-            modelo.addColumn(coluna);
-        }
-        // Colocar data em formato DD/MM/AAAA
+        modeloTabelaEditais.setRowCount(0);
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        if (getCentral().getTodosOsEditais() == null) {
+            return;
+        }
 
         //Filtra as colunas que deseja colocar na tabela
         for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
-            modelo.addRow(new Object[]{item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
+            modeloTabelaEditais.addRow(new Object[]{item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
                     item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto()});
         }
-        tabelaEditais = new JTable(modelo);
-        // Não deixa que as colunas sejam reordenadas, isso evita bugs no código.
-        tabelaEditais.getTableHeader().setReorderingAllowed(false);
-        mudarVisualDeTabela(tabelaEditais);
-
+        
     }
 
     public void atualizarValoresDaTabelaAluno() {
-        DefaultTableModel modelo = new DefaultTableModel() {
-            // Não deixar as células ser editáveis
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        if (modeloTabelaAlunos == null) return;
+        modeloTabelaAlunos.setRowCount(0);
 
-        String[] colunas = {"matricula", "nome", "email"};
-        for (String coluna : colunas) {
-            modelo.addColumn(coluna);
+        // Adiciona uma verificação para evitar NullPointerException se a lista for nula.
+        if (getCentral().getTodosOsAlunos() == null) {
+            return;
         }
 
         //Filtra as colunas que deseja colocar na tabela
         for (Aluno alguem : getCentral().getTodosOsAlunos()) {
-            modelo.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail()});
+            modeloTabelaAlunos.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail()});
         }
-        tabelaAlunos = new JTable(modelo);
-        // Não deixa que as colunas sejam reordenadas, isso evita bugs no código.
-        tabelaAlunos.getTableHeader().setReorderingAllowed(false);
-        mudarVisualDeTabela(tabelaAlunos);
+
     }
 
     /**
@@ -358,7 +355,7 @@ public class TelaPrincipal extends TelaBase {
 
             if (edital != null) {
                 TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(edital, getCentral(), getPersistencia(), getNomeArquivo());
-
+                telaDetalhes.addWindowListener(new OuvinteDoFechamentoDaJanela());
                 telaDetalhes.inicializar();
                 telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             } else {
@@ -379,10 +376,9 @@ public class TelaPrincipal extends TelaBase {
         }
 
         public void windowClosed(WindowEvent e) {
+            atualizarValoresDaTabelaEdital();
             atualizarValoresDaTabelaAluno();
-            tabelaAlunos.repaint();
         }
-
         public void windowIconified(WindowEvent e) {
 
         }
@@ -433,6 +429,9 @@ public class TelaPrincipal extends TelaBase {
             // Ajustar largura de colunas
             tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
             tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
+
+            // Impede que o usuário reordene as colunas, o que poderia quebrar a lógica de pegar valores por índice
+            tabela.getTableHeader().setReorderingAllowed(false);
         }
     }
 

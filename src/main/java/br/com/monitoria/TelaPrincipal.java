@@ -282,7 +282,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
         //Filtra as colunas que deseja colocar na tabela
         for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
             modeloTabelaEditais.addRow(new Object[]{item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
-                    item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto()});
+                    item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto() ? "aberto" : "FECHADO"});
         }
     }
 
@@ -424,7 +424,6 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
         public void actionPerformed(ActionEvent e) {
             TelaCadastrarEdital telaCadastrarEdital = new TelaCadastrarEdital(getCentral(), getPersistencia(), getNomeArquivo());
-            // O WindowListener não é mais necessário aqui para atualizar a tabela
             telaCadastrarEdital.inicializar();
             telaCadastrarEdital.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }

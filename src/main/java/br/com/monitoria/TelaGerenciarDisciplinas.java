@@ -78,7 +78,7 @@ public class TelaGerenciarDisciplinas extends TelaBase {
         JLabel labelRemuneradas = criarLabel("Vagas Remuneradas:", Estilos.FONTE_NORMAL);
         labelRemuneradas.setBounds(310, 130, 150, 40);
         painelPrincipal.add(labelRemuneradas);
-        spinnerVagasRemuneradas = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
+        spinnerVagasRemuneradas = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
         spinnerVagasRemuneradas.setBounds(450, 130, 100, 40);
         spinnerVagasRemuneradas.setFont(Estilos.FONTE_NORMAL);
         painelPrincipal.add(spinnerVagasRemuneradas);
@@ -86,7 +86,7 @@ public class TelaGerenciarDisciplinas extends TelaBase {
         JLabel labelVoluntarias = criarLabel("Vagas Voluntárias:", Estilos.FONTE_NORMAL);
         labelVoluntarias.setBounds(310, 180, 150, 40);
         painelPrincipal.add(labelVoluntarias);
-        spinnerVagasVoluntarias = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
+        spinnerVagasVoluntarias = new JSpinner(new SpinnerNumberModel(0, 0, 99, 1));
         spinnerVagasVoluntarias.setBounds(450, 180, 100, 40);
         spinnerVagasVoluntarias.setFont(Estilos.FONTE_NORMAL);
         painelPrincipal.add(spinnerVagasVoluntarias);
@@ -171,6 +171,7 @@ public class TelaGerenciarDisciplinas extends TelaBase {
             listModel.addElement(novaDisciplina);
 
             getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+            getCentral().forcarAtualizacaoObservadores(); // Notifica a TelaPrincipal
             mostrarSucesso("Disciplina adicionada com sucesso!");
             limparCampos();
         }
@@ -205,6 +206,7 @@ public class TelaGerenciarDisciplinas extends TelaBase {
                 selecionada.setVagasVoluntarias(novasVagasVol);
 
                 getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                getCentral().forcarAtualizacaoObservadores(); // Notifica a TelaPrincipal
                 mostrarSucesso("Alterações salvas com sucesso!");
                 listaDisciplinas.repaint(); // Para garantir que a exibição (se houver) seja atualizada
                 limparCampos();
@@ -244,6 +246,7 @@ public class TelaGerenciarDisciplinas extends TelaBase {
                 listModel.removeElement(selecionada);
 
                 getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                getCentral().forcarAtualizacaoObservadores(); // Notifica a TelaPrincipal
                 mostrarSucesso("Disciplina apagada com sucesso.");
                 limparCampos();
             }

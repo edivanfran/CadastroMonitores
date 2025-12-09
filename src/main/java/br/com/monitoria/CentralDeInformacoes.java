@@ -46,6 +46,15 @@ public class CentralDeInformacoes {
         }
     }
 
+    /**
+     * Força a notificação de todos os observadores.
+     * Útil quando uma alteração é feita em um objeto interno (como uma disciplina dentro de um edital)
+     * e a central precisa informar as telas para se atualizarem.
+     */
+    public void forcarAtualizacaoObservadores() {
+        notificarObservadores();
+    }
+
     public Coordenador getCoordenador() {
         return this.coordenador;
     }
@@ -91,6 +100,7 @@ public class CentralDeInformacoes {
             }
         }
         todosOsAlunos.add(aluno);
+        notificarObservadores(); // Notifica as telas sobre a adição do novo aluno
         return true; //TODO| pode ser interessante criar uma exceção para caso o aluno já exista (duplicata)
     }
 
@@ -145,6 +155,8 @@ public class CentralDeInformacoes {
             }
         }
         todosOsEditais.add(edital);
+        // Notifica as telas que um novo edital foi adicionado
+        notificarObservadores();
         return true;
     }
 
@@ -162,6 +174,8 @@ public class CentralDeInformacoes {
         if (!adicionarEdital(edital)) {
             throw new IllegalArgumentException("Já existe um edital com o mesmo ID.");
         }
+        // Notifica as telas após o cadastro bem-sucedido
+        notificarObservadores();
     }
 
     /**

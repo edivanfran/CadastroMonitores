@@ -1,7 +1,7 @@
 package br.com.monitoria;
 
 import java.util.ArrayList;
-import main.java.br.com.monitoria.excecoes.*;
+import br.com.monitoria.excecoes.*;
 
 /**
  * <p>Representa o usuário atribuído na central de informações como o Coordenador do Curso.

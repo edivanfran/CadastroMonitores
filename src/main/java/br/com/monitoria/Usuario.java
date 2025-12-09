@@ -1,6 +1,6 @@
 package br.com.monitoria;
 
-import main.java.br.com.monitoria.excecoes.LoginInvalidoException;
+import br.com.monitoria.excecoes.LoginInvalidoException;
 
 /**
  * Abstração que representa usuários cadastrados em uma central de informações.

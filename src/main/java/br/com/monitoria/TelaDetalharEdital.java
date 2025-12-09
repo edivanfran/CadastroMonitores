@@ -9,10 +9,10 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import main.java.br.com.monitoria.excecoes.EditalAbertoException;
-import main.java.br.com.monitoria.excecoes.EditalFechadoException;
-import main.java.br.com.monitoria.excecoes.PermissaoNegadaException;
-import main.java.br.com.monitoria.excecoes.PrazoVencidoException;
+import br.com.monitoria.excecoes.EditalAbertoException;
+import br.com.monitoria.excecoes.EditalFechadoException;
+import br.com.monitoria.excecoes.PermissaoNegadaException;
+import br.com.monitoria.excecoes.PrazoVencidoException;
 
 public class TelaDetalharEdital extends TelaEditalBase {
 

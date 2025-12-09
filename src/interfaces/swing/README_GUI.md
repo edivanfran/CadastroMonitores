@@ -26,12 +26,12 @@
 Coloque o arquivo `logo.png` na raiz do projeto (mesma pasta onde está o `src`).
 
 ### 2. Inicializar a GUI
-No seu `main.java.br.com.monitoria.Main.java`, substitua ou adicione:
+No seu `main.java.br.com.monitoria.Inscricao.Main.java`, substitua ou adicione:
 
 ```java
 import interfaces.swing.main.java.br.com.monitoria.InicializadorGUI;
 
-public class main.java.br.com.monitoria.Main {
+public class main.java.br.com.monitoria.Inscricao.Main {
     public static void main(String[] args) {
         // ... seu código existente para carregar central e persistencia ...
 

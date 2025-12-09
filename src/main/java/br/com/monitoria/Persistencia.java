@@ -7,29 +7,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.GeneralSecurityException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 /**
  * Utilitário que proporciona a possibilidade de serialização e desserialização de objetos {@link CentralDeInformacoes}.
+ * Agora com integração ao Google Drive.
  */
 public class Persistencia {
     private XStream xstream = new XStream(new DomDriver());
 
-    public Persistencia() { // Configuração inicial do persistidor
-        XStream.setupDefaultSecurity(xstream); //TODO| substituir, pois esse método está depreciado/obsolto
-        xstream.allowTypes(new Class[] { // Permitir os tipos usados no projeto para desserialização segura
-            CentralDeInformacoes.class,
-            Aluno.class,
-            Coordenador.class,
-            Usuario.class,
-            EditalDeMonitoria.class,
-            Disciplina.class,
-            Inscricao.class,
-            Sexo.class,
-            Vaga.class,
-            LocalDate.class,
-            ArrayList.class
+    public Persistencia() {
+        XStream.setupDefaultSecurity(xstream);
+        xstream.allowTypes(new Class[] {
+            CentralDeInformacoes.class, Aluno.class, Coordenador.class, Usuario.class,
+            EditalDeMonitoria.class, Disciplina.class, Inscricao.class,
+            Sexo.class, Vaga.class, LocalDate.class, ArrayList.class
         });
         xstream.alias("central", CentralDeInformacoes.class);
         xstream.alias("aluno", Aluno.class);
@@ -40,40 +34,53 @@ public class Persistencia {
     }
 
     /**
-     * Serializa as informações armazenadas no {@link CentralDeInformacoes} para XML, e então salva-as em um arquivo no diretório atual do programa.
-     * @param cDI O objeto que será serializado
-     * @param nomeArquivo O nome do arquivo onde o XML será escrito
+     * Serializa a CentralDeInformacoes para XML, salva localmente e depois envia para o Google Drive.
+     * @param cDI O objeto a ser serializado
+     * @param nomeArquivo O nome do arquivo (sem extensão)
      */
     public void salvarCentral(CentralDeInformacoes cDI, String nomeArquivo) {
-        String caminho = System.getProperty("user.dir") + File.separator + nomeArquivo + ".xml"; /* `user.dir` → diretório atual */
+        String nomeCompleto = nomeArquivo + ".xml";
+        String caminho = System.getProperty("user.dir") + File.separator + nomeCompleto;
         File arquivo = new File(caminho);
         String xml = xstream.toXML(cDI);
-        try {
-            if (!arquivo.exists()) {
-                arquivo.createNewFile();
-            }
-            PrintWriter gravar = new PrintWriter(arquivo);
+
+        try (PrintWriter gravar = new PrintWriter(arquivo)) {
             gravar.println(xml);
-            gravar.close();
             System.out.println("Central salva com sucesso em: " + caminho);
+
+            // Após salvar localmente, envia para o Google Drive
+            DriveService.enviarArquivo(arquivo);
+
         } catch (IOException e) {
-            System.out.println("[Erro] Não foi possível salvar a central: " + e.getMessage());
-            e.printStackTrace(); //TODO| é mais apropriado usar um modal com mensagem de erro
+            System.out.println("[Erro] Não foi possível salvar a central localmente: " + e.getMessage());
+            e.printStackTrace();
+        } catch (GeneralSecurityException e) {
+            System.out.println("[Erro] Falha de segurança ao tentar enviar para o Google Drive: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     /**
-     * Lê as informações escritas no arquivo e tenta desserializá-las para recuperar o {@link CentralDeInformacoes} que foi serializado anteriormente.
-     * <p>Caso não consiga desserializar, ou caso o arquivo não exista, instancia um novo objeto desse tipo.</p>
-     * @param nomeArquivo O nome do arquivo a ser lido
-     * @return O objeto central que estava no arquivo, ou um recém-instanciado
+     * Baixa a CentralDeInformacoes do Google Drive, e depois a desserializa.
+     * Se não encontrar no Drive, tenta carregar uma versão local. Se falhar, cria uma nova.
+     * @param nomeArquivo O nome do arquivo (sem extensão)
+     * @return O objeto CentralDeInformacoes
      */
     public CentralDeInformacoes recuperarCentral(String nomeArquivo) {
-        String caminho = System.getProperty("user.dir") + File.separator + nomeArquivo + ".xml";
+        String nomeCompleto = nomeArquivo + ".xml";
+        String caminho = System.getProperty("user.dir") + File.separator + nomeCompleto;
         File arquivo = new File(caminho);
 
+        try {
+            // Tenta baixar a versão mais recente do Google Drive primeiro
+            DriveService.baixarArquivo(nomeCompleto, caminho);
+        } catch (IOException | GeneralSecurityException e) {
+            System.out.println("[Aviso] Não foi possível baixar o arquivo do Google Drive: " + e.getMessage());
+            System.out.println("Tentando carregar a versão local, se existir...");
+        }
+
         if (!arquivo.exists()) {
-            System.out.println("[Aviso] Arquivo não encontrado: " + caminho + ". Criando nova Central...");
+            System.out.println("[Aviso] Arquivo local não encontrado: " + caminho + ". Criando nova Central...");
             return new CentralDeInformacoes();
         }
 
@@ -87,9 +94,10 @@ public class Persistencia {
                 System.out.println("[Erro] O XML não contém uma Central de Informações válida.");
             }
         } catch (Exception e) {
-            System.out.println("[Erro] Não foi possível recuperar central: " + e.getMessage());
+            System.out.println("[Erro] Não foi possível recuperar a central do arquivo local: " + e.getMessage());
             e.printStackTrace();
         }
+
         System.out.println("Criando nova Central...");
         return new CentralDeInformacoes();
     }

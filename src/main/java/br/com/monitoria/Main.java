@@ -48,7 +48,7 @@ public class Main {
                 System.out.println("  \"" + arquivo.getName() + "\"");
             }
             System.out.println("-------------------------------");
-            System.out.print("Digite o nome do arquivo da Central que deseja recuperar, ou forneça um nome para criar uma nova Central\n» ");
+            System.out.print("Espere um momento estamos pegar arquivo da nuvem » ");
 //           nomeArquivo = sc.nextLine().strip();
             nomeArquivo = "central".toUpperCase();
             central = persistencia.recuperarCentral(nomeArquivo);

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import br.com.monitoria.excecoes.*;
 
 /**
@@ -51,11 +52,13 @@ public class EditalDeMonitoria {
     public void setAberto(boolean aberto) {
         this.aberto = aberto;
     }
-    public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite, ArrayList<Disciplina> disciplinas,
-                             boolean aberto, double pesoCre, double pesoNota,
-                             ArrayList<Inscricao> inscricoes, Map<String, ArrayList<Inscricao>> ranque,
-                             boolean resultadoCalculado) {
-        this.id = System.currentTimeMillis();
+
+    /**
+     * Construtor privado para uso interno do método clonar.
+     */
+    private EditalDeMonitoria(long id, String numero, LocalDate dataInicio, LocalDate dataLimite,
+                              ArrayList<Disciplina> disciplinas, boolean aberto, double pesoCre, double pesoNota) {
+        this.id = id;
         this.numero = numero;
         this.dataInicio = dataInicio;
         this.dataLimite = dataLimite;
@@ -63,9 +66,10 @@ public class EditalDeMonitoria {
         this.aberto = aberto;
         this.pesoCre = pesoCre;
         this.pesoNota = pesoNota;
-        this.inscricoes = inscricoes;
-        this.ranquePorDisciplina = ranque;
-        this.resultadoCalculado = resultadoCalculado;
+        this.inscricoes = new ArrayList<>();
+        this.ranquePorDisciplina = new HashMap<>();
+        this.resultadoCalculado = false;
+        this.periodoDesistenciaEncerrado = false;
     }
 
     /**
@@ -261,9 +265,31 @@ public class EditalDeMonitoria {
        resultadoCalculado = true;
        System.out.println("Resultado calculado com sucesso para " + ranquePorDisciplina.size() + " disciplina(s).");
    }
+
+    /**
+     * Cria um clone deste edital.
+     * O edital clonado terá um novo ID, um número com o sufixo "- Cópia",
+     * e começará com a lista de inscrições e resultados zerados.
+     * As disciplinas são clonadas para evitar compartilhamento de referências.
+     * @return Uma nova instância de EditalDeMonitoria.
+     */
     public EditalDeMonitoria clonar() {
-        return new EditalDeMonitoria(numero, dataInicio, dataLimite, disciplinas,aberto, pesoCre, pesoNota,
-                inscricoes, ranquePorDisciplina, resultadoCalculado);
+        // Cria uma cópia profunda da lista de disciplinas
+        ArrayList<Disciplina> disciplinasClonadas = this.disciplinas.stream()
+                .map(Disciplina::clonar)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        // Cria o novo edital com um novo ID e número, mas com as mesmas configurações
+        return new EditalDeMonitoria(
+                System.currentTimeMillis(),
+                this.numero + " - Cópia",
+                this.dataInicio,
+                this.dataLimite,
+                disciplinasClonadas,
+                true, // Um edital clonado sempre começa aberto
+                this.pesoCre,
+                this.pesoNota
+        );
     }
 
     /**

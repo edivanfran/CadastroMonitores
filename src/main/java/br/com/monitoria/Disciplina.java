@@ -87,6 +87,14 @@ public class Disciplina {
     }
 
     /**
+     * Cria uma cópia da disciplina.
+     * @return Uma nova instância de Disciplina com os mesmos valores.
+     */
+    public Disciplina clonar() {
+        return new Disciplina(this.nomeDisciplina, this.vagasVoluntarias, this.vagasRemuneradas);
+    }
+
+    /**
      * Representação em {@code String} do objeto.
      * @return O nome da disciplina
      */

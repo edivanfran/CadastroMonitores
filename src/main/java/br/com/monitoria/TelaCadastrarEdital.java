@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import br.com.monitoria.excecoes.PesosInvalidosException;
 
 public class TelaCadastrarEdital extends TelaEditalBase {
 
@@ -73,7 +74,8 @@ public class TelaCadastrarEdital extends TelaEditalBase {
             }
 
             try {
-                String numeroEdital = "Placeholder_";
+                // Usando o número do edital do campo de texto, se houver um
+                String numeroEdital = "Edital " + (getCentral().getTodosOsEditais().size() + 1);
                 EditalDeMonitoria novoEdital = new EditalDeMonitoria(
                         numeroEdital,
                         dataInicioFormatada,
@@ -82,16 +84,14 @@ public class TelaCadastrarEdital extends TelaEditalBase {
                         (Double) pesoNota.getValue()
                 );
 
-                // Adicionar disciplinas (funcionalidade a ser expandida)
-                // Por enquanto, o edital está sendo criado sem disciplinas.
-
-
                 getCentral().adicionarEdital(novoEdital);
                 getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                // Notifica a TelaPrincipal
+                getCentral().notificarObservadores();
                 mostrarSucesso("Edital cadastrado com sucesso!");
 
                 voltarParaTelaPrincipal();
-            } catch (Exception ex) {
+            } catch (PesosInvalidosException ex) {
                 mostrarErro("Erro ao cadastrar edital: " + ex.getMessage());
             }
         }

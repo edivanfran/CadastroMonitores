@@ -1,7 +1,9 @@
 package br.com.monitoria;
 
+import br.com.monitoria.interfaces.Observador;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import br.com.monitoria.excecoes.*;
@@ -18,7 +20,31 @@ public class CentralDeInformacoes {
     private ArrayList<Aluno> todosOsAlunos = new ArrayList<>();
     private ArrayList<EditalDeMonitoria> todosOsEditais = new ArrayList<>();
     private transient Map<String, String> codigosRecuperacao = new HashMap<>();
+    private transient List<Observador> observadores = new ArrayList<>();
 
+    /**
+     * Adiciona um observador à lista.
+     * Observadores são notificados quando os dados da central mudam.
+     * @param observador O observador a ser adicionado.
+     */
+    public void adicionarObservador(Observador observador) {
+        if (this.observadores == null) {
+            this.observadores = new ArrayList<>();
+        }
+        this.observadores.add(observador);
+    }
+
+    /**
+     * Notifica todos os observadores registrados que uma mudança ocorreu.
+     */
+    public void notificarObservadores() {
+        if (this.observadores == null) {
+            return; // Nenhum observador para notificar
+        }
+        for (Observador observador : this.observadores) {
+            observador.atualizar();
+        }
+    }
 
     public Coordenador getCoordenador() {
         return this.coordenador;

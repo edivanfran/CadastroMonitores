@@ -1,5 +1,6 @@
 package br.com.monitoria;
 
+import br.com.monitoria.interfaces.Observador;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -19,7 +20,7 @@ import java.time.format.DateTimeFormatter;
  * Tela principal do sistema.
  * Apresenta as funcionalidades em um menu lateral com abas.
  */
-public class TelaPrincipal extends TelaBase {
+public class TelaPrincipal extends TelaBase implements Observador {
 
     private JTabbedPane menuAbas;
     private JScrollPane painelTabelaEditais;
@@ -44,6 +45,17 @@ public class TelaPrincipal extends TelaBase {
 
     public TelaPrincipal(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
         super("Sistema de Cadastro de Monitores", central, persistencia, nomeArquivo);
+        // Registra a TelaPrincipal como um observador da CentralDeInformacoes
+        getCentral().adicionarObservador(this);
+    }
+
+    @Override
+    public void atualizar() {
+        // Este método será chamado pela CentralDeInformacoes quando os dados mudarem
+        atualizarValoresDaTabelaEdital();
+        if (isCoordenador()) {
+            atualizarValoresDaTabelaAluno();
+        }
     }
 
     @Override
@@ -396,7 +408,7 @@ public class TelaPrincipal extends TelaBase {
 
             if (edital != null) {
                 TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(edital, getCentral(), getPersistencia(), getNomeArquivo());
-                telaDetalhes.addWindowListener(new OuvinteDoFechamentoDaJanela());
+                // O WindowListener não é mais necessário aqui para atualizar a tabela
                 telaDetalhes.inicializar();
                 telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             } else {
@@ -405,26 +417,14 @@ public class TelaPrincipal extends TelaBase {
         }
     }
 
-    public class OuvinteDoFechamentoDaJanela implements WindowListener {
-        public void windowOpened(WindowEvent e) {}
-        public void windowClosing(WindowEvent e) {}
-        public void windowClosed(WindowEvent e) {
-            atualizarValoresDaTabelaEdital();
-            if (isCoordenador()) {
-                atualizarValoresDaTabelaAluno();
-            }
-        }
-        public void windowIconified(WindowEvent e) {}
-        public void windowDeiconified(WindowEvent e) {}
-        public void windowActivated(WindowEvent e) {}
-        public void windowDeactivated(WindowEvent e) {}
-    }
+    // Este listener agora está obsoleto e pode ser removido.
+    // public class OuvinteDoFechamentoDaJanela implements WindowListener { ... }
 
     public class OuvinteBotaoCadastrarEdital implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
             TelaCadastrarEdital telaCadastrarEdital = new TelaCadastrarEdital(getCentral(), getPersistencia(), getNomeArquivo());
-            telaCadastrarEdital.addWindowListener(new OuvinteDoFechamentoDaJanela());
+            // O WindowListener não é mais necessário aqui para atualizar a tabela
             telaCadastrarEdital.inicializar();
             telaCadastrarEdital.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }

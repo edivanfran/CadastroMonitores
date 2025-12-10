@@ -80,8 +80,6 @@ public class CentralDeInformacoes {
     public void cadastrarCoordenador(String email, String senha, String nome) {
         this.coordenador = new Coordenador(email, senha, nome);
     }
-    //TODO| seria mais interessante que o método só recebesse já o objeto, ex.: `cadastrarCoordenador(Coordenador c)`
-
     /**
      * Verifica se já foi atribuído algum {@link Coordenador} à central.
      */
@@ -117,22 +115,6 @@ public class CentralDeInformacoes {
         }
         return null; //TODO| criar exceção para caso não consiga recuperar o aluno, ao invés de apenas usar `null`
     }
-
-    /**
-     * Recupera e imprime a lista de editais.
-     * <p>Se a lista estiver vazia, imprime "Lista vazia"</p>
-     * @see EditalDeMonitoria
-     */
-    public void mostrarIdEditais() {
-        if (todosOsEditais.isEmpty()) {
-            System.out.println("Lista vazia");
-            return;
-        }
-        for (EditalDeMonitoria edital : todosOsEditais) {
-            System.out.printf("Disciplina: %s Id: %s \n", edital.getDisciplinas(), edital.getId());
-        }
-    }
-
     /**
      * Tenta recuperar um edital específico.
      * @param id ID do edital
@@ -221,7 +203,8 @@ public class CentralDeInformacoes {
     /**
      * Gera e armazena um código de recuperação para um determinado e-mail.
      * @param email O e-mail para o qual o código será gerado.
-     * @return O código de 6 dígitos gerado, ou null se o e-mail não for encontrado.
+     * @return O código de 6 dígitos gerado, ou null se o e-mail nã
+     * o for encontrado.
      */
     public String gerarCodigoRecuperacao(String email) {
         Usuario usuario = getUsuarioPorEmail(email);
@@ -259,7 +242,7 @@ public class CentralDeInformacoes {
                 return true;
             }
         }
-        return false;
+        return false;  // TODO: CRIAR EXCEÇÃO
     }
 
     /**

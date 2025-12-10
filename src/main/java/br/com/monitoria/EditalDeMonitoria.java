@@ -162,22 +162,21 @@ public class EditalDeMonitoria {
 
     /**
      * Inscreve um aluno em uma disciplina do edital.
-     * <p>Primeiro testa se o edital continua aberto – se não, lança {@link EditalFechadoException};</p>
-     * <p>continuando aberto, verifica se está dentro do prazo de inscrição no edital – se não, lança {@link PrazoInscricaoVencidoException};</p>
-     * <p>estando dentro do prazo, cria uma inscrição com o CRE e a nota (média na disciplina) fornecidos pelo aluno.</p>
-     * <p>Caso não encontre a disciplina— lança {@link DisciplinaNaoEncontradaException}.</p>
      * @param aluno O aluno que se deseja inscrever no edital
      * @param nomeDisciplina O nome da disciplina do edital a qual aluno deseja concorrer
      * @param cre O CRE do aluno
      * @param nota A média do aluno na disciplina específica
      * @param tipoVaga O tipo de vaga (remunerada ou voluntária)
+     * @param ordemPreferencia A ordem de preferência da disciplina para o aluno
+     * @param preferenciaVaga A preferência do aluno pelo tipo de vaga
      * @throws EditalFechadoException Se o edital estiver fechado
      * @throws PrazoInscricaoVencidoException Se o prazo de inscrição tiver vencido
      * @throws DisciplinaNaoEncontradaException Se a disciplina não for encontrada no edital
-     * @throws ValoresInvalidosException Se o CRE ou a nota estiverem fora do intervalo válido (0-10)
+     * @throws ValoresInvalidosException Se o CRE ou a nota estiverem fora do intervalo válido (0-100)
+     * @throws VagasEsgotadasException se não houver mais vagas do tipo solicitado.
      */
-   public void inscreverAluno(Aluno aluno, String nomeDisciplina, double cre, double nota, Vaga tipoVaga) 
-           throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException {
+   public void inscreverAluno(Aluno aluno, String nomeDisciplina, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga)
+           throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException, VagasEsgotadasException {
        if (!aberto) {
            throw new EditalFechadoException(numero);
        }
@@ -195,15 +194,14 @@ public class EditalDeMonitoria {
        
        for (Disciplina d : disciplinas) {
            if (d.getNomeDisciplina().equalsIgnoreCase(nomeDisciplina)) {
-               // Cria a inscrição
-               Inscricao inscricao = new Inscricao(aluno, d, cre, nota, tipoVaga);
-               inscricoes.add(inscricao);
-               
-               // Adiciona o aluno na lista da disciplina (para compatibilidade com código existente)
+               // Tenta adicionar o aluno na disciplina (pode lançar VagasEsgotadasException)
                d.adicionarAluno(aluno, tipoVaga);
                
-               System.out.println("Aluno " + aluno.getNome() + " inscrito na disciplina " + nomeDisciplina + 
-                       " (CRE: " + cre + ", Nota: " + nota + ", Vaga: " + tipoVaga + ")");
+               // Se não lançou exceção, a vaga foi garantida. Cria a inscrição.
+               Inscricao inscricao = new Inscricao(aluno, d, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);
+               inscricoes.add(inscricao);
+               
+               System.out.println("Inscrição de " + aluno.getNome() + " em " + nomeDisciplina + " (" + tipoVaga + ") confirmada.");
                return;
            }
        }
@@ -235,29 +233,64 @@ public class EditalDeMonitoria {
        System.out.println("Calculando resultado do edital " + numero + "...");
        ranquePorDisciplina.clear();
 
-       // Agrupa inscrições por disciplina
+       // 1. Agrupa inscrições por disciplina
        Map<String, ArrayList<Inscricao>> inscricoesPorDisciplina = new HashMap<>();
        for (Inscricao inscricao : inscricoes) {
            if (inscricao.isDesistiu()) {
                continue; // Ignora inscrições desistidas
            }
            String nomeDisciplina = inscricao.getDisciplina().getNomeDisciplina();
-           inscricoesPorDisciplina.putIfAbsent(nomeDisciplina, new ArrayList<>());
-           inscricoesPorDisciplina.get(nomeDisciplina).add(inscricao);
+           inscricoesPorDisciplina.computeIfAbsent(nomeDisciplina, k -> new ArrayList<>()).add(inscricao);
        }
 
-       // Calcula pontuação e ordena por disciplina
+       // 2. Itera sobre cada disciplina para calcular o ranque e alocar vagas
        for (Map.Entry<String, ArrayList<Inscricao>> entry : inscricoesPorDisciplina.entrySet()) {
            String nomeDisciplina = entry.getKey();
            ArrayList<Inscricao> inscricoesDisciplina = entry.getValue();
+           Disciplina disciplina = inscricoesDisciplina.get(0).getDisciplina();
 
-           // Calcula a pontuação para cada inscrição
+           // 3. Calcula a pontuação e ordena a lista de inscritos
            for (Inscricao inscricao : inscricoesDisciplina) {
                inscricao.calcularPontuacao(pesoCre, pesoNota);
            }
-
-           // Ordena as inscrições por pontuação (decrescente)
            inscricoesDisciplina.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
+
+           // 4. Aloca os alunos nas vagas (Resultado Definitivo)
+           int vagasRemuneradasRestantes = disciplina.getVagasRemuneradas();
+           int vagasVoluntariasRestantes = disciplina.getVagasVoluntarias();
+
+           for (Inscricao inscricao : inscricoesDisciplina) {
+               PreferenciaInscricao pref = inscricao.getPreferenciaVaga();
+               boolean conseguiuVaga = false;
+
+               if (pref == PreferenciaInscricao.SOMENTE_REMUNERADA) {
+                   if (vagasRemuneradasRestantes > 0) {
+                       inscricao.setTipoVaga(Vaga.REMUNERADA);
+                       vagasRemuneradasRestantes--;
+                       conseguiuVaga = true;
+                   }
+               } else if (pref == PreferenciaInscricao.REMUNERADA_OU_VOLUNTARIA) {
+                   if (vagasRemuneradasRestantes > 0) {
+                       inscricao.setTipoVaga(Vaga.REMUNERADA);
+                       vagasRemuneradasRestantes--;
+                       conseguiuVaga = true;
+                   } else if (vagasVoluntariasRestantes > 0) {
+                       inscricao.setTipoVaga(Vaga.VOLUNTARIA);
+                       vagasVoluntariasRestantes--;
+                       conseguiuVaga = true;
+                   }
+               } else if (pref == PreferenciaInscricao.SOMENTE_VOLUNTARIA) {
+                   if (vagasVoluntariasRestantes > 0) {
+                       inscricao.setTipoVaga(Vaga.VOLUNTARIA);
+                       vagasVoluntariasRestantes--;
+                       conseguiuVaga = true;
+                   }
+               }
+
+               if (!conseguiuVaga) {
+                   inscricao.setTipoVaga(null); // Define como Excedente
+               }
+           }
 
            ranquePorDisciplina.put(nomeDisciplina, inscricoesDisciplina);
        }
@@ -329,26 +362,10 @@ public class EditalDeMonitoria {
      */
     private void recalcularResultado() {
         System.out.println("Recalculando resultado do edital " + numero + " após desistência...");
-        ranquePorDisciplina.clear();
-
-        Map<String, ArrayList<Inscricao>> inscricoesPorDisciplina = new HashMap<>();
-        for (Inscricao inscricao : inscricoes) {
-            if (inscricao.isDesistiu()) {
-                continue; // Ignora inscrições desistidas
-            }
-            String nomeDisciplina = inscricao.getDisciplina().getNomeDisciplina();
-            inscricoesPorDisciplina.putIfAbsent(nomeDisciplina, new ArrayList<>());
-            inscricoesPorDisciplina.get(nomeDisciplina).add(inscricao);
-        }
-
-        for (Map.Entry<String, ArrayList<Inscricao>> entry : inscricoesPorDisciplina.entrySet()) {
-            String nomeDisciplina = entry.getKey();
-            ArrayList<Inscricao> inscricoesDisciplina = entry.getValue();
-
-            // A pontuação já foi calculada, apenas reordenamos
-            inscricoesDisciplina.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
-
-            ranquePorDisciplina.put(nomeDisciplina, inscricoesDisciplina);
+        try {
+            calcularResultado();
+        } catch (EditalAbertoException | SemInscricoesException e) {
+            System.out.println("[Erro Interno] Falha ao recalcular resultado: " + e.getMessage());
         }
         System.out.println("Resultado recalculado com sucesso.");
     }
@@ -393,18 +410,20 @@ public class EditalDeMonitoria {
 
        StringBuilder sb = new StringBuilder();
        sb.append("=== RANQUE - ").append(nomeDisciplina).append(" ===\n");
-       sb.append(String.format("%-5s %-30s %-10s %-10s %-10s\n", "Pos.", "Aluno", "CRE", "Nota", "Pontuação"));
-       sb.append("------------------------------------------------------------\n");
+       sb.append(String.format("%-5s %-30s %-10s %-10s %-10s %-15s\n", "Pos.", "Aluno", "CRE", "Nota", "Pontuação", "Vaga"));
+       sb.append("--------------------------------------------------------------------------\n");
 
        int posicao = 1;
        for (Inscricao inscricao : ranque) {
            double pontuacao = inscricao.getPontuacaoFinal();
-           sb.append(String.format("%-5d %-30s %-10.2f %-10.2f %-10.2f\n",
+           String status = inscricao.getTipoVaga() != null ? inscricao.getTipoVaga().toString() : "Excedente";
+           sb.append(String.format("%-5d %-30s %-10.2f %-10.2f %-10.2f %-15s\n",
                    posicao++,
                    inscricao.getAluno().getNome(),
                    inscricao.getCre(),
                    inscricao.getNota(),
-                   pontuacao));
+                   pontuacao,
+                   status));
        }
 
        return sb.toString();

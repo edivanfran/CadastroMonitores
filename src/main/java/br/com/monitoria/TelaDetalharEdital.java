@@ -16,6 +16,7 @@ import br.com.monitoria.excecoes.PrazoVencidoException;
 
 public class TelaDetalharEdital extends TelaEditalBase {
 
+    // Botões do Coordenador
     private JButton botaoVerInscritos;
     private JButton botaoEncerrarReabrir;
     private JButton botaoEditarEdital;
@@ -23,6 +24,8 @@ public class TelaDetalharEdital extends TelaEditalBase {
     private JButton botaoEditarDisciplina;
     private JButton botaoSalvar;
     private JButton botaoCancelar;
+
+    // Botão do Aluno
     private JButton botaoInscrever;
 
     public TelaDetalharEdital(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
@@ -45,8 +48,8 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
 
     private void criarBotoes() {
-        // Botões visíveis apenas para o Coordenador
         if (isCoordenador()) {
+            // Botões visíveis apenas para o Coordenador
             botaoVerInscritos = criarBotao("Ver Inscritos", new OuvinteBotaoVerInscritos());
             botaoVerInscritos.setBounds(430, 170, 180, 40);
             botaoVerInscritos.setBackground(Estilos.COR_AVISO);
@@ -83,12 +86,15 @@ public class TelaDetalharEdital extends TelaEditalBase {
             botaoCancelar.setBackground(Estilos.COR_CINZA);
             botaoCancelar.setVisible(false);
             painelPrincipal.add(botaoCancelar);
-        } else {
-            botaoInscrever = criarBotao("Inscrever-se", new OuvinteBotaoInscreverEdital());
-            botaoInscrever.setBounds(280, 390, 120, 40);
-            painelPrincipal.add(botaoInscrever);
+        } else if (isAluno()) {
+            // Botão visível apenas para o Aluno
+            if (edital.isAberto() && !edital.jaAcabou()) {
+                botaoInscrever = criarBotao("Inscrever-se neste Edital", new OuvinteBotaoInscrever());
+                botaoInscrever.setBounds(200, 390, 250, 40);
+                botaoInscrever.setBackground(Estilos.COR_SUCESSO);
+                painelPrincipal.add(botaoInscrever);
+            }
         }
-        // Nenhum botão será criado se o usuário for um aluno
     }
 
     private void atualizarBotaoEncerramento() {
@@ -131,6 +137,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
         }
     }
 
+    // Ouvintes de botões do Coordenador...
     private class OuvinteBotaoEditar implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             tornarCamposEditaveis(true);
@@ -141,7 +148,6 @@ public class TelaDetalharEdital extends TelaEditalBase {
     private class OuvinteBotaoVerInscritos implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // mas mantemos a verificação aqui por segurança.
             if (!isCoordenador()) {
                 mostrarErro("Apenas coordenadores podem visualizar a lista de inscritos.");
                 return;
@@ -287,6 +293,15 @@ public class TelaDetalharEdital extends TelaEditalBase {
 
             tornarCamposEditaveis(false);
             mudarVisibilidadeBotoes(false);
+        }
+    }
+
+    // Ouvinte do botão do Aluno
+    private class OuvinteBotaoInscrever implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            TelaInscreverEmEditalAluno telaInscricao = new TelaInscreverEmEditalAluno(edital, getCentral(), getPersistencia(), getNomeArquivo());
+            telaInscricao.setVisible(true);
         }
     }
 }

@@ -1,5 +1,6 @@
 package br.com.monitoria;
 
+import br.com.monitoria.excecoes.VagasEsgotadasException;
 import java.util.ArrayList;
 
 /**
@@ -58,31 +59,26 @@ public class Disciplina {
 
 
     /**
-     * Verifica se a quantidade de vagas é inferior ao número de alunos já inscritos para a modalidade de vagas que o aluno deseja.
-     * <p>Se sim, então o aluno é adicionado na lista de alunos inscritos, e imprime uma mensagem de êxito; se não, imprime uma mensagem de erro.</p>
+     * Adiciona um aluno a uma vaga, se houver disponibilidade.
      * @param aluno O aluno que deseja se adicionar
      * @param vaga A modalidade da vaga, podendo ser {@code REMUNERADA} ou {@code VOLUNTARIA}
+     * @throws VagasEsgotadasException se não houver mais vagas do tipo solicitado.
      */
-    public void adicionarAluno(Aluno aluno, Vaga vaga) {
+    public void adicionarAluno(Aluno aluno, Vaga vaga) throws VagasEsgotadasException {
         if (vaga == Vaga.REMUNERADA) {
             if (alunosRemuneradosInscritos.size() < vagasRemuneradas) {
                 alunosRemuneradosInscritos.add(aluno);
-                System.out.println("Aluno " + aluno.getNome() + " inscrito em " + nomeDisciplina);
+                System.out.println("Aluno " + aluno.getNome() + " inscrito em " + nomeDisciplina + " (Remunerada)");
             } else {
-                System.out.println("Não há mais vagas remuneradas em " + nomeDisciplina);
-                //TODO| Se não tiver mais vagas disponíveis tem que lançar.
+                throw new VagasEsgotadasException(nomeDisciplina, vaga);
             }
         } else if (vaga == Vaga.VOLUNTARIA) {
             if (alunosVoluntariosInscritos.size() < vagasVoluntarias) {
                 alunosVoluntariosInscritos.add(aluno);
-                System.out.println("Aluno " + aluno.getNome() + " inscrito em " + nomeDisciplina);
+                System.out.println("Aluno " + aluno.getNome() + " inscrito em " + nomeDisciplina + " (Voluntária)");
             } else {
-                System.out.println("Não há mais vagas voluntarias em " + nomeDisciplina);
-                //TODO| Se não tiver mais vagas disponíveis tem que lançar.
+                throw new VagasEsgotadasException(nomeDisciplina, vaga);
             }
-        } else {
-            System.out.println("Vaga não identificada");
-            //TODO| Se não identificou a vaga escolhida retornar uma exceção.
         }
     }
 

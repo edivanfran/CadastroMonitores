@@ -1,9 +1,12 @@
 package br.com.monitoria;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class TelaPerfilAluno extends TelaBase {
 
@@ -19,15 +22,20 @@ public class TelaPerfilAluno extends TelaBase {
     private JButton botaoSalvar;
     private JButton botaoCancelar;
 
+    // Componentes para o histórico
+    private JTable tabelaHistorico;
+    private DefaultTableModel modeloTabelaHistorico;
+    private JScrollPane painelTabelaHistorico;
+
     public TelaPerfilAluno(Aluno aluno, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
         super("Perfil do Aluno", central, persistencia, nomeArquivo);
         this.aluno = aluno;
 
-        // Sobrescreve o tamanho padrão da TelaBase
-        setSize(700, 500);
-        // Fecha apenas esta janela
+        // Aumentei a altura para caber a tabela
+        setSize(700, 650);
+        setResizable(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null); // Centraliza novamente após mudar o tamanho
+        setLocationRelativeTo(null);
 
         inicializar();
     }
@@ -36,8 +44,10 @@ public class TelaPerfilAluno extends TelaBase {
     protected void criarComponentes() {
         criarLabels();
         criarCampos();
+        criarTabelaHistorico(); // Novo método
         criarBotoes();
         preencherCampos();
+        carregarHistorico();
         alternarModoEdicao(false);
     }
 
@@ -49,45 +59,70 @@ public class TelaPerfilAluno extends TelaBase {
 
         JLabel email = new JLabel("E-mail:");
         email.setFont(Estilos.FONTE_NORMAL);
-        email.setBounds(40, 100, 100, 40);
+        email.setBounds(40, 80, 100, 30);
         painelPrincipal.add(email);
 
         JLabel senha = new JLabel("Senha:");
         senha.setFont(Estilos.FONTE_NORMAL);
-        senha.setBounds(40, 160, 100, 40);
+        senha.setBounds(40, 130, 100, 30);
         painelPrincipal.add(senha);
 
         JLabel matricula = new JLabel("Matrícula:");
         matricula.setFont(Estilos.FONTE_NORMAL);
-        matricula.setBounds(40, 220, 100, 40);
+        matricula.setBounds(40, 180, 100, 30);
         painelPrincipal.add(matricula);
 
         JLabel genero = new JLabel("Gênero:");
         genero.setFont(Estilos.FONTE_NORMAL);
-        genero.setBounds(40, 280, 100, 40);
+        genero.setBounds(40, 230, 100, 30);
         painelPrincipal.add(genero);
+
+        // Label para o histórico
+        JLabel historico = new JLabel("Histórico de Monitorias:");
+        historico.setFont(new Font("Calibri", Font.BOLD, 20));
+        historico.setBounds(40, 290, 300, 30);
+        painelPrincipal.add(historico);
     }
 
     private void criarCampos() {
         campoNome = new JTextField();
-        campoNome.setBounds(140, 40, 350, 40);
+        campoNome.setBounds(140, 30, 350, 30);
         painelPrincipal.add(campoNome);
 
         campoEmail = new JTextField();
-        campoEmail.setBounds(140, 100, 350, 40);
+        campoEmail.setBounds(140, 80, 350, 30);
         painelPrincipal.add(campoEmail);
 
         campoSenha = new JPasswordField();
-        campoSenha.setBounds(140, 160, 350, 40);
+        campoSenha.setBounds(140, 130, 350, 30);
         painelPrincipal.add(campoSenha);
 
         campoMatricula = new JTextField();
-        campoMatricula.setBounds(140, 220, 350, 40);
+        campoMatricula.setBounds(140, 180, 350, 30);
         painelPrincipal.add(campoMatricula);
 
         campoGenero = new JComboBox<>(Sexo.values());
-        campoGenero.setBounds(140, 280, 180, 40);
+        campoGenero.setBounds(140, 230, 180, 30);
         painelPrincipal.add(campoGenero);
+    }
+
+    private void criarTabelaHistorico() {
+        modeloTabelaHistorico = new DefaultTableModel() {
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        String[] colunas = {"Edital", "Disciplina", "Período", "Vaga"};
+
+        for (String coluna : colunas) {
+            modeloTabelaHistorico.addColumn(coluna);
+        }
+
+        tabelaHistorico = new JTable(modeloTabelaHistorico);
+        tabelaHistorico.setRowHeight(25);
+        tabelaHistorico.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        
+        painelTabelaHistorico = new JScrollPane(tabelaHistorico);
+        painelTabelaHistorico.setBounds(40, 330, 600, 180); // Posicionada abaixo dos dados
+        painelPrincipal.add(painelTabelaHistorico);
     }
 
     private void preencherCampos() {
@@ -98,25 +133,59 @@ public class TelaPerfilAluno extends TelaBase {
         campoGenero.setSelectedItem(aluno.getGenero());
     }
 
+    private void carregarHistorico() {
+        modeloTabelaHistorico.setRowCount(0);
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        ArrayList<EditalDeMonitoria> editais = getCentral().getTodosOsEditais();
+
+        if (editais != null) {
+            for (EditalDeMonitoria edital : editais) {
+                for (Inscricao inscricao : edital.getInscricoes()) {
+                    // Verifica se a inscrição pertence ao aluno e se ele não desistiu
+                    if (inscricao.getAluno().getMatricula().equals(aluno.getMatricula()) && !inscricao.isDesistiu()) {
+                        
+                        String periodo = edital.getDataInicio().format(formatador) + " - " + 
+                                         edital.getDataLimite().format(formatador);
+                        
+                        modeloTabelaHistorico.addRow(new Object[]{
+                            edital.getNumero(),
+                            inscricao.getDisciplina().getNomeDisciplina(),
+                            periodo,
+                            inscricao.getTipoVaga()
+                        });
+                    }
+                }
+            }
+        }
+    }
+
     private void criarBotoes() {
-        botaoEditar = criarBotao("Editar", e -> alternarModoEdicao(true));
-        botaoEditar.setBounds(80, 350, 120, 40);
-        botaoEditar.setBackground(Estilos.COR_SUCESSO);
+        // Ajustei a posição Y dos botões para ficarem abaixo da tabela
+        int yBotoes = 530;
+
+        botaoEditar = new JButton("Editar");
+        botaoEditar.setBounds(140, yBotoes, 100, 40);
+        botaoEditar.addActionListener(e -> alternarModoEdicao(true));
         painelPrincipal.add(botaoEditar);
 
-        botaoVoltar = criarBotao("Voltar", e -> dispose());
-        botaoVoltar.setBounds(350, 350, 120, 40);
-        botaoVoltar.setBackground(Estilos.COR_CINZA);
+        botaoVoltar = new JButton("Voltar");
+        botaoVoltar.setBounds(260, yBotoes, 100, 40);
+        botaoVoltar.addActionListener(e -> dispose());
         painelPrincipal.add(botaoVoltar);
 
-        botaoSalvar = criarBotao("Salvar", new OuvinteBotaoSalvar());
-        botaoSalvar.setBounds(100, 350, 120, 40);
+        botaoSalvar = new JButton("Salvar");
+        botaoSalvar.setBounds(140, yBotoes, 100, 40);
         botaoSalvar.setBackground(Estilos.COR_SUCESSO);
+        botaoSalvar.addActionListener(new OuvinteBotaoSalvar());
         painelPrincipal.add(botaoSalvar);
 
-        botaoCancelar = criarBotao("Cancelar", new OuvinteBotaoCancelar());
-        botaoCancelar.setBounds(400, 350, 120, 40);
+        botaoCancelar = new JButton("Cancelar");
+        botaoCancelar.setBounds(260, yBotoes, 100, 40);
         botaoCancelar.setBackground(Estilos.COR_PERIGO);
+        botaoCancelar.addActionListener(e -> {
+            preencherCampos();
+            alternarModoEdicao(false);
+        });
         painelPrincipal.add(botaoCancelar);
     }
 
@@ -126,13 +195,8 @@ public class TelaPerfilAluno extends TelaBase {
         campoSenha.setEditable(editando);
         campoGenero.setEnabled(editando);
         // Email e Matrícula nunca são editáveis
-        if (sessao.getUsuarioLogado() instanceof Coordenador) {
-            campoEmail.setEditable(editando);
-            campoMatricula.setEditable(editando);
-        } else {
-            campoEmail.setEditable(false);
-            campoMatricula.setEditable(false);
-        }
+        campoEmail.setEditable(false);
+        campoMatricula.setEditable(false);
 
         // Botões
         botaoEditar.setVisible(!editando);
@@ -149,6 +213,7 @@ public class TelaPerfilAluno extends TelaBase {
     }
 
     private class OuvinteBotaoSalvar implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent e) {
             // Validar nome
             String nome = campoNome.getText().strip();
@@ -171,6 +236,7 @@ public class TelaPerfilAluno extends TelaBase {
 
             // Persistir as alterações
             getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+
             mostrarSucesso("Dados do aluno atualizados com sucesso!");
             
             alternarModoEdicao(false);

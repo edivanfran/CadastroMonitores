@@ -12,8 +12,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -183,8 +181,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
             botaoMeuPerfil = criarBotaoLateral("Meu Perfil", new OuvinteBotaoMeuPerfil());
             painelAluno.add(botaoMeuPerfil);
 
-            botaoInscreverMonitoria = criarBotaoLateral("Inscrever em Monitoria",
-                    e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+            botaoInscreverMonitoria = criarBotaoLateral("Inscrever em Monitoria", new OuvinteBotaoInscreverMonitoria());
             painelAluno.add(botaoInscreverMonitoria);
 
             botaoVerRanque = criarBotaoLateral("Ver Ranque",
@@ -415,6 +412,28 @@ public class TelaPrincipal extends TelaBase implements Observador {
             if (edital != null) {
                 TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(edital, getCentral(), getPersistencia(), getNomeArquivo());
                 // O WindowListener não é mais necessário aqui para atualizar a tabela
+                telaDetalhes.inicializar();
+                telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            } else {
+                mostrarErro("Edital não encontrado");
+            }
+        }
+    }
+
+    private class OuvinteBotaoInscreverMonitoria implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            int linhaSelecionada = tabelaEditais.getSelectedRow();
+
+            if (linhaSelecionada == -1) {
+                mostrarErro("Selecione uma linha!");
+                return;
+            }
+            long id = (long) tabelaEditais.getValueAt(linhaSelecionada, 0);
+
+            EditalDeMonitoria edital = getCentral().recuperarEdital(id);
+
+            if (edital != null) {
+                TelaInscreverEmEditalAluno telaDetalhes = new TelaInscreverEmEditalAluno(edital, getCentral(), getPersistencia(), getNomeArquivo());
                 telaDetalhes.inicializar();
                 telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             } else {

@@ -13,6 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.time.format.DateTimeFormatter;
+import br.com.monitoria.excecoes.EditalAbertoException;
+import br.com.monitoria.excecoes.SemInscricoesException;
 
 /**
  * Tela principal do sistema.
@@ -143,15 +145,15 @@ public class TelaPrincipal extends TelaBase implements Observador {
         botaoDetalharEdital = criarBotaoLateral("Detalhar Edital", new OuvinteBotaoDetalharEdital());
         painelEditais.add(botaoDetalharEdital);
 
-        botaoCalcularResultado = criarBotaoLateral("Calcular Resultado",
-                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+        // BOTÃO CALCULAR RESULTADO - CORRIGIDO AQUI
+        botaoCalcularResultado = criarBotaoLateral("Calcular Resultado", new OuvinteBotaoCalcularResultado());
         if (!isCoordenador()) {
             botaoCalcularResultado.setVisible(false);
         }
         painelEditais.add(botaoCalcularResultado);
 
         botaoFecharEdital = criarBotaoLateral("Fechar Edital",
-                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+                e -> mostrarSucesso("Funcionalidade em desenvolvimento")); // Este ainda está em desenvolvimento
         if (!isCoordenador()) {
             botaoFecharEdital.setVisible(false);
         }
@@ -480,9 +482,6 @@ public class TelaPrincipal extends TelaBase implements Observador {
         }
     }
 
-    // Este listener agora está obsoleto e pode ser removido.
-    // public class OuvinteDoFechamentoDaJanela implements WindowListener { ... }
-
     public class OuvinteBotaoCadastrarEdital implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
@@ -549,5 +548,66 @@ public class TelaPrincipal extends TelaBase implements Observador {
         
         painelRodape.add(botaoSair);
         painelPrincipal.add(painelRodape);
+    }
+
+    // NOVO LISTENER PARA O BOTÃO "CALCULAR RESULTADO"
+    private class OuvinteBotaoCalcularResultado implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int linhaSelecionada = tabelaEditais.getSelectedRow();
+            
+            if (linhaSelecionada == -1) {
+                mostrarErro("Por favor, selecione um edital na tabela para calcular o resultado.");
+                return;
+            }
+            
+            long idEdital = (long) tabelaEditais.getValueAt(linhaSelecionada, 0);
+            EditalDeMonitoria editalSelecionado = getCentral().recuperarEdital(idEdital);
+            
+            if (editalSelecionado == null) {
+                mostrarErro("Edital não encontrado. Por favor, tente novamente.");
+                return;
+            }
+
+            if (editalSelecionado.isResultadoCalculado()) {
+                mostrarAviso("O resultado para este edital já foi calculado.");
+                // Opcional: Abrir a tela de resultado mesmo assim
+                abrirTelaResultadoEdital(editalSelecionado);
+                return;
+            }
+
+            if (editalSelecionado.isAberto()) {
+                mostrarAviso("Não é possível calcular o resultado de um edital que ainda está aberto para inscrições. Por favor, feche o edital primeiro.");
+                return;
+            }
+            
+            try {
+                // A permissão de coordenador já é verificada na TelaPrincipal
+                editalSelecionado.calcularResultado();
+                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                mostrarSucesso("Resultado do edital " + editalSelecionado.getNumero() + " calculado com sucesso!");
+                
+                // Atualiza a tabela na TelaPrincipal para mostrar que o resultado foi calculado
+                atualizarValoresDaTabelaEdital();
+                
+                // Abre a tela de resultado para o coordenador ver
+                abrirTelaResultadoEdital(editalSelecionado);
+
+            } catch (EditalAbertoException ex) {
+                mostrarErro("Erro: " + ex.getMessage());
+            } catch (SemInscricoesException ex) {
+                mostrarAviso("Não há inscrições para este edital. Não é possível calcular o resultado.");
+            } catch (Exception ex) {
+                mostrarErro("Ocorreu um erro inesperado ao calcular o resultado: " + ex.getMessage());
+            }
+        }
+    }
+
+    // Método auxiliar para abrir a TelaResultadoEdital
+    private void abrirTelaResultadoEdital(EditalDeMonitoria edital) {
+        TelaResultadoEdital telaResultado = new TelaResultadoEdital(edital, getCentral(), getPersistencia(), getNomeArquivo());
+        telaResultado.inicializar();
+        // Não fecha a TelaPrincipal, apenas abre a nova tela por cima
+        // this.dispose(); // Não chamar dispose aqui se quiser manter a TelaPrincipal aberta
     }
 }

@@ -186,11 +186,11 @@ public class EditalDeMonitoria {
        }
        
        // Valida valores de CRE e nota
-       if (cre < 0 || cre > 10) {
-           throw new ValoresInvalidosException("CRE", cre, 0, 10);
+       if (cre < 0 || cre > 100) {
+           throw new ValoresInvalidosException("CRE", cre, 0, 100);
        }
-       if (nota < 0 || nota > 10) {
-           throw new ValoresInvalidosException("Nota", nota, 0, 10);
+       if (nota < 0 || nota > 100) {
+           throw new ValoresInvalidosException("Nota", nota, 0, 100);
        }
        
        for (Disciplina d : disciplinas) {

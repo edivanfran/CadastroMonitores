@@ -84,15 +84,11 @@ public class TelaLogin extends TelaBase {
         //Senha
         JLabel lblSenha = criarLabel("Senha:", Estilos.FONTE_NORMAL);
         lblSenha.setBounds(225, 355, 80, 40);
-        lblSenha.setHorizontalAlignment(SwingConstants.RIGHT);
         painelPrincipal.add(lblSenha);
 
         campoSenha = new JPasswordField();
         campoSenha.setToolTipText("Insira aqui sua senha.");
         campoSenha.setFont(Estilos.FONTE_NORMAL);
-        campoSenha.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Estilos.COR_SECUNDARIA, 1),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
         campoSenha.setBounds(315, 355, 350, 40);
         painelPrincipal.add(campoSenha);
 

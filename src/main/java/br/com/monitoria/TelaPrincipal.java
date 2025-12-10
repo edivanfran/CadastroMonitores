@@ -38,8 +38,6 @@ public class TelaPrincipal extends TelaBase implements Observador {
     private JButton botaoListarEditais;
     private JButton botaoDetalharEdital;
     private JButton botaoCalcularResultado;
-    private JButton botaoFecharEdital;
-    private JButton botaoDetalharAluno; // Botão original, sem alteração
     private JButton botaoVerPerfil; // Novo botão para coordenador
     private JButton botaoMeuPerfil;
     private JButton botaoInscreverMonitoria;
@@ -153,23 +151,12 @@ public class TelaPrincipal extends TelaBase implements Observador {
         }
         painelEditais.add(botaoCalcularResultado);
 
-        botaoFecharEdital = criarBotaoLateral("Fechar Edital",
-                e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
-        if (!isCoordenador()) {
-            botaoFecharEdital.setVisible(false);
-        }
-        painelEditais.add(botaoFecharEdital);
 
         // Painel para a aba de Alunos (apenas para coordenador)
         if (isCoordenador()) {
             JPanel painelAlunos = criarPainelAba();
             menuAbas.addTab("Alunos", null, painelAlunos, "Funcionalidades relacionadas a alunos, pressione Alt + 2 para abrir essa aba");
             menuAbas.setMnemonicAt(1, KeyEvent.VK_2);
-
-            // Botão original "Detalhar Aluno" (sem funcionalidade por enquanto)
-            botaoDetalharAluno = criarBotaoLateral("Detalhar Aluno",
-                    e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
-            painelAlunos.add(botaoDetalharAluno);
 
             // Novo botão "Ver Perfil" para o coordenador
             botaoVerPerfil = criarBotaoLateral("Ver Perfil", new OuvinteBotaoVerPerfil());

@@ -99,31 +99,24 @@ public class TelaPerfilAluno extends TelaBase {
     }
 
     private void criarBotoes() {
-        botaoEditar = new JButton("Editar");
+        botaoEditar = criarBotao("Editar", e -> alternarModoEdicao(true));
         botaoEditar.setBounds(80, 350, 120, 40);
-        botaoEditar.addActionListener(e -> alternarModoEdicao(true));
         botaoEditar.setBackground(Estilos.COR_SUCESSO);
         painelPrincipal.add(botaoEditar);
 
-        botaoVoltar = new JButton("Voltar");
+        botaoVoltar = criarBotao("Voltar", e -> dispose());
         botaoVoltar.setBounds(350, 350, 120, 40);
-        botaoVoltar.addActionListener(e -> dispose());
         botaoVoltar.setBackground(Estilos.COR_CINZA);
         painelPrincipal.add(botaoVoltar);
 
-        botaoSalvar = new JButton("Salvar");
+        botaoSalvar = criarBotao("Salvar", new OuvinteBotaoSalvar());
         botaoSalvar.setBounds(100, 350, 120, 40);
         botaoSalvar.setBackground(Estilos.COR_SUCESSO);
-        botaoSalvar.addActionListener(new OuvinteBotaoSalvar());
         painelPrincipal.add(botaoSalvar);
 
-        botaoCancelar = new JButton("Cancelar");
+        botaoCancelar = criarBotao("Cancelar", new OuvinteBotaoCancelar());
         botaoCancelar.setBounds(400, 350, 120, 40);
         botaoCancelar.setBackground(Estilos.COR_PERIGO);
-        botaoCancelar.addActionListener(e -> {
-            preencherCampos(); // Restaura os dados originais
-            alternarModoEdicao(false);
-        });
         painelPrincipal.add(botaoCancelar);
     }
 
@@ -146,6 +139,13 @@ public class TelaPerfilAluno extends TelaBase {
         botaoVoltar.setVisible(!editando);
         botaoSalvar.setVisible(editando);
         botaoCancelar.setVisible(editando);
+    }
+    private class OuvinteBotaoCancelar implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            // Restaura os dados originais
+            preencherCampos();
+            alternarModoEdicao(false);
+        }
     }
 
     private class OuvinteBotaoSalvar implements ActionListener {

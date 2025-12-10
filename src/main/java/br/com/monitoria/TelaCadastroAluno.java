@@ -143,6 +143,24 @@ public class TelaCadastroAluno extends TelaBase {
             campoEmail.requestFocus();
             return;
         }
+
+        for (Aluno aluno : getCentral().getTodosOsAlunos()) {
+            if (aluno.getEmail().equals(email)) {
+                mostrarErro("Já existe um usuário cadastrado com este e-mail.");
+                campoEmail.requestFocus();
+                return;
+            }
+            if (aluno.getMatricula().equals(matricula)) {
+                mostrarErro("Já existe um usuário cadastrado com esta matrícula.");
+                campoMatricula.requestFocus();
+                return;
+            }
+            if (email.equals(getCentral().getCoordenador().getEmail())) {
+                mostrarErro("Já existe um usuário cadastrado com este e-mail.");
+                campoEmail.requestFocus();
+                return;
+            }
+        }
         
         try {
             Aluno novoAluno = new Aluno(email, senha, nome, matricula, sexo);

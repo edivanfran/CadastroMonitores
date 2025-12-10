@@ -31,7 +31,9 @@ public class TelaDetalharEdital extends TelaEditalBase {
     @Override
     public void inicializar() {
         super.inicializar();
-        atualizarBotaoEncerramento();
+        if (isCoordenador()) {
+            atualizarBotaoEncerramento();
+        }
     }
 
     protected void criarComponentes() {
@@ -42,46 +44,51 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
 
     private void criarBotoes() {
-        botaoVerInscritos = criarBotao("Ver Inscritos", new OuvinteBotaoVerInscritos());
-        botaoVerInscritos.setBounds(430, 170, 180, 40);
-        botaoVerInscritos.setBackground(Estilos.COR_AVISO);
-        painelPrincipal.add(botaoVerInscritos);
+        // Botões visíveis apenas para o Coordenador
+        if (isCoordenador()) {
+            botaoVerInscritos = criarBotao("Ver Inscritos", new OuvinteBotaoVerInscritos());
+            botaoVerInscritos.setBounds(430, 170, 180, 40);
+            botaoVerInscritos.setBackground(Estilos.COR_AVISO);
+            painelPrincipal.add(botaoVerInscritos);
 
-        botaoEncerrarReabrir = criarBotao("", new OuvinteBotaoEncerrarReabrir());
-        botaoEncerrarReabrir.setBounds(50, 390, 200, 40);
-        painelPrincipal.add(botaoEncerrarReabrir);
+            botaoEncerrarReabrir = criarBotao("", new OuvinteBotaoEncerrarReabrir());
+            botaoEncerrarReabrir.setBounds(50, 390, 200, 40);
+            painelPrincipal.add(botaoEncerrarReabrir);
 
-        botaoEditarEdital = criarBotao("Editar Edital", new OuvinteBotaoEditar());
-        botaoEditarEdital.setBounds(270, 390, 120, 40);
-        painelPrincipal.add(botaoEditarEdital);
+            botaoEditarEdital = criarBotao("Editar Edital", new OuvinteBotaoEditar());
+            botaoEditarEdital.setBounds(270, 390, 120, 40);
+            painelPrincipal.add(botaoEditarEdital);
 
-        botaoClonarEdital = criarBotao("Clonar Edital", new OuvinteBotaoClonarEdital());
-        botaoClonarEdital.setBounds(440, 390, 120, 40);
-        botaoClonarEdital.setBackground(Estilos.COR_AVISO);
-        definirPermissao(botaoClonarEdital, isCoordenador());
-        painelPrincipal.add(botaoClonarEdital);
+            botaoClonarEdital = criarBotao("Clonar Edital", new OuvinteBotaoClonarEdital());
+            botaoClonarEdital.setBounds(440, 390, 120, 40);
+            botaoClonarEdital.setBackground(Estilos.COR_AVISO);
+            painelPrincipal.add(botaoClonarEdital);
 
-        // Botões do modo de edição (inicialmente invisíveis)
-        botaoEditarDisciplina = criarBotao("Gerenciar Disciplinas", new OuvinteBotaoEditarDisciplina());
-        botaoEditarDisciplina.setBounds(430, 170, 180, 40);
-        botaoEditarDisciplina.setBackground(Estilos.COR_AVISO);
-        botaoEditarDisciplina.setVisible(false);
-        painelPrincipal.add(botaoEditarDisciplina);
+            // Botões do modo de edição (inicialmente invisíveis)
+            botaoEditarDisciplina = criarBotao("Gerenciar Disciplinas", new OuvinteBotaoEditarDisciplina());
+            botaoEditarDisciplina.setBounds(430, 170, 180, 40);
+            botaoEditarDisciplina.setBackground(Estilos.COR_AVISO);
+            botaoEditarDisciplina.setVisible(false);
+            painelPrincipal.add(botaoEditarDisciplina);
 
-        botaoSalvar = criarBotao("Salvar", new OuvinteBotaoSalvar());
-        botaoSalvar.setBounds(200, 390, 120, 40);
-        botaoSalvar.setBackground(Estilos.COR_SUCESSO);
-        botaoSalvar.setVisible(false);
-        painelPrincipal.add(botaoSalvar);
+            botaoSalvar = criarBotao("Salvar", new OuvinteBotaoSalvar());
+            botaoSalvar.setBounds(200, 390, 120, 40);
+            botaoSalvar.setBackground(Estilos.COR_SUCESSO);
+            botaoSalvar.setVisible(false);
+            painelPrincipal.add(botaoSalvar);
 
-        botaoCancelar = criarBotao("Cancelar", new OuvinteBotaoCancelar());
-        botaoCancelar.setBounds(440, 390, 120, 40);
-        botaoCancelar.setBackground(Estilos.COR_CINZA);
-        botaoCancelar.setVisible(false);
-        painelPrincipal.add(botaoCancelar);
+            botaoCancelar = criarBotao("Cancelar", new OuvinteBotaoCancelar());
+            botaoCancelar.setBounds(440, 390, 120, 40);
+            botaoCancelar.setBackground(Estilos.COR_CINZA);
+            botaoCancelar.setVisible(false);
+            painelPrincipal.add(botaoCancelar);
+        }
+        // Nenhum botão será criado se o usuário for um aluno
     }
 
     private void atualizarBotaoEncerramento() {
+        if (botaoEncerrarReabrir == null) return; // Não faz nada se o botão não foi criado (aluno)
+
         if (edital.jaAcabou()) {
             botaoEncerrarReabrir.setText("Encerrado Definitivamente");
             botaoEncerrarReabrir.setBackground(Estilos.COR_CINZA);
@@ -98,6 +105,8 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
 
     private void mudarVisibilidadeBotoes(boolean editando) {
+        if (!isCoordenador()) return; // Alunos não têm botões para gerenciar
+
         botaoEncerrarReabrir.setVisible(!editando);
         botaoEditarEdital.setVisible(!editando);
         botaoClonarEdital.setVisible(!editando);
@@ -118,6 +127,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
     private class OuvinteBotaoVerInscritos implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            // mas mantemos a verificação aqui por segurança.
             if (!isCoordenador()) {
                 mostrarErro("Apenas coordenadores podem visualizar a lista de inscritos.");
                 return;
@@ -183,6 +193,10 @@ public class TelaDetalharEdital extends TelaEditalBase {
 
     public class OuvinteBotaoClonarEdital implements ActionListener {
         public void actionPerformed(ActionEvent e) {
+            if (!isCoordenador()) {
+                mostrarErro("Apenas coordenadores podem clonar editais.");
+                return;
+            }
             EditalDeMonitoria copiaEdital = edital.clonar();
             getCentral().adicionarEdital(copiaEdital);
             getPersistencia().salvarCentral(getCentral(), getNomeArquivo());

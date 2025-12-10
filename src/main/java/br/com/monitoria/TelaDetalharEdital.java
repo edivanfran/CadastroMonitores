@@ -23,6 +23,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
     private JButton botaoEditarDisciplina;
     private JButton botaoSalvar;
     private JButton botaoCancelar;
+    private JButton botaoInscrever;
 
     public TelaDetalharEdital(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
         super("Detalhar Edital", edital, central, persistencia, nomeArquivo);
@@ -82,6 +83,10 @@ public class TelaDetalharEdital extends TelaEditalBase {
             botaoCancelar.setBackground(Estilos.COR_CINZA);
             botaoCancelar.setVisible(false);
             painelPrincipal.add(botaoCancelar);
+        } else {
+            botaoInscrever = criarBotao("Inscrever-se", new OuvinteBotaoInscreverEdital());
+            botaoInscrever.setBounds(280, 390, 120, 40);
+            painelPrincipal.add(botaoInscrever);
         }
         // Nenhum botão será criado se o usuário for um aluno
     }
@@ -115,6 +120,15 @@ public class TelaDetalharEdital extends TelaEditalBase {
         botaoEditarDisciplina.setVisible(editando);
         botaoSalvar.setVisible(editando);
         botaoCancelar.setVisible(editando);
+    }
+
+    private class OuvinteBotaoInscreverEdital implements ActionListener {
+
+        public void actionPerformed(ActionEvent e) {
+            TelaInscreverEmEditalAluno tela = new TelaInscreverEmEditalAluno(edital, getCentral(), getPersistencia(), getNomeArquivo());
+            tela.inicializar();
+            dispose();
+        }
     }
 
     private class OuvinteBotaoEditar implements ActionListener {

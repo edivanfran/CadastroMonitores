@@ -37,8 +37,9 @@ public class TelaPrincipal extends TelaBase implements Observador {
     private JButton botaoDetalharEdital;
     private JButton botaoCalcularResultado;
     private JButton botaoFecharEdital;
-    private JButton botaoListarAlunos;
-    private JButton botaoDetalharAluno;
+    private JButton botaoDetalharAluno; // Botão original, sem alteração
+    private JButton botaoVerPerfil; // Novo botão para coordenador
+    private JButton botaoMeuPerfil;
     private JButton botaoInscreverMonitoria;
     private JButton botaoVerRanque;
     private JButton botaoSair;
@@ -164,18 +165,23 @@ public class TelaPrincipal extends TelaBase implements Observador {
             menuAbas.addTab("Alunos", null, painelAlunos, "Funcionalidades relacionadas a alunos, pressione Alt + 2 para abrir essa aba");
             menuAbas.setMnemonicAt(1, KeyEvent.VK_2);
 
-            // Adicionar botões à aba de Alunos (apenas coordenador vê)
-            botaoListarAlunos = criarBotaoLateral("Listar Alunos", null);
-            painelAlunos.add(botaoListarAlunos);
-
+            // Botão original "Detalhar Aluno" (sem funcionalidade por enquanto)
             botaoDetalharAluno = criarBotaoLateral("Detalhar Aluno",
                     e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
             painelAlunos.add(botaoDetalharAluno);
+
+            // Novo botão "Ver Perfil" para o coordenador
+            botaoVerPerfil = criarBotaoLateral("Ver Perfil", new OuvinteBotaoVerPerfil());
+            painelAlunos.add(botaoVerPerfil);
+
         } else {
             // Para alunos, criar uma aba própria com funcionalidades de aluno
             JPanel painelAluno = criarPainelAba();
             menuAbas.addTab("Minhas Funcionalidades", null, painelAluno, "Funcionalidades disponíveis para alunos");
             menuAbas.setMnemonicAt(1, KeyEvent.VK_2);
+
+            botaoMeuPerfil = criarBotaoLateral("Meu Perfil", new OuvinteBotaoMeuPerfil());
+            painelAluno.add(botaoMeuPerfil);
 
             botaoInscreverMonitoria = criarBotaoLateral("Inscrever em Monitoria",
                     e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
@@ -413,6 +419,44 @@ public class TelaPrincipal extends TelaBase implements Observador {
                 telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             } else {
                 mostrarErro("Edital não encontrado");
+            }
+        }
+    }
+
+    private class OuvinteBotaoVerPerfil implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int linhaSelecionada = tabelaAlunos.getSelectedRow();
+
+            if (linhaSelecionada == -1) {
+                mostrarErro("Selecione um aluno na tabela para ver o perfil!");
+                return;
+            }
+
+            // Obter a matrícula do aluno da linha selecionada
+            String matricula = (String) tabelaAlunos.getValueAt(linhaSelecionada, 0);
+            Aluno aluno = getCentral().recuperarAluno(matricula);
+
+            if (aluno != null) {
+                TelaPerfilAluno telaPerfil = new TelaPerfilAluno(aluno, getCentral(), getPersistencia(), getNomeArquivo());
+                telaPerfil.setVisible(true);
+            } else {
+                mostrarErro("Aluno não encontrado!");
+            }
+        }
+    }
+
+    private class OuvinteBotaoMeuPerfil implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // O aluno logado está na sessão
+            Aluno alunoLogado = (Aluno) sessao.getUsuarioLogado();
+            if (alunoLogado != null) {
+                TelaPerfilAluno telaPerfil = new TelaPerfilAluno(alunoLogado, getCentral(), getPersistencia(), getNomeArquivo());
+                telaPerfil.setVisible(true);
+            } else {
+                // Isso não deve acontecer se a lógica de sessão estiver correta
+                mostrarErro("Não foi possível encontrar os dados do seu perfil.");
             }
         }
     }

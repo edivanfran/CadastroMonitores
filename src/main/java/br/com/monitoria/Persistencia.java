@@ -70,35 +70,46 @@ public class Persistencia {
         String nomeCompleto = nomeArquivo + ".xml";
         String caminho = System.getProperty("user.dir") + File.separator + nomeCompleto;
         File arquivo = new File(caminho);
+        boolean downloadSucesso = false;
 
         try {
             // Tenta baixar a versão mais recente do Google Drive primeiro
             DriveService.baixarArquivo(nomeCompleto, caminho);
+            downloadSucesso = true;
         } catch (IOException | GeneralSecurityException e) {
             System.out.println("[Aviso] Não foi possível baixar o arquivo do Google Drive: " + e.getMessage());
             System.out.println("Tentando carregar a versão local, se existir...");
         }
 
-        if (!arquivo.exists()) {
-            System.out.println("[Aviso] Arquivo local não encontrado: " + caminho + ". Criando nova Central...");
-            return new CentralDeInformacoes();
-        }
+        // Só tenta ler o arquivo se ele existir e tiver algum conteúdo
+        if (arquivo.exists() && arquivo.length() > 0) {
+            try (FileInputStream file = new FileInputStream(arquivo)) {
+                Object obj = xstream.fromXML(file);
 
-        try (FileInputStream file = new FileInputStream(arquivo)) {
-            Object obj = xstream.fromXML(file);
-
-            if (obj instanceof CentralDeInformacoes) {
-                System.out.println("Central carregada com sucesso.");
-                return (CentralDeInformacoes) obj;
-            } else {
-                System.out.println("[Erro] O XML não contém uma Central de Informações válida.");
+                if (obj instanceof CentralDeInformacoes) {
+                    System.out.println("Central carregada com sucesso.");
+                    return (CentralDeInformacoes) obj;
+                } else {
+                    System.out.println("[Erro] O XML não contém uma Central de Informações válida.");
+                }
+            } catch (Exception e) {
+                System.out.println("[Erro] Não foi possível recuperar a central do arquivo local: " + e.getMessage());
+                e.printStackTrace();
+                // Se o download falhou e o arquivo local está corrompido, o melhor é criar uma nova central
+                if (!downloadSucesso) {
+                    System.out.println("Arquivo local corrompido. Criando nova Central...");
+                    return new CentralDeInformacoes();
+                }
             }
-        } catch (Exception e) {
-            System.out.println("[Erro] Não foi possível recuperar a central do arquivo local: " + e.getMessage());
-            e.printStackTrace();
+        } else {
+            if (downloadSucesso) {
+                System.out.println("[Aviso] O arquivo baixado do Google Drive está vazio. Criando nova Central...");
+            } else {
+                System.out.println("[Aviso] Arquivo local não encontrado ou vazio. Criando nova Central...");
+            }
         }
 
-        System.out.println("Criando nova Central...");
+        // Se tudo falhar, cria uma nova central
         return new CentralDeInformacoes();
     }
 }

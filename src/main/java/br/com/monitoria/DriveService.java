@@ -15,6 +15,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
@@ -108,7 +111,7 @@ public class DriveService {
     }
 
     /**
-     * Baixa um arquivo do Google Drive para um caminho local.
+     * Baixa um arquivo do Google Drive para um caminho local de forma segura, usando um arquivo temporário.
      * @param nomeArquivo O nome do arquivo no Drive.
      * @param caminhoDestino O caminho completo onde o arquivo será salvo localmente.
      * @throws IOException
@@ -117,15 +120,27 @@ public class DriveService {
     public static void baixarArquivo(String nomeArquivo, String caminhoDestino) throws IOException, GeneralSecurityException {
         String fileId = procurarArquivoPorNome(nomeArquivo);
         if (fileId == null) {
-            System.out.println("Arquivo '" + nomeArquivo + "' não encontrado no Google Drive.");
-            // Não lança exceção, pois o programa pode continuar e criar uma nova central
+            System.out.println("Arquivo '" + nomeArquivo + "' não encontrado no Google Drive. Usando versão local se existir.");
             return;
         }
 
         Drive driveService = getDriveService();
-        try (OutputStream outputStream = new FileOutputStream(caminhoDestino)) {
+        java.io.File arquivoTemporario = new java.io.File(caminhoDestino + ".temp");
+
+        try (OutputStream outputStream = new FileOutputStream(arquivoTemporario)) {
             driveService.files().get(fileId).executeMediaAndDownloadTo(outputStream);
+            
+            // Se o download for bem-sucedido, substitui o arquivo original pelo temporário
+            Files.move(arquivoTemporario.toPath(), Paths.get(caminhoDestino), StandardCopyOption.REPLACE_EXISTING);
             System.out.println("Arquivo baixado do Google Drive com sucesso para: " + caminhoDestino);
+
+        } catch (IOException e) {
+            // Se o download falhar, apaga o arquivo temporário para não deixar lixo
+            if (arquivoTemporario.exists()) {
+                arquivoTemporario.delete();
+            }
+            // Lança a exceção para que a classe Persistencia saiba que o download falhou
+            throw new IOException("Falha ao baixar o arquivo do Google Drive: " + e.getMessage(), e);
         }
     }
 }

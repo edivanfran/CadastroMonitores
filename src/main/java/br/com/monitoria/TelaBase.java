@@ -128,23 +128,6 @@ public abstract class TelaBase extends JFrame {
     }
 
     /**
-     * Cria um painel de botões com layout organizado.
-     * @param botoes Os botões a serem adicionados
-     * @return O painel com os botões
-     */
-    protected JPanel criarPainelBotoes(JButton... botoes) {
-        JPanel painel = new JPanel();
-        painel.setLayout(new FlowLayout(FlowLayout.CENTER, Estilos.ESPACAMENTO, Estilos.ESPACAMENTO));
-        painel.setBackground(Estilos.COR_FUNDO);
-
-        for (JButton botao : botoes) {
-            painel.add(botao);
-        }
-
-        return painel;
-    }
-
-    /**
      * Mostra uma mensagem de sucesso.
      * @param mensagem A mensagem a ser exibida
      */

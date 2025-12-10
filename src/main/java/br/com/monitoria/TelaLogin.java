@@ -24,8 +24,6 @@ public class TelaLogin extends TelaBase {
     protected void criarComponentes() {
         // Logo e título
         criarCabecalho();
-        
-        // Formulário de login
         criarFormularioLogin();
     }
     
@@ -33,7 +31,6 @@ public class TelaLogin extends TelaBase {
      * Cria o cabeçalho com logo e título.
      */
     private void criarCabecalho() {
-        // Logo (se existir)
         JLabel logo = criarLogo();
         if (logo != null) {
             logo.setBounds(375, 50, 150, 150); // Centralizado horizontalmente
@@ -53,7 +50,6 @@ public class TelaLogin extends TelaBase {
      */
     private JLabel criarLogo() {
         try {
-            // Tenta carregar a imagem do logo a partir do classpath
             URL resource = getClass().getResource("/IFPB_icon.jpg");
             if (resource != null) {
                 ImageIcon icon = new ImageIcon(resource);

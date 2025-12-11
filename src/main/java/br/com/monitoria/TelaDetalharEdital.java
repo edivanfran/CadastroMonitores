@@ -68,7 +68,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
             botaoClonarEdital.setBackground(Estilos.COR_AVISO);
             painelPrincipal.add(botaoClonarEdital);
 
-            // Botões do modo de edição (inicialmente invisíveis)
+            // Botões do modo de edição
             botaoEditarDisciplina = criarBotao("Gerenciar Disciplinas", new OuvinteBotaoEditarDisciplina());
             botaoEditarDisciplina.setBounds(430, 170, 180, 40);
             botaoEditarDisciplina.setBackground(Estilos.COR_AVISO);
@@ -98,7 +98,10 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
 
     private void atualizarBotaoEncerramento() {
-        if (botaoEncerrarReabrir == null) return; // Não faz nada se o botão não foi criado (aluno)
+        if (botaoEncerrarReabrir == null) {
+            // Não faz nada se o botão não foi criado
+            return;
+        }
 
         if (edital.jaAcabou()) {
             botaoEncerrarReabrir.setText("Encerrado Definitivamente");
@@ -116,7 +119,10 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
 
     private void mudarVisibilidadeBotoes(boolean editando) {
-        if (!isCoordenador()) return; // Alunos não têm botões para gerenciar
+        if (!isCoordenador()) {
+            // Alunos não vão ter botões para gerenciar
+            return;
+        }
 
         botaoEncerrarReabrir.setVisible(!editando);
         botaoEditarEdital.setVisible(!editando);
@@ -137,7 +143,6 @@ public class TelaDetalharEdital extends TelaEditalBase {
         }
     }
 
-    // Ouvintes de botões do Coordenador...
     private class OuvinteBotaoEditar implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             tornarCamposEditaveis(true);
@@ -176,7 +181,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
             Coordenador coordenador = (Coordenador) sessao.getUsuarioLogado();
             
             if (edital.isAberto()) {
-                // Ação de Encerrar
+                // Confirmar para encerrar
                 int confirmacao = JOptionPane.showConfirmDialog(TelaDetalharEdital.this,
                         "Tem certeza que deseja encerrar as inscrições para este edital?",
                         "Confirmar Encerramento", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -192,7 +197,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
                     }
                 }
             } else {
-                // Ação de Reabrir
+                // Confirmar para reabrir
                 int confirmacao = JOptionPane.showConfirmDialog(TelaDetalharEdital.this,
                         "Deseja reabrir as inscrições para este edital?",
                         "Confirmar Reabertura", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
@@ -296,7 +301,6 @@ public class TelaDetalharEdital extends TelaEditalBase {
         }
     }
 
-    // Ouvinte do botão do Aluno
     private class OuvinteBotaoInscrever implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {

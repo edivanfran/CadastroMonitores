@@ -97,23 +97,25 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
         campoDeDisciplina.setBounds(230, 90, 250, 40);
         painelPrincipal.add(campoDeDisciplina);
 
+        // Campo para colocar o CRE
         SpinnerNumberModel modelCRE = new SpinnerNumberModel(70, 0, 100, 1);
         campoCRE = new JSpinner(modelCRE);
         campoCRE.setBounds(250, 150, 80, 40);
         painelPrincipal.add(campoCRE);
 
+        // Campo para colocar a nota da disciplina
         SpinnerNumberModel modelNota = new SpinnerNumberModel(70, 0, 100, 1);
         campoNota = new JSpinner(modelNota);
         campoNota.setBounds(250, 210, 80, 40);
         painelPrincipal.add(campoNota);
 
-        // Campo para ordem de preferência
+        // Campo para definir a ordem de preferência
         SpinnerNumberModel modelOrdem = new SpinnerNumberModel(1, 1, 10, 1);
         campoOrdemPreferencia = new JSpinner(modelOrdem);
         campoOrdemPreferencia.setBounds(250, 270, 80, 40);
         painelPrincipal.add(campoOrdemPreferencia);
 
-        // Campo para preferência de vaga
+        // Campo para preferencia
         campoPreferencia = new JComboBox<>(PreferenciaInscricao.values());
         campoPreferencia.setBounds(270, 330, 210, 40);
         painelPrincipal.add(campoPreferencia);
@@ -147,7 +149,7 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
     private class OuvinteBotaoInscrever implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Coleta dos dados da tela
+            // Coleta os dados da tela
             Disciplina disciplinaSelecionada = (Disciplina) campoDeDisciplina.getSelectedItem();
             if (disciplinaSelecionada == null) {
                 mostrarErro("Por favor, selecione uma disciplina.");
@@ -178,14 +180,13 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
                                 mostrarAviso("Vagas remuneradas esgotadas. Tentando vaga voluntária...");
                                 realizarInscricao(alunoLogado, disciplinaSelecionada, cre, nota, Vaga.VOLUNTARIA, ordemPreferencia, preferenciaVaga);
                             } catch (VagasEsgotadasException eVoluntaria) {
-                                // Se também não conseguiu, informa o erro final
+                                // Se também não conseguiu, informa o erro
                                 mostrarErro("Não há mais vagas remuneradas ou voluntárias para esta disciplina.");
                             }
                         }
                         break;
                 }
             } catch (Exception ex) {
-                // Captura outras exceções como EditalFechado, PrazoVencido, etc.
                 mostrarErro(ex.getMessage());
             }
         }

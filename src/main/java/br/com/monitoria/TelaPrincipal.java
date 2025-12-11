@@ -38,7 +38,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
     private JButton botaoListarEditais;
     private JButton botaoDetalharEdital;
     private JButton botaoCalcularResultado;
-    private JButton botaoVerPerfil; // Novo botão para coordenador
+    private JButton botaoVerPerfil;
     private JButton botaoMeuPerfil;
     private JButton botaoInscreverMonitoria;
     private JButton botaoVerRanque;
@@ -46,13 +46,13 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
     public TelaPrincipal(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
         super("Sistema de Cadastro de Monitores", central, persistencia, nomeArquivo);
-        // Registra a TelaPrincipal como um observador da CentralDeInformacoes
+        // Registra a TelaPrincipal para observar a Central
         getCentral().adicionarObservador(this);
     }
 
     @Override
     public void atualizar() {
-        // Este método será chamado pela CentralDeInformacoes quando os dados mudarem
+        // Vai atualizar os valores na tabela edital
         atualizarValoresDaTabelaEdital();
         if (isCoordenador()) {
             atualizarValoresDaTabelaAluno();
@@ -72,11 +72,11 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
         // Criar tabela na interface
         criarPainelTabelaEditais();
-        // Tabela de alunos só é criada e exibida para coordenadores
+        // Tabela de alunos só é criada para coordenador
         if (isCoordenador()) {
             criarPainelTabelaAlunos();
             criarCampoFiltro();
-            painelTabelaAlunos.setVisible(false); // Começa invisível
+            painelTabelaAlunos.setVisible(false);
             campoFiltro.setVisible(false);
             if (labelFiltro != null) {
                 labelFiltro.setVisible(false);
@@ -152,18 +152,17 @@ public class TelaPrincipal extends TelaBase implements Observador {
         painelEditais.add(botaoCalcularResultado);
 
 
-        // Painel para a aba de Alunos (apenas para coordenador)
+        // Painel para a aba de Alunos
         if (isCoordenador()) {
             JPanel painelAlunos = criarPainelAba();
             menuAbas.addTab("Alunos", null, painelAlunos, "Funcionalidades relacionadas a alunos, pressione Alt + 2 para abrir essa aba");
             menuAbas.setMnemonicAt(1, KeyEvent.VK_2);
 
-            // Novo botão "Ver Perfil" para o coordenador
             botaoVerPerfil = criarBotaoLateral("Ver Perfil", new OuvinteBotaoVerPerfil());
             painelAlunos.add(botaoVerPerfil);
 
         } else {
-            // Para alunos, criar uma aba própria com funcionalidades de aluno
+            // Criar uma aba só para Aluno
             JPanel painelAluno = criarPainelAba();
             menuAbas.addTab("Minhas Funcionalidades", null, painelAluno, "Funcionalidades disponíveis para alunos");
             menuAbas.setMnemonicAt(1, KeyEvent.VK_2);
@@ -179,10 +178,8 @@ public class TelaPrincipal extends TelaBase implements Observador {
             painelAluno.add(botaoVerRanque);
         }
 
-        // Adicionar um Listener para quando a aba trocar exibir tabelas diferentes.
+        // Adicionar um Listener para quando a aba trocar exibir tabelas diferentes
         menuAbas.addChangeListener(new OuvinteTrocaDeAba());
-
-        // Posicionar o JTabbedPane na tela
         menuAbas.setBounds(0, 70, 200, Estilos.ALTURA_TELA - 150);
         painelPrincipal.add(menuAbas);
     }
@@ -197,14 +194,12 @@ public class TelaPrincipal extends TelaBase implements Observador {
             modeloTabelaEditais.addColumn(coluna);
         }
 
-        // Cria a JTable com o modelo
         tabelaEditais = new JTable(modeloTabelaEditais);
         mudarVisualDeTabela(tabelaEditais);
 
         // Preenche os dados iniciais
         atualizarValoresDaTabelaEdital();
-
-        // Adiciona a tabela (dentro de um JScrollPane) ao painel principal
+        // Adiciona a tabela ao painel principal
         painelTabelaEditais = new JScrollPane(tabelaEditais);
         painelTabelaEditais.setBounds(210, 125, 650, 400);
         painelPrincipal.add(painelTabelaEditais);
@@ -212,7 +207,9 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
     private void criarPainelTabelaAlunos() {
         modeloTabelaAlunos = new DefaultTableModel() {
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         String[] colunas = {"Matrícula", "Nome", "Email"};
         for (String coluna : colunas) {
@@ -240,15 +237,12 @@ public class TelaPrincipal extends TelaBase implements Observador {
         painelPrincipal.add(campoFiltro);
 
         campoFiltro.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
             public void insertUpdate(DocumentEvent e) {
                 filtrarTabelaAlunos();
             }
-            @Override
             public void removeUpdate(DocumentEvent e) {
                 filtrarTabelaAlunos();
             }
-            @Override
             public void changedUpdate(DocumentEvent e) {
                 filtrarTabelaAlunos();
             }
@@ -272,7 +266,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
             return;
         }
 
-        //Filtra as colunas que deseja colocar na tabela
+        //Filtra as colunas que vai colocar na tabela
         for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
             modeloTabelaEditais.addRow(new Object[]{item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
                     item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto() ? "aberto" : "FECHADO"});
@@ -288,7 +282,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
             return;
         }
 
-        //Filtra as colunas que deseja colocar na tabela
+        //Filtra as colunas que vai colocar na tabela
         for (Aluno alguem : getCentral().getTodosOsAlunos()) {
             modeloTabelaAlunos.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail()});
         }
@@ -300,7 +294,6 @@ public class TelaPrincipal extends TelaBase implements Observador {
      */
     private JPanel criarPainelAba() {
         JPanel painel = new JPanel();
-        // Usar GridLayout para empilhar os botões verticalmente
         painel.setLayout(new GridLayout(0, 1, 8, 8));
         painel.setBackground(Estilos.COR_FUNDO);
         painel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -401,7 +394,6 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
             if (edital != null) {
                 TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(edital, getCentral(), getPersistencia(), getNomeArquivo());
-                // O WindowListener não é mais necessário aqui para atualizar a tabela
                 telaDetalhes.inicializar();
                 telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             } else {
@@ -487,13 +479,11 @@ public class TelaPrincipal extends TelaBase implements Observador {
     private class OuvinteBotaoMeuPerfil implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            // O aluno logado está na sessão
             Aluno alunoLogado = (Aluno) sessao.getUsuarioLogado();
             if (alunoLogado != null) {
                 TelaPerfilAluno telaPerfil = new TelaPerfilAluno(alunoLogado, getCentral(), getPersistencia(), getNomeArquivo());
                 telaPerfil.setVisible(true);
             } else {
-                // Isso não deve acontecer se a lógica de sessão estiver correta
                 mostrarErro("Não foi possível encontrar os dados do seu perfil.");
             }
         }
@@ -529,7 +519,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
             tabela.getColumnModel().getColumn(0).setPreferredWidth(150);
             tabela.getColumnModel().getColumn(1).setPreferredWidth(100);
 
-            // Impede que o usuário reordene as colunas, o que poderia quebrar a lógica de pegar valores por índice
+            // Impede que o usuário reordene as colunas
             tabela.getTableHeader().setReorderingAllowed(false);
         }
     }

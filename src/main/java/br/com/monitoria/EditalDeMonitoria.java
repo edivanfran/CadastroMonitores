@@ -84,7 +84,7 @@ public class EditalDeMonitoria {
      */
     public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite, double pesoCre, double pesoNota) throws PesosInvalidosException {
        // Valida que os pesos somem 1
-       if (Math.abs((pesoCre + pesoNota) - 1.0) > 0.0001) { // Usa epsilon para comparação de double
+       if (Math.abs((pesoCre + pesoNota) - 1.0) > 0.0001) {
            throw new PesosInvalidosException(pesoCre, pesoNota);
        }
        this.id = System.currentTimeMillis();
@@ -194,7 +194,7 @@ public class EditalDeMonitoria {
        
        for (Disciplina d : disciplinas) {
            if (d.getNomeDisciplina().equalsIgnoreCase(nomeDisciplina)) {
-               // Tenta adicionar o aluno na disciplina (pode lançar VagasEsgotadasException)
+               // Tenta adicionar o aluno na disciplina, lança exceção se não conseguir
                d.adicionarAluno(aluno, tipoVaga);
                
                // Se não lançou exceção, a vaga foi garantida. Cria a inscrição.
@@ -233,7 +233,7 @@ public class EditalDeMonitoria {
        System.out.println("Calculando resultado do edital " + numero + "...");
        ranquePorDisciplina.clear();
 
-       // 1. Agrupa inscrições por disciplina
+       // Agrupa inscrições por disciplina
        Map<String, ArrayList<Inscricao>> inscricoesPorDisciplina = new HashMap<>();
        for (Inscricao inscricao : inscricoes) {
            if (inscricao.isDesistiu()) {
@@ -243,19 +243,19 @@ public class EditalDeMonitoria {
            inscricoesPorDisciplina.computeIfAbsent(nomeDisciplina, k -> new ArrayList<>()).add(inscricao);
        }
 
-       // 2. Itera sobre cada disciplina para calcular o ranque e alocar vagas
+       // Itera sobre cada disciplina para calcular o ranque e alocar vagas
        for (Map.Entry<String, ArrayList<Inscricao>> entry : inscricoesPorDisciplina.entrySet()) {
            String nomeDisciplina = entry.getKey();
            ArrayList<Inscricao> inscricoesDisciplina = entry.getValue();
            Disciplina disciplina = inscricoesDisciplina.get(0).getDisciplina();
 
-           // 3. Calcula a pontuação e ordena a lista de inscritos
+           // Calcula a pontuação e ordena a lista de inscritos
            for (Inscricao inscricao : inscricoesDisciplina) {
                inscricao.calcularPontuacao(pesoCre, pesoNota);
            }
            inscricoesDisciplina.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
 
-           // 4. Aloca os alunos nas vagas (Resultado Definitivo)
+           // Coloca os alunos nas vagas
            int vagasRemuneradasRestantes = disciplina.getVagasRemuneradas();
            int vagasVoluntariasRestantes = disciplina.getVagasVoluntarias();
 
@@ -288,7 +288,7 @@ public class EditalDeMonitoria {
                }
 
                if (!conseguiuVaga) {
-                   inscricao.setTipoVaga(null); // Define como Excedente
+                   inscricao.setTipoVaga(null);
                }
            }
 
@@ -307,19 +307,19 @@ public class EditalDeMonitoria {
      * @return Uma nova instância de EditalDeMonitoria.
      */
     public EditalDeMonitoria clonar() {
-        // Cria uma cópia profunda da lista de disciplinas
+        // Cria uma cópia da lista de disciplinas
         ArrayList<Disciplina> disciplinasClonadas = this.disciplinas.stream()
                 .map(Disciplina::clonar)
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        // Cria o novo edital com um novo ID e número, mas com as mesmas configurações
+        // Cria o novo edital com um novo ID e número
         return new EditalDeMonitoria(
                 System.currentTimeMillis(),
                 this.numero + " - Cópia",
                 this.dataInicio,
                 this.dataLimite,
                 disciplinasClonadas,
-                true, // Um edital clonado sempre começa aberto
+                true,
                 this.pesoCre,
                 this.pesoNota
         );
@@ -352,7 +352,7 @@ public class EditalDeMonitoria {
         inscricaoAlvo.setDesistiu(true);
         System.out.println("Aluno " + aluno.getNome() + " desistiu da vaga em " + disciplina.getNomeDisciplina());
 
-        // Recalcula o resultado para refletir a desistência
+        // Recalcula o resultado para a desistência
         recalcularResultado();
     }
 

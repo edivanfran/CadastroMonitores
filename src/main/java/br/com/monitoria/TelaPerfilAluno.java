@@ -21,8 +21,6 @@ public class TelaPerfilAluno extends TelaBase {
     private JButton botaoVoltar;
     private JButton botaoSalvar;
     private JButton botaoCancelar;
-
-    // Componentes para o histórico
     private JTable tabelaHistorico;
     private DefaultTableModel modeloTabelaHistorico;
     private JScrollPane painelTabelaHistorico;
@@ -31,7 +29,6 @@ public class TelaPerfilAluno extends TelaBase {
         super("Perfil do Aluno", central, persistencia, nomeArquivo);
         this.aluno = aluno;
 
-        // Aumentei a altura para caber a tabela
         setSize(700, 650);
         setResizable(true);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -44,7 +41,7 @@ public class TelaPerfilAluno extends TelaBase {
     protected void criarComponentes() {
         criarLabels();
         criarCampos();
-        criarTabelaHistorico(); // Novo método
+        criarTabelaHistorico();
         criarBotoes();
         preencherCampos();
         carregarHistorico();
@@ -77,7 +74,6 @@ public class TelaPerfilAluno extends TelaBase {
         genero.setBounds(40, 230, 100, 30);
         painelPrincipal.add(genero);
 
-        // Label para o histórico
         JLabel historico = new JLabel("Histórico de Monitorias:");
         historico.setFont(new Font("Calibri", Font.BOLD, 20));
         historico.setBounds(40, 290, 300, 30);
@@ -160,27 +156,24 @@ public class TelaPerfilAluno extends TelaBase {
     }
 
     private void criarBotoes() {
-        // Ajustei a posição Y dos botões para ficarem abaixo da tabela
-        int yBotoes = 530;
-
         botaoEditar = new JButton("Editar");
-        botaoEditar.setBounds(140, yBotoes, 100, 40);
+        botaoEditar.setBounds(140, 530, 100, 40);
         botaoEditar.addActionListener(e -> alternarModoEdicao(true));
         painelPrincipal.add(botaoEditar);
 
         botaoVoltar = new JButton("Voltar");
-        botaoVoltar.setBounds(260, yBotoes, 100, 40);
+        botaoVoltar.setBounds(260, 530, 100, 40);
         botaoVoltar.addActionListener(e -> dispose());
         painelPrincipal.add(botaoVoltar);
 
         botaoSalvar = new JButton("Salvar");
-        botaoSalvar.setBounds(140, yBotoes, 100, 40);
+        botaoSalvar.setBounds(140, 530, 100, 40);
         botaoSalvar.setBackground(Estilos.COR_SUCESSO);
         botaoSalvar.addActionListener(new OuvinteBotaoSalvar());
         painelPrincipal.add(botaoSalvar);
 
         botaoCancelar = new JButton("Cancelar");
-        botaoCancelar.setBounds(260, yBotoes, 100, 40);
+        botaoCancelar.setBounds(260, 530, 100, 40);
         botaoCancelar.setBackground(Estilos.COR_PERIGO);
         botaoCancelar.addActionListener(e -> {
             preencherCampos();
@@ -194,7 +187,7 @@ public class TelaPerfilAluno extends TelaBase {
         campoNome.setEditable(editando);
         campoSenha.setEditable(editando);
         campoGenero.setEnabled(editando);
-        // Email e Matrícula nunca são editáveis
+        // Email e Matrícula nunca são editáveis para aluno
         campoEmail.setEditable(false);
         campoMatricula.setEditable(false);
 
@@ -206,7 +199,7 @@ public class TelaPerfilAluno extends TelaBase {
     }
     private class OuvinteBotaoCancelar implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            // Restaura os dados originais
+            // Coloca os dados originais
             preencherCampos();
             alternarModoEdicao(false);
         }
@@ -234,9 +227,8 @@ public class TelaPerfilAluno extends TelaBase {
             aluno.setSenha(senha);
             aluno.setGenero((Sexo) campoGenero.getSelectedItem());
 
-            // Persistir as alterações
+            // Salva na central
             getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-
             mostrarSucesso("Dados do aluno atualizados com sucesso!");
             
             alternarModoEdicao(false);

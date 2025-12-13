@@ -10,16 +10,12 @@ dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 
-# Arquivos de credenciais e tokens
-# NUNCA COMMITE ESSES ARQUIVOS!
 ### Google API ###
 tokens/
 credentials.json
 service-account-key.json
 
-# Arquivos compilados e de log do Java
 ### Java ###
-*.class
 *.log
 hs_err_pid*
 
@@ -36,7 +32,6 @@ out/
 bin/
 .springBeans
 
-# Arquivos gerados pela aplicação em runtime
 ### Runtime Generated Files ###
 *.pdf
 

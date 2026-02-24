@@ -18,7 +18,7 @@ import java.util.Map;
 
 // Essa classe serve para fazer os calculos da classe Edital
 // Também vão fazer a manipulação dos dados de Edital
-public class EditalService {
+public class EditalService implements EditalServiceImpl {
 
     private EditalDeMonitoria editalDeMonitoria;
 

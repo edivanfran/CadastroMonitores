@@ -194,42 +194,6 @@ public class EditalDeMonitoria {
        return ranquePorDisciplina.get(nomeDisciplina);
    }
 
-   /**
-    * Retorna uma representação em String do ranque de uma disciplina.
-    * @param nomeDisciplina O nome da disciplina
-    * @return String formatada com o ranque, ou mensagem de erro se não houver ranque calculado
-    */
-   public String exibirRanqueDisciplina(String nomeDisciplina) {
-       if (!resultadoCalculado) {
-           return "[Erro] O resultado do edital ainda não foi calculado.";
-       }
-
-       ArrayList<Inscricao> ranque = ranquePorDisciplina.get(nomeDisciplina);
-       if (ranque == null || ranque.isEmpty()) {
-           return "[Aviso] Não há inscrições para a disciplina " + nomeDisciplina + ".";
-       }
-
-       StringBuilder sb = new StringBuilder();
-       sb.append("=== RANQUE - ").append(nomeDisciplina).append(" ===\n");
-       sb.append(String.format("%-5s %-30s %-10s %-10s %-10s %-15s\n", "Pos.", "Aluno", "CRE", "Nota", "Pontuação", "Vaga"));
-       sb.append("--------------------------------------------------------------------------\n");
-
-       int posicao = 1;
-       for (Inscricao inscricao : ranque) {
-           double pontuacao = inscricao.getPontuacaoFinal();
-           String status = inscricao.getTipoVaga() != null ? inscricao.getTipoVaga().toString() : "Excedente";
-           sb.append(String.format("%-5d %-30s %-10.2f %-10.2f %-10.2f %-15s\n",
-                   posicao++,
-                   inscricao.getAluno().getNome(),
-                   inscricao.getCre(),
-                   inscricao.getNota(),
-                   pontuacao,
-                   status));
-       }
-
-       return sb.toString();
-   }
-
     /**
      * Representação em {@code String} do objeto.
      * @return Uma listagem dos atributos do edital ({@code numero}, {@code id}, {@code dataInicio}, {@code dataLimite}, {@code disciplinas}, {@code aberto})

@@ -7,6 +7,7 @@ package br.com.monitoria;
 public class Aluno extends Usuario{
 	public String matricula;
 	public Sexo genero;
+
     public String getMatricula() {
         return matricula;
     }

@@ -48,7 +48,7 @@ public class Persistencia {
             gravar.println(xml);
             System.out.println("Central salva com sucesso em: " + caminho);
 
-            // Após salvar localmente, envia para o Google Drive
+            // Depois de salvar localmente, envia para o Google Drive
             DriveService.enviarArquivo(arquivo);
 
         } catch (IOException e) {

@@ -83,7 +83,6 @@ public class EditalDeMonitoria {
      * @throws PesosInvalidosException Se a soma dos pesos não for igual a 1.0
      */
     public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite, double pesoCre, double pesoNota) throws PesosInvalidosException {
-       // Valida que os pesos somem 1
        if (Math.abs((pesoCre + pesoNota) - 1.0) > 0.0001) {
            throw new PesosInvalidosException(pesoCre, pesoNota);
        }
@@ -196,11 +195,11 @@ public class EditalDeMonitoria {
            if (d.getNomeDisciplina().equalsIgnoreCase(nomeDisciplina)) {
                // Tenta adicionar o aluno na disciplina, lança exceção se não conseguir
                d.adicionarAluno(aluno, tipoVaga);
-               
+
                // Se não lançou exceção, a vaga foi garantida. Cria a inscrição.
                Inscricao inscricao = new Inscricao(aluno, d, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);
                inscricoes.add(inscricao);
-               
+
                System.out.println("Inscrição de " + aluno.getNome() + " em " + nomeDisciplina + " (" + tipoVaga + ") confirmada.");
                return;
            }
@@ -237,13 +236,12 @@ public class EditalDeMonitoria {
        Map<String, ArrayList<Inscricao>> inscricoesPorDisciplina = new HashMap<>();
        for (Inscricao inscricao : inscricoes) {
            if (inscricao.isDesistiu()) {
-               continue; // Ignora inscrições desistidas
+               continue;
            }
            String nomeDisciplina = inscricao.getDisciplina().getNomeDisciplina();
            inscricoesPorDisciplina.computeIfAbsent(nomeDisciplina, k -> new ArrayList<>()).add(inscricao);
        }
 
-       // Itera sobre cada disciplina para calcular o ranque e alocar vagas
        for (Map.Entry<String, ArrayList<Inscricao>> entry : inscricoesPorDisciplina.entrySet()) {
            String nomeDisciplina = entry.getKey();
            ArrayList<Inscricao> inscricoesDisciplina = entry.getValue();
@@ -255,7 +253,6 @@ public class EditalDeMonitoria {
            }
            inscricoesDisciplina.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
 
-           // Coloca os alunos nas vagas
            int vagasRemuneradasRestantes = disciplina.getVagasRemuneradas();
            int vagasVoluntariasRestantes = disciplina.getVagasVoluntarias();
 

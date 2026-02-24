@@ -39,7 +39,7 @@ public class CentralDeInformacoes {
      */
     public void notificarObservadores() {
         if (this.observadores == null) {
-            return; // Nenhum observador para notificar
+            return;
         }
         for (Observador observador : this.observadores) {
             observador.atualizar();
@@ -98,7 +98,8 @@ public class CentralDeInformacoes {
             }
         }
         todosOsAlunos.add(aluno);
-        notificarObservadores(); // Notifica as telas sobre a adição do novo aluno
+        // Notifica as telas
+        notificarObservadores();
         return true; //TODO| pode ser interessante criar uma exceção para caso o aluno já exista (duplicata)
     }
 
@@ -137,7 +138,6 @@ public class CentralDeInformacoes {
             }
         }
         todosOsEditais.add(edital);
-        // Notifica as telas que um novo edital foi adicionado
         notificarObservadores();
         return true;
     }
@@ -209,7 +209,7 @@ public class CentralDeInformacoes {
     public String gerarCodigoRecuperacao(String email) {
         Usuario usuario = getUsuarioPorEmail(email);
         if (usuario == null) {
-            return null; // Usuário não encontrado
+            return null;
         }
         
         if (codigosRecuperacao == null) {
@@ -230,7 +230,7 @@ public class CentralDeInformacoes {
      */
     public boolean redefinirSenhaComCodigo(String email, String codigo, String novaSenha) {
         if (codigosRecuperacao == null || !codigosRecuperacao.containsKey(email.toLowerCase())) {
-            return false; // Nenhum código foi gerado para este e-mail
+            return false; // Nenhum código foi gerado para esse e-mail
         }
 
         String codigoArmazenado = codigosRecuperacao.get(email.toLowerCase());
@@ -238,7 +238,8 @@ public class CentralDeInformacoes {
             Usuario usuario = getUsuarioPorEmail(email);
             if (usuario != null) {
                 usuario.setSenha(novaSenha);
-                codigosRecuperacao.remove(email.toLowerCase()); // Invalida o código após o uso
+                // Invalida o código depois de usar
+                codigosRecuperacao.remove(email.toLowerCase());
                 return true;
             }
         }

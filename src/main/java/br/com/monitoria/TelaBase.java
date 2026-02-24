@@ -32,9 +32,9 @@ public abstract class TelaBase extends JFrame {
     private void configurarJanela() {
         setSize(Estilos.LARGURA_TELA, Estilos.ALTURA_TELA);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Centraliza a janela
+        setLocationRelativeTo(null);
         setLayout(null);
-        setResizable(false); // Tirar o resizable para manter a tela menos proprícia a erros.
+        setResizable(false);
         getContentPane().setBackground(Estilos.COR_FUNDO);
     }
 
@@ -119,7 +119,6 @@ public abstract class TelaBase extends JFrame {
     protected JTextField criarCampoTexto(int colunas) {
         JTextField campo = new JTextField(colunas);
         campo.setFont(Estilos.FONTE_NORMAL);
-        // Criar a borda do Campo
         campo.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Estilos.COR_SECUNDARIA, 1),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)
@@ -149,7 +148,6 @@ public abstract class TelaBase extends JFrame {
      * Mostra uma mensagem de aviso.
      * @param mensagem A mensagem a ser exibida
      */
-    // Vai ser muito útil
     protected void mostrarAviso(String mensagem) {
         JOptionPane.showMessageDialog(this, mensagem, "Aviso",
                 JOptionPane.WARNING_MESSAGE);

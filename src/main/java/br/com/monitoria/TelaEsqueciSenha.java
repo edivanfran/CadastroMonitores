@@ -1,5 +1,7 @@
 package br.com.monitoria;
 
+import br.com.monitoria.excecoes.UsuarioNaoEncontradoException;
+
 import javax.swing.*;
 
 /**
@@ -61,7 +63,13 @@ public class TelaEsqueciSenha extends TelaBase {
             return;
         }
 
-        String codigo = getCentral().gerarCodigoRecuperacao(email);
+        String codigo;
+        try {
+            codigo = getCentral().getAutenticador().gerarCodigoRecuperacao(email, getCentral());
+        } catch (UsuarioNaoEncontradoException e) {
+            mostrarErro("O e-mail inserido não foi encontrado em nosso sistema.");
+            return;
+        }
 
         if (codigo == null) {
             mostrarErro("O e-mail inserido não foi encontrado em nosso sistema.");

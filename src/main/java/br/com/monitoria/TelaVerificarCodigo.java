@@ -92,7 +92,7 @@ public class TelaVerificarCodigo extends TelaBase {
             return;
         }
 
-        boolean sucesso = getCentral().redefinirSenhaComCodigo(email, codigo, novaSenha);
+        boolean sucesso = getCentral().getAutenticador().redefinirSenhaComCodigo(email, codigo, novaSenha, getCentral());
 
         if (sucesso) {
             try {

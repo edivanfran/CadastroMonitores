@@ -170,7 +170,7 @@ public class TelaLogin extends TelaBase {
         }
         
         // Verifica se é aluno
-        if (getCentral().isLoginPermitido(email, senha)) {
+        if (getCentral().getAutenticador().isLoginPermitido(email, senha, getCentral())) {
             Aluno aluno = getCentral().retornarAlunoPeloEmail(email);
             if (aluno != null) {
                 sessao.setUsuarioLogado(aluno);

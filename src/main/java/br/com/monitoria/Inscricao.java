@@ -1,6 +1,7 @@
 package br.com.monitoria;
 
 import br.com.monitoria.excecoes.ValoresInvalidosException;
+import br.com.monitoria.servico.ValidadorInscricao;
 
 /**
  * Representa uma inscrição de um aluno em uma disciplina de um edital de monitoria.
@@ -15,38 +16,15 @@ public class Inscricao {
     private int ordemPreferencia;
     private PreferenciaInscricao preferenciaVaga;
     private boolean desistiu;
-    private double pontuacaoFinal; // Armazena a pontuação calculada
+    private double pontuacaoFinal;
 
     /**
      * Construtor da inscrição.
-     * @param aluno O aluno que se inscreveu
-     * @param disciplina A disciplina na qual o aluno se inscreveu
-     * @param cre O CRE do aluno (deve estar entre 0 e 100)
-     * @param nota A média do aluno na disciplina (deve estar entre 0 e 100)
-     * @param tipoVaga O tipo de vaga (remunerada ou voluntária) que o aluno conseguiu
-     * @param ordemPreferencia A ordem de preferência da disciplina para o aluno
-     * @param preferenciaVaga A preferência do aluno pelo tipo de vaga
-     * @throws ValoresInvalidosException Se o CRE ou a nota estiverem fora do intervalo válido
+     * A validação dos dados é delegada para a classe ValidadorInscricao (SRP/High Cohesion).
      */
     public Inscricao(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga) throws ValoresInvalidosException {
-        if (cre < 0 || cre > 100) {
-            throw new ValoresInvalidosException("CRE", cre, 0, 100);
-        }
-        if (nota < 0 || nota > 100) {
-            throw new ValoresInvalidosException("Nota", nota, 0, 100);
-        }
-        if (aluno == null) {
-            throw new IllegalArgumentException("O aluno não pode ser nulo.");
-        }
-        if (disciplina == null) {
-            throw new IllegalArgumentException("A disciplina não pode ser nula.");
-        }
-        if (tipoVaga == null) {
-            throw new IllegalArgumentException("O tipo de vaga não pode ser nulo.");
-        }
-        if (preferenciaVaga == null) {
-            throw new IllegalArgumentException("A preferência de vaga não pode ser nula.");
-        }
+        // Delega a responsabilidade de validação (Pure Fabrication / SRP)
+        ValidadorInscricao.validar(aluno, disciplina, cre, nota, tipoVaga, preferenciaVaga);
         
         this.aluno = aluno;
         this.disciplina = disciplina;

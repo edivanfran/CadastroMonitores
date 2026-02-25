@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import br.com.monitoria.excecoes.*;
+import br.com.monitoria.interfaces.ICalculadoraPontuacao;
+import br.com.monitoria.servico.CalculadoraPontuacaoPadrao;
 
 /**
  * Representa editais de monitoria de disciplinas do Curso, registradas em uma central de informações. Possui ID {@code long}, um número {@code String}, uma data de início e uma de limite — ambas {@link LocalDate} —, uma lista de disciplinas que esse edital compreende em seu processo seletivo, e um booleano determinando se o edital se encontra ainda aberto.
@@ -24,6 +26,9 @@ public class EditalDeMonitoria {
     private Map<String, ArrayList<Inscricao>> ranquePorDisciplina;
     private boolean resultadoCalculado;
     private boolean periodoDesistenciaEncerrado;
+    
+    // Estratégia de cálculo (OCP)
+    private ICalculadoraPontuacao calculadoraPontuacao;
 
     public long getId() {
         return id;
@@ -70,6 +75,7 @@ public class EditalDeMonitoria {
         this.ranquePorDisciplina = new HashMap<>();
         this.resultadoCalculado = false;
         this.periodoDesistenciaEncerrado = false;
+        this.calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
     }
 
     /**
@@ -98,6 +104,8 @@ public class EditalDeMonitoria {
        this.ranquePorDisciplina = new HashMap<>();
        this.resultadoCalculado = false;
        this.periodoDesistenciaEncerrado = false;
+       // Define a estratégia padrão
+       this.calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
    }
 
     /**
@@ -110,6 +118,14 @@ public class EditalDeMonitoria {
      */
     public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite) throws PesosInvalidosException {
         this(numero, dataInicio, dataLimite, 0.5, 0.5);
+    }
+    
+    /**
+     * Permite alterar a estratégia de cálculo de pontuação em tempo de execução.
+     * @param calculadora A nova estratégia de cálculo.
+     */
+    public void setCalculadoraPontuacao(ICalculadoraPontuacao calculadora) {
+        this.calculadoraPontuacao = calculadora;
     }
 
     public double getPesoCre() {
@@ -247,10 +263,13 @@ public class EditalDeMonitoria {
            ArrayList<Inscricao> inscricoesDisciplina = entry.getValue();
            Disciplina disciplina = inscricoesDisciplina.get(0).getDisciplina();
 
-           // Calcula a pontuação e ordena a lista de inscritos
+           // Calcula a pontuação usando a ESTRATÉGIA definida
            for (Inscricao inscricao : inscricoesDisciplina) {
-               inscricao.calcularPontuacao(pesoCre, pesoNota);
+               double pontuacao = calculadoraPontuacao.calcular(inscricao, pesoCre, pesoNota);
+               inscricao.setPontuacaoFinal(pontuacao);
            }
+           
+           // Ordena a lista de inscritos
            inscricoesDisciplina.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
 
            int vagasRemuneradasRestantes = disciplina.getVagasRemuneradas();

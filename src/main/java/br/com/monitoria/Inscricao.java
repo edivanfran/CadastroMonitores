@@ -104,14 +104,12 @@ public class Inscricao {
     }
 
     /**
-     * Calcula e define a pontuação final do aluno usando a fórmula: PONTUAÇÃO = PESO_CRE * CRE + PESO_NOTA * NOTA
-     * @param pesoCre O peso do CRE no cálculo
-     * @param pesoNota O peso da nota no cálculo
-     * @return A pontuação final calculada
+     * Define a pontuação final da inscrição.
+     * O cálculo deve ser feito externamente por uma ICalculadoraPontuacao.
+     * @param pontuacaoFinal O valor calculado.
      */
-    public double calcularPontuacao(double pesoCre, double pesoNota) {
-        this.pontuacaoFinal = (pesoCre * cre) + (pesoNota * nota);
-        return this.pontuacaoFinal;
+    public void setPontuacaoFinal(double pontuacaoFinal) {
+        this.pontuacaoFinal = pontuacaoFinal;
     }
 
     /**

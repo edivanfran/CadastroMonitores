@@ -19,6 +19,20 @@
     <!-- 3. Dependências Externas -->
     <dependencies>
 
+    <!-- Importar o banco de dados e SQL-->
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>6.4.4.Final</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
+                <version>8.3.0</version>
+            </dependency>
+
+
         <!-- XStream para manipulação de XML (usado em main.java.br.com.monitoria.Persistencia.java) -->
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>

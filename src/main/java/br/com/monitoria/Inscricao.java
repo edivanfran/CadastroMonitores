@@ -2,21 +2,53 @@ package br.com.monitoria;
 
 import br.com.monitoria.excecoes.ValoresInvalidosException;
 import br.com.monitoria.servico.ValidadorInscricao;
+import jakarta.persistence.*;
 
 /**
  * Representa uma inscrição de um aluno em uma disciplina de um edital de monitoria.
  * Armazena o aluno, a disciplina, o CRE, a nota e o tipo de vaga (remunerada ou voluntária).
  */
+
+@Entity
+@Table (name = "inscricao")
 public class Inscricao {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "aluno_id", nullable = false)
     private Aluno aluno;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "disciplina_id", nullable = false)
     private Disciplina disciplina;
+
+    @Column(nullable = false)
     private double cre;
+
+    @Column(nullable = false)
     private double nota;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_Vaga", nullable = false)
     private Vaga tipoVaga;
+
+    @Column(name = "ordem_preferencia")
     private int ordemPreferencia;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "preferencia_vaga")
     private PreferenciaInscricao preferenciaVaga;
+
+    @Column(nullable = false)
     private boolean desistiu;
+
+    @Column(name = "pontuacao_final")
     private double pontuacaoFinal;
+
+    protected Inscricao() {}
 
     /**
      * Construtor da inscrição.

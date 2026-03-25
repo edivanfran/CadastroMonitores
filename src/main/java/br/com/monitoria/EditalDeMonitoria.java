@@ -9,24 +9,59 @@ import br.com.monitoria.excecoes.*;
 import br.com.monitoria.interfaces.ICalculadoraPontuacao;
 import br.com.monitoria.servico.CalculadoraPontuacaoPadrao;
 
+import jakarta.persistence.*;
+import java.util.*;
+
 /**
  * Representa editais de monitoria de disciplinas do Curso, registradas em uma central de informações. Possui ID {@code long}, um número {@code String}, uma data de início e uma de limite — ambas {@link LocalDate} —, uma lista de disciplinas que esse edital compreende em seu processo seletivo, e um booleano determinando se o edital se encontra ainda aberto.
  */
+
+@Entity
+@Table (name = "edital_de_mentoria")
 public class EditalDeMonitoria {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column(nullable = false)
     private String numero;
+
+    @Column(name = "data_inicio", nullable = false)
     private LocalDate dataInicio;
+
+    @Column(name = "data_limite", nullable = false)
     private LocalDate dataLimite;
-    private ArrayList<Disciplina> disciplinas;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "edital_disciplina",
+              joinColumns = @JoinColumn(name = "edital_id"),
+              inverseJoinColumns = @JoinColumn(name = "disciplina_id")
+    )
+    private List<Disciplina> disciplinas = new ArrayList<>();
+
+    @Column(nullable = false)
     private boolean aberto;
+
+    @Column(name = "peso_cre", nullable = false)
     private double pesoCre;
+
+    @Column(name = "peso_nota", nullable = false)
     private double pesoNota;
-    private ArrayList<Inscricao> inscricoes;
-    // Nome da disciplina -> Lista ordenada de inscrições
+
+    @OneToMany(mappedBy = "edital", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Inscricao> inscricoes = new ArrayList<>();
+
+    @Transient
     private Map<String, ArrayList<Inscricao>> ranquePorDisciplina;
+
+    @Column(name = "resultado_calculado", nullable = false)
     private boolean resultadoCalculado;
+
+    @Column(name = "periodo_desistencia_encerrado", nullable = false)
     private boolean periodoDesistenciaEncerrado;
-    
+
+    protected EditalDeMonitoria() {}
+
     // Estratégia de cálculo (OCP)
     private ICalculadoraPontuacao calculadoraPontuacao;
 
@@ -42,7 +77,7 @@ public class EditalDeMonitoria {
     public LocalDate getDataLimite() {
         return dataLimite;
     }
-    public ArrayList<Disciplina> getDisciplinas() {
+    public List<Disciplina> getDisciplinas() {
         return disciplinas;
     }
     public void setDataInicio(LocalDate dataInicio) {
@@ -144,7 +179,7 @@ public class EditalDeMonitoria {
         this.pesoNota = pesoNota;
     }
 
-    public ArrayList<Inscricao> getInscricoes() {
+    public List<Inscricao> getInscricoes() {
         return inscricoes;
     }
 

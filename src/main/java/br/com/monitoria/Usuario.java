@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import javax.swing.JFrame;
 
 /**
  * Abstração que representa usuários cadastrados em uma central de informações.
@@ -73,4 +74,10 @@ public abstract class Usuario {
             throw new LoginInvalidoException();
         }
     }
+
+    /**
+     * Tenta abrir a tela de cadastro de edital. A implementação varia conforme o tipo de usuário.
+     * @param telaPai A tela que está chamando a ação, para posicionamento de janelas de diálogo.
+     */
+    public abstract void abrirTelaCadastroEdital(JFrame telaPai);
 }

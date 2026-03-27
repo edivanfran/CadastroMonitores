@@ -1,16 +1,37 @@
 package br.com.monitoria;
 
 import br.com.monitoria.excecoes.LoginInvalidoException;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 
 /**
  * Abstração que representa usuários cadastrados em uma central de informações.
  * <p>Possui nome, e-mail e senha.</p>
  * @see CentralDeInformacoes
  */
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "tipo")
 public abstract class Usuario {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(nullable = false)
     private String nome;
-    public String email;
-    public String senha;
+    @Column(nullable = false, unique = true)
+    private String email;
+    @Column(nullable = false)
+    private String senha;
+
+    protected Usuario() {
+        // Construtor para JPA
+    }
 
     public String getNome() {
         return nome;
@@ -31,6 +52,10 @@ public abstract class Usuario {
         this.senha = senha;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public Usuario(String email, String senha, String nome) {
         this.email = email;
         this.senha = senha;
@@ -44,8 +69,8 @@ public abstract class Usuario {
      * @throws LoginInvalidoException Se as credenciais forem ilegítimas; do contrário, não faz nada
      */
     public void autenticarLogin(String email, String senha) throws LoginInvalidoException {
-        if (this.email.equals(email) && this.senha.equals(senha)) {
+        if (!this.email.equals(email) || !this.senha.equals(senha)) {
             throw new LoginInvalidoException();
-        } //TODO| falta implementar
+        }
     }
 }

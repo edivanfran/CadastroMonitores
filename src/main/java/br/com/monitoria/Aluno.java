@@ -50,7 +50,6 @@ public class Aluno extends Usuario{
 		return this.getNome();
 	}
 
-    @Override
     public void abrirTelaCadastroEdital(JFrame telaPai) {
         // O Aluno NÃO PODE. Então ele mostra uma mensagem de erro.
         JOptionPane.showMessageDialog(telaPai, "Apenas coordenadores podem cadastrar editais.", "Acesso Negado", JOptionPane.WARNING_MESSAGE);

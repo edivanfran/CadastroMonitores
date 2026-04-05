@@ -527,6 +527,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
     private void abrirTelaListagemEditais() {
         TelaListagemEditais telaListagem = new TelaListagemEditais(getCentral(), getPersistencia(), getNomeArquivo());
+        telaListagem.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         telaListagem.inicializar();
         this.dispose();
     }

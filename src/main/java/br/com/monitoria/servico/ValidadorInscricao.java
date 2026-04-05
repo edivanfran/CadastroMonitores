@@ -1,7 +1,7 @@
 package br.com.monitoria.servico;
 
-import br.com.monitoria.Aluno;
-import br.com.monitoria.Disciplina;
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Disciplina;
 import br.com.monitoria.PreferenciaInscricao;
 import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.ValoresInvalidosException;

@@ -1,5 +1,6 @@
-package br.com.monitoria;
+package br.com.monitoria.model;
 
+import br.com.monitoria.CentralDeInformacoes;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import javax.swing.JFrame;

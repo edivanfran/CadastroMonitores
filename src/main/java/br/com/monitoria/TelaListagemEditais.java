@@ -1,5 +1,7 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.EditalDeMonitoria;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.WindowAdapter;

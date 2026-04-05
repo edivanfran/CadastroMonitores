@@ -1,5 +1,6 @@
-package br.com.monitoria;
+package br.com.monitoria.model;
 
+import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.VagasEsgotadasException;
 import java.util.ArrayList;
 import java.util.List;

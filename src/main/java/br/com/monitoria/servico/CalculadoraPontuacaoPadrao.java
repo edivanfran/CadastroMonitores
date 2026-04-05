@@ -1,6 +1,6 @@
 package br.com.monitoria.servico;
 
-import br.com.monitoria.Inscricao;
+import br.com.monitoria.model.Inscricao;
 import br.com.monitoria.interfaces.ICalculadoraPontuacao;
 
 /**

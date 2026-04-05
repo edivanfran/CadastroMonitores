@@ -3,6 +3,9 @@ package br.com.monitoria;
 import br.com.monitoria.excecoes.EditalAbertoException;
 import br.com.monitoria.excecoes.SemInscricoesException;
 import br.com.monitoria.interfaces.Observador;
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.EditalDeMonitoria;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;

@@ -1,5 +1,9 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Disciplina;
+import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.model.Inscricao;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import java.io.FileOutputStream;

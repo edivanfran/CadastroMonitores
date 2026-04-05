@@ -1,5 +1,7 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Aluno;
+
 import javax.swing.*;
 
 /**

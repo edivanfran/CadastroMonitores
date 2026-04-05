@@ -1,8 +1,11 @@
 package br.com.monitoria;
 
 import br.com.monitoria.excecoes.LoginInvalidoException;
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Usuario;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
 
@@ -43,7 +46,7 @@ public class GerenciadorDeDados {
     public List<Aluno> getTodosOsAlunos() {
         EntityManager em = emf.createEntityManager();
         try {
-            TypedQuery<Aluno> query = em.createQuery("SELECT a FROM Alunos a", Aluno.class);
+            TypedQuery<Aluno> query = em.createQuery("SELECT a FROM Aluno a", Aluno.class);
             return  query.getResultList();
         } finally {
             em.close();
@@ -58,6 +61,8 @@ public class GerenciadorDeDados {
             );
             query.setParameter("email", email.toLowerCase());
             return query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
         } finally {
             em.close();
         }

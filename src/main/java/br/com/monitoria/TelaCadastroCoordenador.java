@@ -1,5 +1,7 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Coordenador;
+
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;

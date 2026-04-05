@@ -1,5 +1,9 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Disciplina;
+import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.model.Inscricao;
+
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;

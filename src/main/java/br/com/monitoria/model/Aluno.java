@@ -1,5 +1,6 @@
-package br.com.monitoria;
+package br.com.monitoria.model;
 
+import br.com.monitoria.Sexo;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -14,7 +15,7 @@ import javax.swing.JOptionPane;
  */
 @Entity
 @DiscriminatorValue("A")
-public class Aluno extends Usuario{
+public class Aluno extends Usuario {
 	@Column(unique = true, nullable = false)
 	public String matricula;
 	@Enumerated(EnumType.STRING)

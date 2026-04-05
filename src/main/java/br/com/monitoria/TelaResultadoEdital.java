@@ -1,5 +1,12 @@
 
 package br.com.monitoria;
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.Disciplina;
+import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.model.Inscricao;
+import br.com.monitoria.model.Usuario;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;

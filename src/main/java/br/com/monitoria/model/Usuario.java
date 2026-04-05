@@ -1,5 +1,6 @@
-package br.com.monitoria;
+package br.com.monitoria.model;
 
+import br.com.monitoria.CentralDeInformacoes;
 import br.com.monitoria.excecoes.LoginInvalidoException;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;

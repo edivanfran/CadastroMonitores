@@ -1,5 +1,9 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Disciplina;
+import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.model.Inscricao;
+
 import javax.swing.JTable;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;

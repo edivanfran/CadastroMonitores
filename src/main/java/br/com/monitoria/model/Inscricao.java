@@ -1,5 +1,7 @@
-package br.com.monitoria;
+package br.com.monitoria.model;
 
+import br.com.monitoria.PreferenciaInscricao;
+import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.ValoresInvalidosException;
 import br.com.monitoria.servico.ValidadorInscricao;
 import jakarta.persistence.*;

@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import br.com.monitoria.excecoes.PesosInvalidosException;
+import br.com.monitoria.model.EditalDeMonitoria;
 
 public class TelaCadastrarEdital extends TelaEditalBase {
 

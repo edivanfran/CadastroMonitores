@@ -1,5 +1,10 @@
 package br.com.monitoria;
 
+import br.com.monitoria.excecoes.LoginInvalidoException;
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.Usuario;
+
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
@@ -159,7 +164,22 @@ public class TelaLogin extends TelaBase {
             mostrarErro("Por favor, preencha todos os campos.");
             return;
         }
-        
+
+        try {
+            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+            Usuario usuarioLogado = gerenciadorDeDados.autenticarUsuario(email, senha);
+
+            sessao.setUsuarioLogado(usuarioLogado);
+            abrirTelaPrincipal();
+        } catch (LoginInvalidoException e) {
+            mostrarErro("E-mail ou senha inválidos.");
+            campoEmail.requestFocus();
+            campoSenha.setText("");
+        } catch (Exception e){
+            mostrarErro("Ocorreu um erro inesperado. Tente novamente.");
+            e.printStackTrace();
+        }
+
         // Verifica se é coordenador
         Coordenador coordenador = getCentral().getCoordenador();
         if (coordenador.getEmail().equalsIgnoreCase(email) && 

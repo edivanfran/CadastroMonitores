@@ -13,6 +13,9 @@ import br.com.monitoria.excecoes.EditalAbertoException;
 import br.com.monitoria.excecoes.EditalFechadoException;
 import br.com.monitoria.excecoes.PermissaoNegadaException;
 import br.com.monitoria.excecoes.PrazoVencidoException;
+import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.Disciplina;
+import br.com.monitoria.model.EditalDeMonitoria;
 
 public class TelaDetalharEdital extends TelaEditalBase {
 

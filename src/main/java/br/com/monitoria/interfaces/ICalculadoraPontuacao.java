@@ -1,6 +1,6 @@
 package br.com.monitoria.interfaces;
 
-import br.com.monitoria.Inscricao;
+import br.com.monitoria.model.Inscricao;
 
 /**
  * Interface que define a estratégia de cálculo de pontuação para uma inscrição.

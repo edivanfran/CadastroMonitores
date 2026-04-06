@@ -1,5 +1,11 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.Disciplina;
+import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.model.Inscricao;
+import br.com.monitoria.model.Usuario;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 

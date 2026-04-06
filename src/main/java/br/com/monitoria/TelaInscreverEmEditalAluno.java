@@ -1,6 +1,9 @@
 package br.com.monitoria;
 
 import br.com.monitoria.excecoes.*;
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Disciplina;
+import br.com.monitoria.model.EditalDeMonitoria;
 
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;

@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import br.com.monitoria.excecoes.*;
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.model.Usuario;
 
 /**
  * Descreve o objeto cujas funções são armazenar as alterações feitas na base de informações para posteriormente tê-las serializadas em um arquivo XML por meio de um objeto {@link Persistencia}, assim como receber as informações que forem desserializadas por este para que sejam utilizadas pelo programa.

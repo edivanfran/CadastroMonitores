@@ -1,10 +1,13 @@
-package br.com.monitoria;
+package br.com.monitoria.model;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import br.com.monitoria.PreferenciaInscricao;
+import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.*;
 import br.com.monitoria.interfaces.ICalculadoraPontuacao;
 import br.com.monitoria.servico.CalculadoraPontuacaoPadrao;
@@ -37,7 +40,7 @@ public class EditalDeMonitoria {
               joinColumns = @JoinColumn(name = "edital_id"),
               inverseJoinColumns = @JoinColumn(name = "disciplina_id")
     )
-    private List<Disciplina> disciplinas = new ArrayList<>();
+    private ArrayList<Disciplina> disciplinas = new ArrayList<>();
 
     @Column(nullable = false)
     private boolean aberto;
@@ -77,7 +80,7 @@ public class EditalDeMonitoria {
     public LocalDate getDataLimite() {
         return dataLimite;
     }
-    public List<Disciplina> getDisciplinas() {
+    public ArrayList<Disciplina> getDisciplinas() {
         return disciplinas;
     }
     public void setDataInicio(LocalDate dataInicio) {

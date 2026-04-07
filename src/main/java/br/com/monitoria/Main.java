@@ -1,25 +1,19 @@
 package br.com.monitoria;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import br.com.monitoria.dao.JPAUtil;
 import br.com.monitoria.excecoes.*;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 
 public class Main {
     public static void main(String[] args) {
 
         JPAUtil.getEntityManager().close();
 
-        // ... resto do código
-        // Toma o diretório onde o usuário executa o programa e adiciona todos os arquivos .xml deste em uma lista
-        File[] pasta = new File(System.getProperty("user.dir")).listFiles(); /* "user.dir" → diretório onde o programa é executado */
+        File[] pasta = new File(System.getProperty("user.dir")).listFiles();
         ArrayList<File> arquivos = new ArrayList<>();
         for (File arquivo : pasta) {
             if (arquivo.getName().endsWith(".xml")) {
@@ -29,7 +23,6 @@ public class Main {
 
         Scanner sc = new Scanner(System.in);
 
-        // Saúda o usuário corretamente dependendo do período do dia em que ele executa o programa
         if (LocalTime.now().getHour() >= 18) {
             System.out.println("Boa noite.");
         } else if (LocalTime.now().getHour() >= 12) {
@@ -40,7 +33,6 @@ public class Main {
             System.out.println("Boa madrugada.");
         }
 
-        // Tenta recuperar as centrais diretamente dos arquivos, caso encontradas, ou cria uma nova caso não
         Persistencia persistencia = new Persistencia();
         CentralDeInformacoes central;
         String nomeArquivo;

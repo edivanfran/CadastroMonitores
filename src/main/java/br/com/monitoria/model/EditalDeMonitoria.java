@@ -66,6 +66,7 @@ public class EditalDeMonitoria {
     protected EditalDeMonitoria() {}
 
     // Estratégia de cálculo (OCP)
+    @Transient
     private ICalculadoraPontuacao calculadoraPontuacao;
 
     public long getId() {
@@ -157,14 +158,7 @@ public class EditalDeMonitoria {
     public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite) throws PesosInvalidosException {
         this(numero, dataInicio, dataLimite, 0.5, 0.5);
     }
-    
-    /**
-     * Permite alterar a estratégia de cálculo de pontuação em tempo de execução.
-     * @param calculadora A nova estratégia de cálculo.
-     */
-    public void setCalculadoraPontuacao(ICalculadoraPontuacao calculadora) {
-        this.calculadoraPontuacao = calculadora;
-    }
+
 
     public double getPesoCre() {
         return pesoCre;
@@ -251,8 +245,7 @@ public class EditalDeMonitoria {
                d.adicionarAluno(aluno, tipoVaga);
 
                // Se não lançou exceção, a vaga foi garantida. Cria a inscrição.
-               Inscricao inscricao = new Inscricao(aluno, d, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);
-               inscricoes.add(inscricao);
+               Inscricao inscricao = new Inscricao(aluno, d, this, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);               inscricoes.add(inscricao);
 
                System.out.println("Inscrição de " + aluno.getNome() + " em " + nomeDisciplina + " (" + tipoVaga + ") confirmada.");
                return;

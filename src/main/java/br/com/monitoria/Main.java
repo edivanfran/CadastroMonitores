@@ -6,10 +6,18 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+
+import br.com.monitoria.dao.JPAUtil;
 import br.com.monitoria.excecoes.*;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 
 public class Main {
     public static void main(String[] args) {
+
+        JPAUtil.getEntityManager().close();
+
+        // ... resto do código
         // Toma o diretório onde o usuário executa o programa e adiciona todos os arquivos .xml deste em uma lista
         File[] pasta = new File(System.getProperty("user.dir")).listFiles(); /* "user.dir" → diretório onde o programa é executado */
         ArrayList<File> arquivos = new ArrayList<>();

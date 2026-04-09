@@ -6,14 +6,15 @@
              version="3.0">
 
     <persistence-unit name="monitoriaPU" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <class>br.edu.monitoria.model.Usuario</class>
-        <class>br.edu.monitoria.model.Aluno</class>
-        <class>br.edu.monitoria.model.Coordenador</class>
-        <class>br.edu.monitoria.model.Disciplina</class>
-        <class>br.edu.monitoria.model.EditalDeMonitoria</class>
-        <class>br.edu.monitoria.model.EditalDisciplina</class>
-        <class>br.edu.monitoria.model.Inscricao</class>
+        <class>br.com.monitoria.model.Usuario</class>
+        <class>br.com.monitoria.model.Aluno</class>
+        <class>br.com.monitoria.model.Coordenador</class>
+        <class>br.com.monitoria.model.Disciplina</class>
+        <class>br.com.monitoria.model.EditalDeMonitoria</class>
+        <class>br.com.monitoria.model.EditalDisciplina</class>
+        <class>br.com.monitoria.model.Inscricao</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver"

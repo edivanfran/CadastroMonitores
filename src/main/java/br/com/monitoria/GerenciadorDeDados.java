@@ -1,7 +1,6 @@
 package br.com.monitoria;
 
 import br.com.monitoria.dao.*;
-import br.com.monitoria.excecoes.LoginInvalidoException;
 import br.com.monitoria.model.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -316,14 +315,12 @@ public class GerenciadorDeDados {
         }
     }
 
-    public Usuario autenticarUsuario(String email, String senha) throws LoginInvalidoException {
+    public boolean isLoginPermitido(String email, String senha) {
         Usuario usuario = getUsuarioPorEmail(email);
         if (usuario == null) {
-            throw new LoginInvalidoException();
+            return false;
         }
-
-        usuario.autenticarLogin(email, senha);
-        return usuario;
+        return usuario.autenticarUsuario(email, senha);
     }
 
     public void fechar() {

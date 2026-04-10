@@ -1,6 +1,5 @@
 package br.com.monitoria;
 
-import br.com.monitoria.excecoes.LoginInvalidoException;
 import br.com.monitoria.model.Aluno;
 import br.com.monitoria.model.Coordenador;
 import br.com.monitoria.model.Usuario;
@@ -18,7 +17,7 @@ public class TelaLogin extends TelaBase {
     private JTextField campoEmail;
     private JPasswordField campoSenha;
     private JButton botaoLogin;
-    
+
     public TelaLogin(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
         super("Sistema de Cadastro de Monitores - Login",
                 central,
@@ -158,26 +157,12 @@ public class TelaLogin extends TelaBase {
 
         String email = campoEmail.getText().trim();
         String senha = new String(campoSenha.getPassword());
-        
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+
         // Validação básica
         if (email.isEmpty() || senha.isEmpty()) {
             mostrarErro("Por favor, preencha todos os campos.");
             return;
-        }
-
-        try {
-            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-            Usuario usuarioLogado = gerenciadorDeDados.autenticarUsuario(email, senha);
-
-            sessao.setUsuarioLogado(usuarioLogado);
-            abrirTelaPrincipal();
-        } catch (LoginInvalidoException e) {
-            mostrarErro("E-mail ou senha inválidos.");
-            campoEmail.requestFocus();
-            campoSenha.setText("");
-        } catch (Exception e){
-            mostrarErro("Ocorreu um erro inesperado. Tente novamente.");
-            e.printStackTrace();
         }
 
         // Verifica se é coordenador
@@ -190,13 +175,18 @@ public class TelaLogin extends TelaBase {
         }
         
         // Verifica se é aluno
-        if (getCentral().isLoginPermitido(email, senha)) {
-            Aluno aluno = getCentral().retornarAlunoPeloEmail(email);
-            if (aluno != null) {
+        if (gerenciadorDeDados.isLoginPermitido(email, senha)) {
+            Usuario usuario = gerenciadorDeDados.getUsuarioPorEmail(email);
+            if (usuario instanceof Aluno) {
+                Aluno aluno = (Aluno) usuario;
                 sessao.setUsuarioLogado(aluno);
                 abrirTelaPrincipal();
                 return;
             }
+        } else {
+            mostrarErro("E-mail ou senha inválidos.");
+            campoEmail.requestFocus();
+            campoSenha.setText("");
         }
         
         // Credenciais inválidas

@@ -300,6 +300,22 @@ public class GerenciadorDeDados {
 
     // Métodos de Autenticação e Usuário Genérico
 
+    public void atualizarUsuario(Usuario usuario) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.merge(usuario);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
     public Usuario getUsuarioPorEmail(String email) {
         EntityManager em = emf.createEntityManager();
         try {

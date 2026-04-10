@@ -1,7 +1,9 @@
 package br.com.monitoria;
 
+import br.com.monitoria.dao.CoordenadorDao;
 import br.com.monitoria.excecoes.LoginInvalidoException;
 import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Coordenador;
 import br.com.monitoria.model.Usuario;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -56,13 +58,24 @@ public class GerenciadorDeDados {
     public Usuario getUsuarioPorEmail(String email) {
         EntityManager em = emf.createEntityManager();
         try {
-            TypedQuery<Usuario> query = em.createQuery(
-                    "SELECT u FROM Usuario u WHERE u.email = ?", Usuario.class
+            TypedQuery<Usuario> query = em.createQuery( // Usando parâmetro nomeado ':email'
+                    "SELECT u FROM Usuario u WHERE u.email = :email", Usuario.class
             );
             query.setParameter("email", email.toLowerCase());
             return query.getSingleResult();
         } catch (NoResultException e) {
             return null;
+        } finally {
+            em.close();
+        }
+    }
+
+    public void salvarCoordenador(Coordenador coordenador) {
+        EntityManager em = emf.createEntityManager();
+        CoordenadorDao coordenadorDao = new CoordenadorDao(em);
+
+        try {
+            coordenadorDao.salvar(coordenador);
         } finally {
             em.close();
         }

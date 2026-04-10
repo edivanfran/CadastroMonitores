@@ -5,32 +5,26 @@ import jakarta.persistence.EntityManager;
 
 import java.util.List;
 
-public class CoordenadorDao implements Dao<Coordenador, Long>{
+public class CoordenadorDAO implements DAO<Coordenador, Long> {
     private EntityManager em;
 
-    public CoordenadorDao(EntityManager em){
+    public CoordenadorDAO(EntityManager em) {
         this.em = em;
     }
 
     @Override
     public void salvar(Coordenador coordenador) {
-        this.em.getTransaction().begin();
         this.em.persist(coordenador);
-        this.em.getTransaction().commit();
     }
 
     @Override
     public void atualizar(Coordenador coordenador) {
-        this.em.getTransaction().begin();
         this.em.merge(coordenador);
-        this.em.getTransaction().commit();
     }
 
     @Override
     public void excluir(Coordenador coordenador) {
-        this.em.getTransaction().begin();
         this.em.remove(coordenador);
-        this.em.getTransaction().commit();
     }
 
     @Override

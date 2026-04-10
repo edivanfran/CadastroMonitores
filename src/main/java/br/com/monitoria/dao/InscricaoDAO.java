@@ -2,82 +2,41 @@ package br.com.monitoria.dao;
 
 import br.com.monitoria.model.Inscricao;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 
 import java.util.List;
 
-public class InscricaoDAO implements Dao<Inscricao, Long> {
+public class InscricaoDAO implements DAO<Inscricao, Long> {
 
-    private final EntityManagerFactory emf;
+    private final EntityManager em;
 
-    public InscricaoDAO(EntityManagerFactory emf) {
-        this.emf = emf;
+    public InscricaoDAO(EntityManager em) {
+        this.em = em;
     }
 
     @Override
     public void salvar(Inscricao inscricao) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            em.persist(inscricao);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            em.getTransaction().rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
+        em.persist(inscricao);
     }
 
     @Override
     public void atualizar(Inscricao inscricao) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            em.merge(inscricao);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            em.getTransaction().rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
+        em.merge(inscricao);
     }
 
     @Override
     public void excluir(Inscricao inscricao) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            Inscricao i = em.merge(inscricao);
-            em.remove(i);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            em.getTransaction().rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
+        Inscricao i = em.merge(inscricao);
+        em.remove(i);
     }
 
     @Override
     public Inscricao buscarPorId(Long id) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            return em.find(Inscricao.class, id);
-        } finally {
-            em.close();
-        }
+        return em.find(Inscricao.class, id);
     }
 
     @Override
     public List<Inscricao> retornarTodos() {
-        EntityManager em = emf.createEntityManager();
-        try {
-            return em.createQuery("SELECT i FROM Inscricao i", Inscricao.class)
-                    .getResultList();
-        } finally {
-            em.close();
-        }
+        return em.createQuery("SELECT i FROM Inscricao i", Inscricao.class)
+                .getResultList();
     }
 }

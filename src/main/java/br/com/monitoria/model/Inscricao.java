@@ -24,6 +24,10 @@ public class Inscricao {
     private Aluno aluno;
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "edital_id", nullable = false)
+    private EditalDeMonitoria edital;
+
+    @ManyToOne(optional = false)
     @JoinColumn(name = "disciplina_id", nullable = false)
     private Disciplina disciplina;
 
@@ -56,19 +60,18 @@ public class Inscricao {
      * Construtor da inscrição.
      * A validação dos dados é delegada para a classe ValidadorInscricao (SRP/High Cohesion).
      */
-    public Inscricao(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga) throws ValoresInvalidosException {
-        // Delega a responsabilidade de validação (Pure Fabrication / SRP)
+    public Inscricao(Aluno aluno, Disciplina disciplina, EditalDeMonitoria edital, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga) throws ValoresInvalidosException {
         ValidadorInscricao.validar(aluno, disciplina, cre, nota, tipoVaga, preferenciaVaga);
-        
         this.aluno = aluno;
         this.disciplina = disciplina;
+        this.edital = edital; // <- novo
         this.cre = cre;
         this.nota = nota;
         this.tipoVaga = tipoVaga;
         this.ordemPreferencia = ordemPreferencia;
         this.preferenciaVaga = preferenciaVaga;
         this.desistiu = false;
-        this.pontuacaoFinal = 0; 
+        this.pontuacaoFinal = 0;
     }
 
     public Aluno getAluno() {
@@ -95,10 +98,6 @@ public class Inscricao {
         this.tipoVaga = vaga;
     }
 
-    public int getOrdemPreferencia() {
-        return ordemPreferencia;
-    }
-
     public PreferenciaInscricao getPreferenciaVaga() {
         return preferenciaVaga;
     }
@@ -114,6 +113,8 @@ public class Inscricao {
     public double getPontuacaoFinal() {
         return pontuacaoFinal;
     }
+
+    public EditalDeMonitoria getEdital() { return edital; }
 
     /**
      * Define a pontuação final da inscrição.

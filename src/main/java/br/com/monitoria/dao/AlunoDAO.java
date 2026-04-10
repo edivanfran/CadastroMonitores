@@ -3,7 +3,7 @@ package br.com.monitoria.dao;
 import br.com.monitoria.model.Aluno;
 import jakarta.persistence.EntityManager;
 
-public class AlunoDAO implements Dao<Aluno, Long> {
+public class AlunoDAO implements DAO<Aluno, Long> {
     private final EntityManager em;
 
     public AlunoDAO(EntityManager em) {

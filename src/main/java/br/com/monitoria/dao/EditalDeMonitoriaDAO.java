@@ -5,7 +5,7 @@ import jakarta.persistence.EntityManager;
 
 import java.util.List;
 
-public class EditalDeMonitoriaDAO implements Dao<EditalDeMonitoria, Long> {
+public class EditalDeMonitoriaDAO implements DAO<EditalDeMonitoria, Long> {
 
     private final EntityManager em;
 

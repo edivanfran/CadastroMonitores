@@ -2,7 +2,7 @@ package br.com.monitoria.dao;
 
 import java.util.List;
 
-public interface Dao<C,I>{
+public interface DAO<C, I> {
     void salvar(C c);
 
     void atualizar(C c);

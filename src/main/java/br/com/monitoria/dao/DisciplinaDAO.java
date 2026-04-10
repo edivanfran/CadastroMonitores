@@ -5,9 +5,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 
 import java.util.List;
-import java.util.Optional;
 
-public class DisciplinaDAO implements Dao<Disciplina, Long> {
+public class DisciplinaDAO implements DAO<Disciplina, Long> {
 
     private final EntityManagerFactory emf;
 

@@ -5,10 +5,10 @@ import jakarta.persistence.EntityManager;
 
 import java.util.List;
 
-public class CoordenadorDao implements Dao<Coordenador, Long>{
+public class CoordenadorDAO implements DAO<Coordenador, Long> {
     private EntityManager em;
 
-    public CoordenadorDao(EntityManager em){
+    public CoordenadorDAO(EntityManager em) {
         this.em = em;
     }
 

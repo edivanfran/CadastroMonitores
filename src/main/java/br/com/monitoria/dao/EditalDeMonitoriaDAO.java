@@ -2,22 +2,19 @@ package br.com.monitoria.dao;
 
 import br.com.monitoria.model.EditalDeMonitoria;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 
 import java.util.List;
-import java.util.Optional;
 
 public class EditalDeMonitoriaDAO implements Dao<EditalDeMonitoria, Long> {
 
-    private final EntityManagerFactory emf;
+    private final EntityManager em;
 
-    public EditalDeMonitoriaDAO(EntityManagerFactory emf) {
-        this.emf = emf;
+    public EditalDeMonitoriaDAO(EntityManager em) {
+        this.em = em;
     }
 
     @Override
     public void salvar(EditalDeMonitoria edital) {
-        EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
             em.persist(edital);
@@ -32,7 +29,6 @@ public class EditalDeMonitoriaDAO implements Dao<EditalDeMonitoria, Long> {
 
     @Override
     public void atualizar(EditalDeMonitoria edital) {
-        EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
             em.merge(edital);
@@ -47,7 +43,6 @@ public class EditalDeMonitoriaDAO implements Dao<EditalDeMonitoria, Long> {
 
     @Override
     public void excluir(EditalDeMonitoria edital) {
-        EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
             EditalDeMonitoria e = em.merge(edital);
@@ -63,7 +58,6 @@ public class EditalDeMonitoriaDAO implements Dao<EditalDeMonitoria, Long> {
 
     @Override
     public EditalDeMonitoria buscarPorId(Long id) {
-        EntityManager em = emf.createEntityManager();
         try {
             return em.find(EditalDeMonitoria.class, id);
         } finally {
@@ -73,7 +67,6 @@ public class EditalDeMonitoriaDAO implements Dao<EditalDeMonitoria, Long> {
 
     @Override
     public List<EditalDeMonitoria> retornarTodos() {
-        EntityManager em = emf.createEntityManager();
         try {
             return em.createQuery("SELECT e FROM EditalDeMonitoria e", EditalDeMonitoria.class)
                     .getResultList();

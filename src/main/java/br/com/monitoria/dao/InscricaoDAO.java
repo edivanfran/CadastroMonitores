@@ -6,7 +6,7 @@ import jakarta.persistence.EntityManagerFactory;
 
 import java.util.List;
 
-public class InscricaoDAO implements Dao<Inscricao, Long> {
+public class InscricaoDAO implements DAO<Inscricao, Long> {
 
     private final EntityManagerFactory emf;
 

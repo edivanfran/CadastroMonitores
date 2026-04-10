@@ -1,15 +1,11 @@
 package br.com.monitoria;
 
-import br.com.monitoria.dao.CoordenadorDao;
+import br.com.monitoria.dao.CoordenadorDAO;
 import br.com.monitoria.excecoes.LoginInvalidoException;
 import br.com.monitoria.model.Aluno;
 import br.com.monitoria.model.Coordenador;
 import br.com.monitoria.model.Usuario;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.Persistence;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 
 import java.util.List;
 
@@ -72,7 +68,7 @@ public class GerenciadorDeDados {
 
     public void salvarCoordenador(Coordenador coordenador) {
         EntityManager em = emf.createEntityManager();
-        CoordenadorDao coordenadorDao = new CoordenadorDao(em);
+        CoordenadorDAO coordenadorDao = new CoordenadorDAO(em);
 
         try {
             coordenadorDao.salvar(coordenador);

@@ -11,28 +11,16 @@ public class AlunoDAO implements DAO<Aluno, Long> {
     }
 
     public void salvar(Aluno aluno) {
-        em.getTransaction().begin();
         em.persist(aluno);
-        em.getTransaction().commit();
     }
 
     public void atualizar(Aluno aluno) {
-        em.getTransaction().begin();
         em.merge(aluno);
-        em.getTransaction().commit();
     }
 
     public void excluir(Aluno aluno) {
-        try {
-            em.getTransaction().begin();
-            Aluno al = em.find(Aluno.class, aluno.getId());
-            if (al != null) em.remove(al);
-            em.getTransaction().commit();
-        }
-        catch (Exception e) {
-            em.getTransaction().rollback();
-            throw e;
-        }
+        Aluno al = em.find(Aluno.class, aluno.getId());
+        if (al != null) em.remove(al);
     }
 
     public Aluno buscarPorId(Long id) {

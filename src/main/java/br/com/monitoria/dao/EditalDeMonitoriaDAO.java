@@ -15,63 +15,28 @@ public class EditalDeMonitoriaDAO implements DAO<EditalDeMonitoria, Long> {
 
     @Override
     public void salvar(EditalDeMonitoria edital) {
-        try {
-            em.getTransaction().begin();
-            em.persist(edital);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            em.getTransaction().rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
+        em.persist(edital);
     }
 
     @Override
     public void atualizar(EditalDeMonitoria edital) {
-        try {
-            em.getTransaction().begin();
-            em.merge(edital);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            em.getTransaction().rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
+        em.merge(edital);
     }
 
     @Override
     public void excluir(EditalDeMonitoria edital) {
-        try {
-            em.getTransaction().begin();
-            EditalDeMonitoria e = em.merge(edital);
-            em.remove(e);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            em.getTransaction().rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
+        EditalDeMonitoria e = em.merge(edital);
+        em.remove(e);
     }
 
     @Override
     public EditalDeMonitoria buscarPorId(Long id) {
-        try {
-            return em.find(EditalDeMonitoria.class, id);
-        } finally {
-            em.close();
-        }
+        return em.find(EditalDeMonitoria.class, id);
     }
 
     @Override
     public List<EditalDeMonitoria> retornarTodos() {
-        try {
-            return em.createQuery("SELECT e FROM EditalDeMonitoria e", EditalDeMonitoria.class)
-                    .getResultList();
-        } finally {
-            em.close();
-        }
+        return em.createQuery("SELECT e FROM EditalDeMonitoria e", EditalDeMonitoria.class)
+                .getResultList();
     }
 }

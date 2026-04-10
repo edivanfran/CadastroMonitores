@@ -14,23 +14,17 @@ public class CoordenadorDAO implements DAO<Coordenador, Long> {
 
     @Override
     public void salvar(Coordenador coordenador) {
-        this.em.getTransaction().begin();
         this.em.persist(coordenador);
-        this.em.getTransaction().commit();
     }
 
     @Override
     public void atualizar(Coordenador coordenador) {
-        this.em.getTransaction().begin();
         this.em.merge(coordenador);
-        this.em.getTransaction().commit();
     }
 
     @Override
     public void excluir(Coordenador coordenador) {
-        this.em.getTransaction().begin();
         this.em.remove(coordenador);
-        this.em.getTransaction().commit();
     }
 
     @Override

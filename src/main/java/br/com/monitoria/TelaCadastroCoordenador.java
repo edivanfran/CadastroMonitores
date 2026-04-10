@@ -180,11 +180,10 @@ public class TelaCadastroCoordenador extends TelaBase {
         
         // Cadastra o coordenador
         try {
-            getCentral().cadastrarCoordenador(email, senha, nome);
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-            
+            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
             // Define o coordenador como usuário logado
-            Coordenador coordenador = getCentral().getCoordenador();
+            Coordenador coordenador = new Coordenador(email, senha, nome);
+            gerenciadorDeDados.salvarCoordenador(coordenador);
             sessao.setUsuarioLogado(coordenador);
             
             mostrarSucesso("Coordenador cadastrado com sucesso!");

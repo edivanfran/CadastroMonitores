@@ -1,9 +1,11 @@
 package br.com.monitoria;
 
 import br.com.monitoria.dao.CoordenadorDao;
+import br.com.monitoria.dao.EditalDeMonitoriaDAO;
 import br.com.monitoria.excecoes.LoginInvalidoException;
 import br.com.monitoria.model.Aluno;
 import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.EditalDeMonitoria;
 import br.com.monitoria.model.Usuario;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -45,6 +47,22 @@ public class GerenciadorDeDados {
         }
     }
 
+    public <T> void remover(T entidade) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.remove(entidade);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
     public List<Aluno> getTodosOsAlunos() {
         EntityManager em = emf.createEntityManager();
         try {
@@ -53,6 +71,19 @@ public class GerenciadorDeDados {
         } finally {
             em.close();
         }
+    }
+
+    public List<EditalDeMonitoria> getTodosOsEditais() {
+        EntityManager em = emf.createEntityManager();
+        EditalDeMonitoriaDAO editalDeMonitoriaDAO = new EditalDeMonitoriaDAO(em);
+
+        List<EditalDeMonitoria> todosOsEditais;
+        try {
+            todosOsEditais = editalDeMonitoriaDAO.retornarTodos();
+        } finally {
+            em.close();
+        }
+        return todosOsEditais;
     }
 
     public Usuario getUsuarioPorEmail(String email) {

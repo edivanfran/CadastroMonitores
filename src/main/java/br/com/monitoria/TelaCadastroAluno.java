@@ -163,7 +163,7 @@ public class TelaCadastroAluno extends TelaBase {
                 campoMatricula.requestFocus();
                 return;
             }
-            if (email.equals(getCentral().getCoordenador().getEmail())) {
+            if (email.equals(gerenciadorDeDados.getCoordenador().getEmail())) {
                 mostrarErro("Já existe um usuário cadastrado com este e-mail.");
                 campoEmail.requestFocus();
                 return;

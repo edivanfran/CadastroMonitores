@@ -196,7 +196,7 @@ public class TelaLogin extends TelaBase {
         }
 
         // Verifica se é coordenador
-        Coordenador coordenador = getCentral().getCoordenador();
+        Coordenador coordenador = gerenciadorDeDados.getCoordenador();
         if (coordenador.getEmail().equalsIgnoreCase(email) && 
             coordenador.getSenha().equals(senha)) {
             sessao.setUsuarioLogado(coordenador);

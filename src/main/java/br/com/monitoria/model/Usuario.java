@@ -1,7 +1,6 @@
 package br.com.monitoria.model;
 
 import br.com.monitoria.CentralDeInformacoes;
-import br.com.monitoria.excecoes.LoginInvalidoException;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
@@ -68,12 +67,12 @@ public abstract class Usuario {
      * Testa a legitimidade das credenciais fornecidas.
      * @param email O endereço de e-mail do usuário que deseja autenticar-se
      * @param senha A senha
-     * @throws LoginInvalidoException Se as credenciais forem ilegítimas; do contrário, não faz nada
      */
-    public void autenticarLogin(String email, String senha) throws LoginInvalidoException {
+    public boolean autenticarUsuario(String email, String senha) {
         if (!this.email.equals(email) || !this.senha.equals(senha)) {
-            throw new LoginInvalidoException();
+            return false;
         }
+        return true;
     }
 
     /**

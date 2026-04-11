@@ -8,7 +8,6 @@ import br.com.monitoria.model.Usuario;
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
-import java.util.List;
 
 /**
  * Tela de login do sistema.
@@ -150,20 +149,8 @@ public class TelaLogin extends TelaBase {
      * Realiza o processo de login.
      */
     private void realizarLogin() {
-        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-        List<Coordenador> coordenadores = gerenciadorDeDados.getTodosOsCoordenadores();
-
-        Boolean temCoordenador;
-
-        if (coordenadores != null) {
-            temCoordenador = Boolean.TRUE;
-        } else {
-            temCoordenador = Boolean.FALSE;
-        }
-
-
         // Primeiro, verifica se o coordenador precisa ser cadastrado
-        if (!temCoordenador) {
+        if (!getCentral().temCoordenador()) {
             mostrarAviso("Nenhum coordenador encontrado. É necessário cadastrar um administrador primeiro.");
             abrirTelaCadastroCoordenador();
             return;
@@ -179,7 +166,9 @@ public class TelaLogin extends TelaBase {
         }
 
         try {
+            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
             Usuario usuarioLogado = gerenciadorDeDados.autenticarUsuario(email, senha);
+
             sessao.setUsuarioLogado(usuarioLogado);
             abrirTelaPrincipal();
         } catch (LoginInvalidoException e) {

@@ -18,6 +18,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Tela principal do sistema.
@@ -263,28 +264,36 @@ public class TelaPrincipal extends TelaBase implements Observador {
         modeloTabelaEditais.setRowCount(0);
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        if (getCentral().getTodosOsEditais() == null) {
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+
+        if (editais == null) {
             return;
         }
 
         //Filtra as colunas que vai colocar na tabela
-        for (EditalDeMonitoria item : getCentral().getTodosOsEditais()) {
+        for (EditalDeMonitoria item : editais) {
             modeloTabelaEditais.addRow(new Object[]{item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
                     item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto() ? "aberto" : "FECHADO"});
         }
     }
 
     public void atualizarValoresDaTabelaAluno() {
+
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+
+        List<Aluno> alunos = gerenciadorDeDados.getTodosOsAlunos();
+
         if (modeloTabelaAlunos == null) return;
         modeloTabelaAlunos.setRowCount(0);
 
         // Adiciona uma verificação para evitar NullPointerException se a lista for nula.
-        if (getCentral().getTodosOsAlunos() == null) {
+        if (alunos == null) {
             return;
         }
 
         //Filtra as colunas que vai colocar na tabela
-        for (Aluno alguem : getCentral().getTodosOsAlunos()) {
+        for (Aluno alguem : alunos) {
             modeloTabelaAlunos.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail()});
         }
     }

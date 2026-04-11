@@ -163,6 +163,15 @@ public class GerenciadorDeDados {
         }
     }
 
+    public List<Coordenador> getTodosOsCoordenadores() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return new CoordenadorDAO(em).retornarTodos();
+        } finally {
+            em.close();
+        }
+    }
+
     // Métodos para EditalDeMonitoria
 
     public void salvarEdital(EditalDeMonitoria edital) {

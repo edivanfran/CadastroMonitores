@@ -1,8 +1,10 @@
 package br.com.monitoria;
 
 import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.EditalDeMonitoria;
 
 import javax.swing.*;
+import java.util.List;
 
 /**
  * Tela para o cadastro de um novo aluno no sistema.
@@ -146,7 +148,11 @@ public class TelaCadastroAluno extends TelaBase {
             return;
         }
 
-        for (Aluno aluno : getCentral().getTodosOsAlunos()) {
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+
+        List<Aluno> alunos = gerenciadorDeDados.getTodosOsAlunos();
+
+        for (Aluno aluno : alunos){
             if (aluno.getEmail().equals(email)) {
                 mostrarErro("Já existe um usuário cadastrado com este e-mail.");
                 campoEmail.requestFocus();
@@ -163,11 +169,11 @@ public class TelaCadastroAluno extends TelaBase {
                 return;
             }
         }
-        
+
         try {
+
             Aluno novoAluno = new Aluno(email, senha, nome, matricula, sexo);
-            getCentral().adicionarAluno(novoAluno);
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+            gerenciadorDeDados.salvarAluno(novoAluno);
             
             mostrarSucesso("Aluno cadastrado com sucesso! Agora você pode fazer o login.");
             voltarParaLogin();

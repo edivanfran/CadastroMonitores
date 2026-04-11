@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TelaPerfilAluno extends TelaBase {
 
@@ -136,7 +137,10 @@ public class TelaPerfilAluno extends TelaBase {
     private void carregarHistorico() {
         modeloTabelaHistorico.setRowCount(0);
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        ArrayList<EditalDeMonitoria> editais = getCentral().getTodosOsEditais();
+
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+
+        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
 
         if (editais != null) {
             for (EditalDeMonitoria edital : editais) {

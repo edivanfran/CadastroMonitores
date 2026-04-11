@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 import br.com.monitoria.excecoes.PesosInvalidosException;
 import br.com.monitoria.model.EditalDeMonitoria;
 
@@ -74,9 +76,12 @@ public class TelaCadastrarEdital extends TelaEditalBase {
                 return;
             }
 
+            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+            List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+
             try {
                 // Usando o número do edital do campo de texto, se houver um
-                String numeroEdital = "Edital " + (getCentral().getTodosOsEditais().size() + 1);
+                String numeroEdital = "Edital " + (editais.size() + 1);
                 EditalDeMonitoria novoEdital = new EditalDeMonitoria(
                         numeroEdital,
                         dataInicioFormatada,

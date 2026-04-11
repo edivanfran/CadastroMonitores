@@ -7,6 +7,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Tela que exibe uma lista de todos os editais cadastrados no sistema.
@@ -56,9 +57,13 @@ public class TelaListagemEditais extends TelaBase {
         tabelaEditais.setFont(Estilos.FONTE_NORMAL);
         tabelaEditais.getTableHeader().setFont(Estilos.FONTE_BOTAO);
 
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+
+        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+
         // Preenche a tabela com os dados dos editais
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        for (EditalDeMonitoria edital : getCentral().getTodosOsEditais()) {
+        for (EditalDeMonitoria edital : editais) {
             String status = edital.isAberto() ? "Aberto" : "Fechado";
             String resultado = edital.isResultadoCalculado() ? "Calculado" : "Pendente";
             Object[] linha = {
@@ -101,9 +106,12 @@ public class TelaListagemEditais extends TelaBase {
             return;
         }
 
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+
         String numeroEdital = (String) modeloTabela.getValueAt(linhaSelecionada, 0);
         EditalDeMonitoria editalSelecionado = null;
-        for (EditalDeMonitoria edital : getCentral().getTodosOsEditais()) {
+        for (EditalDeMonitoria edital : editais) {
             if (edital.getNumero().equals(numeroEdital)) {
                 editalSelecionado = edital;
                 break;
@@ -151,9 +159,12 @@ public class TelaListagemEditais extends TelaBase {
         // Limpa a tabela
         modeloTabela.setRowCount(0);
 
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+
         // Preenche novamente com os dados atualizados da central
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        for (EditalDeMonitoria edital : getCentral().getTodosOsEditais()) {
+        for (EditalDeMonitoria edital : editais) {
             String status = edital.isAberto() ? "Aberto" : "Fechado";
             String resultado = edital.isResultadoCalculado() ? "Calculado" : "Pendente";
             Object[] linha = {

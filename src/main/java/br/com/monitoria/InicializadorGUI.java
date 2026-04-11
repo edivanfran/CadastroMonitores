@@ -1,6 +1,10 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.EditalDeMonitoria;
+
 import javax.swing.*;
+import java.util.List;
 
 /**
  * Classe responsável por inicializar a interface gráfica.
@@ -21,9 +25,21 @@ public class InicializadorGUI {
         } catch (Exception e) {
             // Se não conseguir, usa o padrão
         }
-        
+
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+        List<Coordenador> coordenadores = gerenciadorDeDados.getTodosOsCoordenadores();
+
+        Boolean temCoordenador;
+
+        if (coordenadores != null) {
+            temCoordenador = Boolean.TRUE;
+        } else {
+            temCoordenador = Boolean.FALSE;
+        }
+
+
         // Verifica se há coordenador cadastrado
-        if (!central.temCoordenador()) {
+        if (!temCoordenador) {
             // Se não houver coordenador, abre tela de cadastro
             SwingUtilities.invokeLater(() -> {
                 TelaCadastroCoordenador telaCadastro = new TelaCadastroCoordenador(central, persistencia, nomeArquivo);

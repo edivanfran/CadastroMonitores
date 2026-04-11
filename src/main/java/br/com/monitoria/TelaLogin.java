@@ -161,7 +161,6 @@ public class TelaLogin extends TelaBase {
             temCoordenador = Boolean.FALSE;
         }
 
-
         // Primeiro, verifica se o coordenador precisa ser cadastrado
         if (!temCoordenador) {
             mostrarAviso("Nenhum coordenador encontrado. É necessário cadastrar um administrador primeiro.");
@@ -178,6 +177,7 @@ public class TelaLogin extends TelaBase {
             return;
         }
 
+        // Remover no futuro
         try {
             Usuario usuarioLogado = gerenciadorDeDados.autenticarUsuario(email, senha);
 
@@ -205,13 +205,18 @@ public class TelaLogin extends TelaBase {
         }
         
         // Verifica se é aluno
-        if (getCentral().isLoginPermitido(email, senha)) {
-            Aluno aluno = getCentral().retornarAlunoPeloEmail(email);
-            if (aluno != null) {
+        if (gerenciadorDeDados.isLoginPermitido(email, senha)) {
+            Usuario usuario = gerenciadorDeDados.getUsuarioPorEmail(email);
+            if (usuario instanceof Aluno) {
+                Aluno aluno = (Aluno) usuario;
                 sessao.setUsuarioLogado(aluno);
                 abrirTelaPrincipal();
                 return;
             }
+        } else {
+            mostrarErro("E-mail ou senha inválidos.");
+            campoEmail.requestFocus();
+            campoSenha.setText("");
         }
         
         // Credenciais inválidas

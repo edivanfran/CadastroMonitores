@@ -29,6 +29,8 @@ public class AlunoDAO implements DAO<Aluno, Long> {
         return em.find(Aluno.class, id);
     }
 
+    /* public Aluno buscarPorId(Long id) */
+
     public java.util.List<Aluno> retornarTodos() {
         return em.createQuery("SELECT a FROM Aluno a", Aluno.class).getResultList();
     }

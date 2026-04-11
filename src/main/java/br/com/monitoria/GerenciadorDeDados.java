@@ -1,12 +1,11 @@
 package br.com.monitoria;
 
-import br.com.monitoria.dao.*;
+import br.com.monitoria.dao.AlunoDAO;
+import br.com.monitoria.dao.CoordenadorDAO;
+import br.com.monitoria.dao.DisciplinaDAO;
+import br.com.monitoria.dao.EditalDeMonitoriaDAO;
 import br.com.monitoria.model.*;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.Persistence;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 
 import java.util.List;
 
@@ -248,6 +247,12 @@ public class GerenciadorDeDados {
         }
     }
 
+    /**
+     * Tenta buscar e recuperar um edital específico através de sua ID.
+     *
+     * @param id ID do edital
+     * @return O edital, ou {@code null}, caso ele não seja encontrado
+     */
     public EditalDeMonitoria buscarEditalPorId(Long id) {
         EntityManager em = emf.createEntityManager();
         try {

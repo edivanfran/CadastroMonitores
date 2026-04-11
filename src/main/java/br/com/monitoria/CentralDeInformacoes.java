@@ -119,12 +119,14 @@ public class CentralDeInformacoes {
         }
         return null;
     }
+
+    //<editor-fold desc="/** ... */">
+
     /**
-     * Tenta recuperar um edital específico.
-     * @param id ID do edital
-     * @return O edital, ou {@code null} caso ele não seja encontrado
-     * @see EditalDeMonitoria
+     * @deprecated – Prefira: {@code GerenciadorDeDados...buscarEditalPorId(...)}
      */
+    //</editor-fold>
+    @Deprecated
     public EditalDeMonitoria recuperarEdital(long id) {
         for (EditalDeMonitoria edital : todosOsEditais) {
             if (edital.getId() == id) {
@@ -134,6 +136,13 @@ public class CentralDeInformacoes {
         return null;
     }
 
+    //<editor-fold desc="/** ... */">
+
+    /**
+     * @deprecated – Prefira: {@code GerenciadorDeDados...salvarEdital(...)}
+     */
+    //</editor-fold>
+    @Deprecated
     public boolean adicionarEdital(EditalDeMonitoria edital) {
         for (EditalDeMonitoria e : todosOsEditais) {
             if (e.getId() == edital.getId()) {

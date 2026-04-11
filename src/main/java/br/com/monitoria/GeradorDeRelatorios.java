@@ -5,7 +5,10 @@ import br.com.monitoria.model.Disciplina;
 import br.com.monitoria.model.EditalDeMonitoria;
 import br.com.monitoria.model.Inscricao;
 import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 
@@ -138,7 +141,7 @@ public class GeradorDeRelatorios {
            documento.add(titulo);
 
            // Corpo do documento
-           EditalDeMonitoria edital = central.recuperarEdital(idEdital);
+           EditalDeMonitoria edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(idEdital);
            Aluno aluno = central.recuperarAluno(matricula);
            
            if (aluno == null) {

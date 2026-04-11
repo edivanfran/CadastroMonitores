@@ -61,7 +61,7 @@ public class TelaEsqueciSenha extends TelaBase {
             return;
         }
 
-        String codigo = getCentral().gerarCodigoRecuperacao(email);
+        String codigo = RecuperadorDeSenhas.gerarCodigoRecuperacao(email);
 
         if (codigo == null) {
             mostrarErro("O e-mail inserido não foi encontrado em nosso sistema.");

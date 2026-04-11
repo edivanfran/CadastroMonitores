@@ -340,6 +340,14 @@ public class GerenciadorDeDados {
         }
     }
 
+    public Usuario autenticarUsuario(String email, String senha) {
+        Usuario usuario = getUsuarioPorEmail(email);
+        if (usuario != null && usuario.getSenha().equals(senha)) {
+            return usuario;
+        }
+        return null;
+    }
+
     public boolean isLoginPermitido(String email, String senha) {
         Usuario usuario = getUsuarioPorEmail(email);
         if (usuario == null) {

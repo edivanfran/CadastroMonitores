@@ -19,11 +19,8 @@ public class TelaCadastroCoordenador extends TelaBase {
     private JButton botaoCadastrar;
     private JButton botaoVoltar;
 
-    public TelaCadastroCoordenador(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Cadastro de Coordenador",
-                central,
-                persistencia,
-                nomeArquivo);
+    public TelaCadastroCoordenador() {
+        super("Cadastro de Coordenador");
     }
 
     protected void criarComponentes() {
@@ -202,7 +199,7 @@ public class TelaCadastroCoordenador extends TelaBase {
      * Volta para a tela de login.
      */
     private void voltarParaLogin() {
-        TelaLogin telaLogin = new TelaLogin(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaLogin telaLogin = new TelaLogin();
         telaLogin.inicializar();
         this.dispose();
     }

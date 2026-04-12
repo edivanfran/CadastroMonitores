@@ -23,14 +23,8 @@ public class InicializadorGUI {
         GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
         List<Coordenador> coordenadores = gerenciadorDeDados.getTodosOsCoordenadores();
 
-        Boolean temCoordenador;
-
-        if (coordenadores != null) {
-            temCoordenador = Boolean.TRUE;
-        } else {
-            temCoordenador = Boolean.FALSE;
-        }
-
+        // Verifica se a lista de coordenadores não está vazia
+        boolean temCoordenador = (coordenadores != null && !coordenadores.isEmpty());
 
         // Verifica se há coordenador cadastrado
         if (!temCoordenador) {
@@ -48,4 +42,3 @@ public class InicializadorGUI {
         }
     }
 }
-

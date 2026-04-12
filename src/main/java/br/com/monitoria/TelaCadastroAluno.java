@@ -25,8 +25,8 @@ public class TelaCadastroAluno extends TelaBase {
     private JButton botaoCadastrar;
     private JButton botaoVoltar;
 
-    public TelaCadastroAluno(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Cadastro de Aluno", central, persistencia, nomeArquivo);
+    public TelaCadastroAluno() {
+        super("Cadastro de Aluno");
     }
 
     @Override
@@ -171,7 +171,6 @@ public class TelaCadastroAluno extends TelaBase {
         }
 
         try {
-
             Aluno novoAluno = new Aluno(email, senha, nome, matricula, sexo);
             gerenciadorDeDados.salvarAluno(novoAluno);
             
@@ -184,7 +183,7 @@ public class TelaCadastroAluno extends TelaBase {
     }
     
     private void voltarParaLogin() {
-        TelaLogin telaLogin = new TelaLogin(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaLogin telaLogin = new TelaLogin();
         telaLogin.inicializar();
         this.dispose();
     }

@@ -12,9 +12,6 @@ public abstract class TelaBase extends JFrame {
     
     protected JPanel painelPrincipal;
     protected SessaoUsuario sessao;
-    private CentralDeInformacoes central;
-    private Persistencia persistencia;
-    private String nomeArquivo;
 
     public TelaBase(String titulo) {
         super(titulo);

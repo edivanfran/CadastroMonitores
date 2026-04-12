@@ -186,7 +186,7 @@ public class TelaCadastroCoordenador extends TelaBase {
             mostrarSucesso("Coordenador cadastrado com sucesso!");
             
             // Abre a tela principal
-            TelaPrincipal telaPrincipal = new TelaPrincipal(getCentral(), getPersistencia(), getNomeArquivo());
+            TelaPrincipal telaPrincipal = new TelaPrincipal();
             telaPrincipal.inicializar();
             this.dispose();
             

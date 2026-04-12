@@ -25,8 +25,8 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
     private JSpinner campoOrdemPreferencia;
     private JButton botaoInscrever;
 
-    public TelaInscreverEmEditalAluno(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Inscrever-se no Edital " + edital.getNumero(), central, persistencia, nomeArquivo);
+    public TelaInscreverEmEditalAluno(EditalDeMonitoria edital) {
+        super("Inscrever-se no Edital " + edital.getNumero());
         this.edital = edital;
         setSize(700, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -196,7 +196,8 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
 
         private void realizarInscricao(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException, VagasEsgotadasException {
             edital.inscreverAluno(aluno, disciplina.getNomeDisciplina(), cre, nota, tipoVaga, ordem, pref);
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+            gerenciadorDeDados.salvarEdital(edital);
             mostrarSucesso("Inscrição para vaga " + tipoVaga + " realizada com sucesso!");
             dispose();
         }

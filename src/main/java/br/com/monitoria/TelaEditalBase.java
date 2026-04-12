@@ -18,8 +18,8 @@ public abstract class TelaEditalBase extends TelaBase {
     protected JSpinner pesoNota;
     protected EditalDeMonitoria edital;
 
-    public TelaEditalBase(String titulo, EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super(titulo, central, persistencia, nomeArquivo);
+    public TelaEditalBase(String titulo, EditalDeMonitoria edital) {
+        super(titulo);
         this.edital = edital;
         setSize(700, 500);
     }

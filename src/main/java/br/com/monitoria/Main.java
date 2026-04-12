@@ -51,7 +51,7 @@ public class Main {
             central = persistencia.recuperarCentral(nomeArquivo);
         }
 
-        InicializadorGUI.iniciar(central, persistencia, "CENTRAL");
+        InicializadorGUI.iniciar();
 
     }
 }

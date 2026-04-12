@@ -33,6 +33,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new AlunoDAO(em).salvar(aluno);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -49,6 +51,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new AlunoDAO(em).atualizar(aluno);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -65,6 +69,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new AlunoDAO(em).excluir(aluno);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -101,6 +107,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new CoordenadorDAO(em).salvar(coordenador);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -117,6 +125,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new CoordenadorDAO(em).atualizar(coordenador);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -133,6 +143,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new CoordenadorDAO(em).excluir(coordenador);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -179,6 +191,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new EditalDeMonitoriaDAO(em).salvar(edital);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -195,6 +209,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new EditalDeMonitoriaDAO(em).atualizar(edital);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -211,6 +227,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new EditalDeMonitoriaDAO(em).excluir(edital);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -247,6 +265,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new DisciplinaDAO(em).salvar(disciplina);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -263,6 +283,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new DisciplinaDAO(em).atualizar(disciplina);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -279,6 +301,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new DisciplinaDAO(em).excluir(disciplina);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -315,6 +339,8 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             em.merge(usuario);
             em.getTransaction().commit();
+            // Notifica a UI que os dados mudaram
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();

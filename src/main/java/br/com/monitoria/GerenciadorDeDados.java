@@ -90,6 +90,15 @@ public class GerenciadorDeDados {
         }
     }
 
+    public Aluno buscarAlunoPorMatricula(String matricula) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return new AlunoDAO(em).buscarPorMatricula(matricula);
+        } finally {
+            em.close();
+        }
+    }
+
     public List<Aluno> getTodosOsAlunos() {
         EntityManager em = emf.createEntityManager();
         try {

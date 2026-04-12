@@ -197,7 +197,7 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
         private void realizarInscricao(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException, VagasEsgotadasException {
             edital.inscreverAluno(aluno, disciplina.getNomeDisciplina(), cre, nota, tipoVaga, ordem, pref);
             GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-            gerenciadorDeDados.salvarEdital(edital);
+            gerenciadorDeDados.atualizarEdital(edital);
             mostrarSucesso("Inscrição para vaga " + tipoVaga + " realizada com sucesso!");
             dispose();
         }

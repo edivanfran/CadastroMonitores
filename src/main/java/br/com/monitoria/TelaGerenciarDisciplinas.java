@@ -26,8 +26,8 @@ public class TelaGerenciarDisciplinas extends TelaBase {
     private JButton botaoApagar;
     private JButton botaoFechar;
 
-    public TelaGerenciarDisciplinas(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Gerenciar Disciplinas do Edital " + edital.getNumero(), central, persistencia, nomeArquivo);
+    public TelaGerenciarDisciplinas(EditalDeMonitoria edital) {
+        super("Gerenciar Disciplinas do Edital " + edital.getNumero());
         this.edital = edital;
         setSize(700, 500);
     }
@@ -170,14 +170,19 @@ public class TelaGerenciarDisciplinas extends TelaBase {
             int vagasRemuneradas = (int) spinnerVagasRemuneradas.getValue();
             int vagasVoluntarias = (int) spinnerVagasVoluntarias.getValue();
 
-            Disciplina novaDisciplina = new Disciplina(nome, vagasVoluntarias, vagasRemuneradas);
-            edital.adicionarDisciplina(novaDisciplina);
-            listModel.addElement(novaDisciplina);
+            try {
+                Disciplina novaDisciplina = new Disciplina(nome, vagasVoluntarias, vagasRemuneradas);
+                edital.adicionarDisciplina(novaDisciplina);
+                GerenciadorDeDados.getInstancia().salvarDisciplina(novaDisciplina);
+                GerenciadorDeDados.getInstancia().atualizarEdital(edital);
 
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-            getCentral().forcarAtualizacaoObservadores(); // Notifica a TelaPrincipal
-            mostrarSucesso("Disciplina adicionada com sucesso!");
-            limparCampos();
+                // Atualiza a UI somente após o sucesso da persistência
+                listModel.addElement(novaDisciplina);
+                mostrarSucesso("Disciplina adicionada com sucesso!");
+                limparCampos();
+            } catch (Exception ex) {
+                mostrarErro("Ocorreu um erro ao adicionar a disciplina: " + ex.getMessage());
+            }
         }
     }
 
@@ -208,14 +213,13 @@ public class TelaGerenciarDisciplinas extends TelaBase {
             try {
                 selecionada.setVagasRemuneradas(novasVagasRem);
                 selecionada.setVagasVoluntarias(novasVagasVol);
-
-                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-                getCentral().forcarAtualizacaoObservadores(); // Notifica a TelaPrincipal
+                GerenciadorDeDados.getInstancia().atualizarDisciplina(selecionada);
+                GerenciadorDeDados.getInstancia().atualizarEdital(edital);
                 mostrarSucesso("Alterações salvas com sucesso!");
                 listaDisciplinas.repaint(); // Para garantir que a exibição (se houver) seja atualizada
                 limparCampos();
             } catch (Exception ex) {
-                mostrarErro("Erro ao salvar: " + ex.getMessage());
+                mostrarErro("Ocorreu um erro ao salvar as alterações: " + ex.getMessage());
             }
         }
     }
@@ -246,13 +250,18 @@ public class TelaGerenciarDisciplinas extends TelaBase {
             );
 
             if (confirmacao == JOptionPane.YES_OPTION) {
-                edital.getDisciplinas().remove(selecionada);
-                listModel.removeElement(selecionada);
+                try {
+                    edital.getDisciplinas().remove(selecionada);
+                    GerenciadorDeDados.getInstancia().removerDisciplina(selecionada);
+                    GerenciadorDeDados.getInstancia().atualizarEdital(edital);
 
-                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-                getCentral().forcarAtualizacaoObservadores(); // Notifica a TelaPrincipal
-                mostrarSucesso("Disciplina apagada com sucesso.");
-                limparCampos();
+                    // Atualiza a UI somente após o sucesso da persistência
+                    listModel.removeElement(selecionada);
+                    mostrarSucesso("Disciplina apagada com sucesso.");
+                    limparCampos();
+                } catch (Exception ex) {
+                    mostrarErro("Ocorreu um erro ao apagar a disciplina: " + ex.getMessage());
+                }
             }
         }
     }

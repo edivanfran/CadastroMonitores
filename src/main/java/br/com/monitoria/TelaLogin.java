@@ -20,11 +20,8 @@ public class TelaLogin extends TelaBase {
     private JPasswordField campoSenha;
     private JButton botaoLogin;
     
-    public TelaLogin(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Sistema de Cadastro de Monitores - Login",
-                central,
-                persistencia,
-                nomeArquivo);
+    public TelaLogin() {
+        super("Sistema de Cadastro de Monitores - Login");
     }
 
     protected void criarComponentes() {
@@ -229,7 +226,7 @@ public class TelaLogin extends TelaBase {
      * Abre a tela de cadastro de coordenador.
      */
     private void abrirTelaCadastroCoordenador() {
-        TelaCadastroCoordenador telaCadastro = new TelaCadastroCoordenador(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaCadastroCoordenador telaCadastro = new TelaCadastroCoordenador();
         telaCadastro.inicializar();
         this.dispose();
     }
@@ -292,7 +289,7 @@ public class TelaLogin extends TelaBase {
      * Abre a tela de esqueci senha.
      */
     private void abrirTelaEsqueciSenha() {
-        TelaEsqueciSenha telaEsqueciSenha = new TelaEsqueciSenha(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaEsqueciSenha telaEsqueciSenha = new TelaEsqueciSenha();
         telaEsqueciSenha.inicializar();
         this.dispose();
     }
@@ -301,7 +298,7 @@ public class TelaLogin extends TelaBase {
      * Abre a tela de cadastro de aluno.
      */
     private void abrirTelaCadastroAluno() {
-        TelaCadastroAluno telaCadastro = new TelaCadastroAluno(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaCadastroAluno telaCadastro = new TelaCadastroAluno();
         telaCadastro.inicializar();
         this.dispose();
     }

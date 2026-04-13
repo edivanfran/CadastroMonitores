@@ -7,7 +7,7 @@ import javax.swing.*;
 import javax.swing.text.MaskFormatter;
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.List;
 
 public abstract class TelaEditalBase extends TelaBase {
 
@@ -91,7 +91,7 @@ public abstract class TelaEditalBase extends TelaBase {
         dataFinal.setText(edital.getDataLimite().format(formatador));
 
         campoDeDisciplina.removeAllItems();
-        ArrayList<Disciplina> disciplinas = edital.getDisciplinas();
+        List<Disciplina> disciplinas = edital.getDisciplinas();
         for (Disciplina disciplina : disciplinas) {
             campoDeDisciplina.addItem(disciplina);
         }

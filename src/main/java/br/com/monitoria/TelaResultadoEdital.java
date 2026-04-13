@@ -32,8 +32,8 @@ public class TelaResultadoEdital extends TelaBase {
     private JPanel painelBotoes;
 
 
-    public TelaResultadoEdital(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Resultado do Edital: " + edital.getNumero(), central, persistencia, nomeArquivo);
+    public TelaResultadoEdital(EditalDeMonitoria edital) {
+        super("Resultado do Edital: " + edital.getNumero());
         this.edital = edital;
         setSize(900, 700);
         setLocationRelativeTo(null);
@@ -240,7 +240,7 @@ public class TelaResultadoEdital extends TelaBase {
         if (resposta == JOptionPane.YES_OPTION) {
             try {
                 edital.encerrarPeriodoDesistencia((Coordenador) sessao.getUsuarioLogado());
-                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                GerenciadorDeDados.getInstancia().atualizarEdital(edital);
                 mostrarSucesso("Edital fechado com sucesso. O resultado agora é final.");
                 recarregarTela();
             } catch (Exception e) {
@@ -251,14 +251,14 @@ public class TelaResultadoEdital extends TelaBase {
 
 
     public void recarregarTela() {
-        TelaResultadoEdital novaTela = new TelaResultadoEdital(this.edital, getCentral(), getPersistencia(), getNomeArquivo());
+        TelaResultadoEdital novaTela = new TelaResultadoEdital(this.edital);
         novaTela.inicializar();
         this.dispose();
     }
 
 
     private void voltarParaListagem() {
-        TelaListagemEditais telaListagem = new TelaListagemEditais(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaListagemEditais telaListagem = new TelaListagemEditais();
         telaListagem.inicializar();
         this.dispose();
     }
@@ -274,7 +274,11 @@ class BotaoRenderer extends JButton implements TableCellRenderer {
     }
 
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    public Component getTableCellRendererComponent(JTable table,
+                                                   Object value,
+                                                   boolean isSelected,
+                                                   boolean hasFocus,
+                                                   int row, int column) {
         setText((value == null) ? "" : value.toString());
         setVisible(value != null && !value.toString().isEmpty());
         return this;
@@ -328,13 +332,11 @@ class BotaoEditor extends DefaultCellEditor {
                 try {
                     DefaultTableModel model = (DefaultTableModel) this.table.getModel();
                     String matriculaAlvo = (String) model.getValueAt(this.row, 2);
-
-                    Aluno alunoAlvo = tela.getCentral().recuperarAluno(matriculaAlvo);
-
+                    Aluno alunoAlvo = GerenciadorDeDados.getInstancia().buscarAlunoPorMatricula(matriculaAlvo);
 
                     if (alunoAlvo != null) {
                         edital.processarDesistencia(alunoAlvo, disciplina);
-                        tela.getPersistencia().salvarCentral(tela.getCentral(), tela.getNomeArquivo());
+                        GerenciadorDeDados.getInstancia().atualizarEdital(edital);
                         JOptionPane.showMessageDialog(tela, "Desistência registrada com sucesso. O resultado foi recalculado.");
                         tela.recarregarTela();
                     } else {

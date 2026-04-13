@@ -32,13 +32,6 @@
             <version>8.3.0</version>
         </dependency>
 
-        <!-- XStream para manipulação de XML (usado em main.java.br.com.monitoria.Persistencia.java) -->
-        <dependency>
-            <groupId>com.thoughtworks.xstream</groupId>
-            <artifactId>xstream</artifactId>
-            <version>1.4.20</version>
-        </dependency>
-
         <!-- iText 5 para geração de PDF (usado em main.java.br.com.monitoria.GeradorDeRelatorios.java) -->
         <dependency>
             <groupId>com.itextpdf</groupId>

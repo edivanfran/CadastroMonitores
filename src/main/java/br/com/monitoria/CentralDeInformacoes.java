@@ -10,7 +10,9 @@ import br.com.monitoria.model.Usuario;
 import java.util.*;
 
 /**
- * Descreve o objeto cujas funções são armazenar as alterações feitas na base de informações para posteriormente tê-las serializadas em um arquivo XML por meio de um objeto {@link Persistencia}, assim como receber as informações que forem desserializadas por este para que sejam utilizadas pelo programa.
+ * Descreve o objeto cujas funções são armazenar as alterações feitas na base de informações para posteriormente
+ * tê-las serializadas em um arquivo XML por meio de um objeto <s>{@code Persistencia}</s>, assim como receber as
+ * informações que forem desserializadas por este para que sejam utilizadas pelo programa.
  * <p>Cada central só pode ter um coordenador — além disso, as centrais armazenam um {@code ArrayList} contendo as informações de todos os alunos cadastrados na central, e outro contendo as informações de todos os editais cadastrados na central.</p>
  * @see Coordenador
  * @see Aluno

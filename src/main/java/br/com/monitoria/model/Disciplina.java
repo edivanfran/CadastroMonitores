@@ -12,7 +12,6 @@ import jakarta.persistence.*;
  */
 
 @Entity
-@Table(name = "disciplina")
 public class Disciplina {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -85,6 +84,7 @@ public class Disciplina {
     public int getTotalAlunos() {
         return totalAlunos;
     }
+    public Long getId() {return id;}
 
 
     /**

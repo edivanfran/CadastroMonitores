@@ -296,7 +296,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
             edital.setPesoCre((Double) pesoCRE.getValue());
             edital.setPesoNota((Double) pesoNota.getValue());
             GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-            gerenciadorDeDados.salvarEdital(edital);
+            gerenciadorDeDados.atualizarEdital(edital);
             mostrarSucesso("Edital salvo com sucesso!");
 
             tornarCamposEditaveis(false);

@@ -309,6 +309,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
         @Override
         public void actionPerformed(ActionEvent e) {
             TelaInscreverEmEditalAluno telaInscricao = new TelaInscreverEmEditalAluno(edital);
+            telaInscricao.inicializar();
             telaInscricao.setVisible(true);
         }
     }

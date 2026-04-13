@@ -11,7 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.List;
 
 public class TelaInscreverEmEditalAluno extends TelaBase {
 
@@ -143,7 +143,7 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
         dataFinal.setText(edital.getDataLimite().format(formatador));
 
         campoDeDisciplina.removeAllItems();
-        ArrayList<Disciplina> disciplinas = edital.getDisciplinas();
+        List<Disciplina> disciplinas = edital.getDisciplinas();
         for (Disciplina disciplina : disciplinas) {
             campoDeDisciplina.addItem(disciplina);
         }

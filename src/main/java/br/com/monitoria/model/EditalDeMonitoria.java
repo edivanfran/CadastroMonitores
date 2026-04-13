@@ -20,7 +20,6 @@ import java.util.*;
  */
 
 @Entity
-@Table (name = "edital_de_mentoria")
 public class EditalDeMonitoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +39,7 @@ public class EditalDeMonitoria {
               joinColumns = @JoinColumn(name = "edital_id"),
               inverseJoinColumns = @JoinColumn(name = "disciplina_id")
     )
-    private ArrayList<Disciplina> disciplinas = new ArrayList<>();
+    private List<Disciplina> disciplinas = new ArrayList<>();
 
     @Column(nullable = false)
     private boolean aberto;
@@ -51,7 +50,7 @@ public class EditalDeMonitoria {
     @Column(name = "peso_nota", nullable = false)
     private double pesoNota;
 
-    @OneToMany(mappedBy = "edital", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "edital", cascade = {CascadeType.ALL, CascadeType.MERGE}, orphanRemoval = true)
     private List<Inscricao> inscricoes = new ArrayList<>();
 
     @Transient
@@ -81,7 +80,7 @@ public class EditalDeMonitoria {
     public LocalDate getDataLimite() {
         return dataLimite;
     }
-    public ArrayList<Disciplina> getDisciplinas() {
+    public List<Disciplina> getDisciplinas() {
         return disciplinas;
     }
     public void setDataInicio(LocalDate dataInicio) {
@@ -98,11 +97,10 @@ public class EditalDeMonitoria {
     }
 
     /**
-     * Construtor privado para uso interno do método clonar.
+     * Construtor para clonagem, sem ID.
      */
-    private EditalDeMonitoria(long id, String numero, LocalDate dataInicio, LocalDate dataLimite,
-                              ArrayList<Disciplina> disciplinas, boolean aberto, double pesoCre, double pesoNota) {
-        this.id = id;
+    private EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite,
+                              List<Disciplina> disciplinas, boolean aberto, double pesoCre, double pesoNota) {
         this.numero = numero;
         this.dataInicio = dataInicio;
         this.dataLimite = dataLimite;
@@ -131,7 +129,6 @@ public class EditalDeMonitoria {
        if (Math.abs((pesoCre + pesoNota) - 1.0) > 0.0001) {
            throw new PesosInvalidosException(pesoCre, pesoNota);
        }
-       this.id = System.currentTimeMillis();
        this.numero = numero;
        this.dataInicio = dataInicio;
        this.dataLimite = dataLimite;
@@ -241,12 +238,9 @@ public class EditalDeMonitoria {
        
        for (Disciplina d : disciplinas) {
            if (d.getNomeDisciplina().equalsIgnoreCase(nomeDisciplina)) {
-               // Tenta adicionar o aluno na disciplina, lança exceção se não conseguir
                d.adicionarAluno(aluno, tipoVaga);
-
-               // Se não lançou exceção, a vaga foi garantida. Cria a inscrição.
-               Inscricao inscricao = new Inscricao(aluno, d, this, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);               inscricoes.add(inscricao);
-
+               Inscricao inscricao = new Inscricao(aluno, d, this, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);
+               inscricoes.add(inscricao);
                System.out.println("Inscrição de " + aluno.getNome() + " em " + nomeDisciplina + " (" + tipoVaga + ") confirmada.");
                return;
            }
@@ -266,7 +260,7 @@ public class EditalDeMonitoria {
     * @throws EditalAbertoException Se o edital ainda estiver aberto
     * @throws SemInscricoesException Se não houver inscrições no edital
     */
-   public void calcularResultado() 
+   public void calcularResultado()
            throws EditalAbertoException, SemInscricoesException {
        if (aberto) {
            throw new EditalAbertoException(numero);
@@ -354,14 +348,12 @@ public class EditalDeMonitoria {
      * @return Uma nova instância de EditalDeMonitoria.
      */
     public EditalDeMonitoria clonar() {
-        // Cria uma cópia da lista de disciplinas
-        ArrayList<Disciplina> disciplinasClonadas = this.disciplinas.stream()
+        List<Disciplina> disciplinasClonadas = this.disciplinas.stream()
                 .map(Disciplina::clonar)
-                .collect(Collectors.toCollection(ArrayList::new));
+                .collect(Collectors.toList());
 
-        // Cria o novo edital com um novo ID e número
+        // Chama o construtor correto que não define um ID.
         return new EditalDeMonitoria(
-                System.currentTimeMillis(),
                 this.numero + " - Cópia",
                 this.dataInicio,
                 this.dataLimite,

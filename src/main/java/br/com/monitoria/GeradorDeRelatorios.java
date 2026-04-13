@@ -126,9 +126,8 @@ public class GeradorDeRelatorios {
      * <p>O comprovante é salvo no diretório do projeto.</p>
      * @param matricula A matrícula do aluno
      * @param idEdital O ID do edital de monitoria
-     * @param central O objeto {@code CentralDeInformacoes} que contém os dados das inscrições
      */
-    public static void obterComprovanteDeInscricoesAluno(String matricula, long idEdital, CentralDeInformacoes central) {
+    public static void obterComprovanteDeInscricoesAluno(String matricula, long idEdital) {
        try {
            Document documento = new Document(); // Instancia o documento o qual será trabalhado
            PdfWriter.getInstance(documento, new FileOutputStream("relatorio.pdf")); // Define o nome do documento
@@ -142,7 +141,7 @@ public class GeradorDeRelatorios {
 
            // Corpo do documento
            EditalDeMonitoria edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(idEdital);
-           Aluno aluno = central.recuperarAluno(matricula);
+           Aluno aluno = GerenciadorDeDados.getInstancia().buscarAlunoPorMatricula(matricula);
            
            if (aluno == null) {
                documento.add(new Paragraph("Aluno não encontrado com a matrícula: " + matricula));

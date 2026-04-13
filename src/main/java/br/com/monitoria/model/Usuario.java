@@ -1,20 +1,12 @@
 package br.com.monitoria.model;
 
-import br.com.monitoria.CentralDeInformacoes;
-import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import javax.swing.JFrame;
+import jakarta.persistence.*;
+
+import javax.swing.*;
 
 /**
  * Abstração que representa usuários cadastrados em uma central de informações.
  * <p>Possui nome, e-mail e senha.</p>
- * @see CentralDeInformacoes
  */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)

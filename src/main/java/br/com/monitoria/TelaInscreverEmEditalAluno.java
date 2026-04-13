@@ -159,8 +159,8 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
                 return;
             }
 
-            double cre = (Integer) campoCRE.getValue();
-            double nota = (Integer) campoNota.getValue();
+            double cre = ((Number) campoCRE.getValue()).doubleValue();
+            double nota = ((Number) campoNota.getValue()).doubleValue();
             int ordemPreferencia = (Integer) campoOrdemPreferencia.getValue();
             PreferenciaInscricao preferenciaVaga = (PreferenciaInscricao) campoPreferencia.getSelectedItem();
             Aluno alunoLogado = (Aluno) sessao.getUsuarioLogado();
@@ -191,13 +191,12 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
                 }
             } catch (Exception ex) {
                 mostrarErro(ex.getMessage());
+                ex.printStackTrace(); // Para depuração
             }
         }
 
-        private void realizarInscricao(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException, VagasEsgotadasException {
-            edital.inscreverAluno(aluno, disciplina.getNomeDisciplina(), cre, nota, tipoVaga, ordem, pref);
-            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-            gerenciadorDeDados.atualizarEdital(edital);
+        private void realizarInscricao(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws Exception {
+            GerenciadorDeDados.getInstancia().inscreverAlunoEmEdital(edital, aluno, disciplina, cre, nota, tipoVaga, ordem, pref);
             mostrarSucesso("Inscrição para vaga " + tipoVaga + " realizada com sucesso!");
             dispose();
         }

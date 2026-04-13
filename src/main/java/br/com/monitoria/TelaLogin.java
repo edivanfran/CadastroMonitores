@@ -1,6 +1,5 @@
 package br.com.monitoria;
 
-import br.com.monitoria.excecoes.LoginInvalidoException;
 import br.com.monitoria.model.Aluno;
 import br.com.monitoria.model.Coordenador;
 import br.com.monitoria.model.Usuario;

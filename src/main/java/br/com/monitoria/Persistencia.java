@@ -1,11 +1,6 @@
 package br.com.monitoria;
 
-import br.com.monitoria.model.Aluno;
-import br.com.monitoria.model.Coordenador;
-import br.com.monitoria.model.Disciplina;
-import br.com.monitoria.model.EditalDeMonitoria;
-import br.com.monitoria.model.Inscricao;
-import br.com.monitoria.model.Usuario;
+import br.com.monitoria.model.*;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 
@@ -20,7 +15,11 @@ import java.util.ArrayList;
 /**
  * Utilitário que proporciona a possibilidade de serialização e desserialização de objetos {@link CentralDeInformacoes}.
  * Agora com integração ao Google Drive.
+ * @deprecated O projeto não usa mais persistência por XML, a qual era atribuída a essa classe a função de
+ * gerenciá-lo, portanto, ao serem removidas todas as referências desta classe em outros módulos, ela será removida.
+ * <u>Não a use.</u>
  */
+@Deprecated(forRemoval = true)
 public class Persistencia {
     private XStream xstream = new XStream(new DomDriver());
 

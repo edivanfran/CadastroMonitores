@@ -15,7 +15,12 @@ import java.util.*;
  * @see Coordenador
  * @see Aluno
  * @see EditalDeMonitoria
+ * @deprecated O projeto não usa mais persistência por XML, a qual era atribuída a essa classe a função de
+ * controlá-lo, portanto, ao serem removidas todas as referências desta classe em outros módulos, ela será removida.
+ * <u>Não a use.</u>
+ * Prefira usar {@link GerenciadorDeDados}
  */
+@Deprecated(forRemoval = true)
 public class CentralDeInformacoes {
     private Coordenador coordenador;
     private ArrayList<Aluno> todosOsAlunos = new ArrayList<>();

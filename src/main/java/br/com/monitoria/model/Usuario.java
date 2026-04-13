@@ -3,6 +3,7 @@ package br.com.monitoria.model;
 import jakarta.persistence.*;
 
 import javax.swing.*;
+import java.util.Objects;
 
 /**
  * Abstração que representa usuários cadastrados em uma central de informações.
@@ -53,6 +54,19 @@ public abstract class Usuario {
         this.email = email;
         this.senha = senha;
         this.nome = nome;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Usuario usuario = (Usuario) o;
+        return Objects.equals(id, usuario.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
     /**

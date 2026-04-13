@@ -39,4 +39,9 @@ public class DisciplinaDAO implements DAO<Disciplina, Long> {
         return em.createQuery("SELECT d FROM Disciplina d", Disciplina.class)
                 .getResultList();
     }
+
+    public void inicializarColecoesAlunos(Disciplina disciplina) {
+        disciplina.getAlunosRemuneradosInscritos().size();
+        disciplina.getAlunosVoluntariosInscritos().size();
+    }
 }

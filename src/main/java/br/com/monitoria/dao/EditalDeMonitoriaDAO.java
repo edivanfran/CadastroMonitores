@@ -32,16 +32,38 @@ public class EditalDeMonitoriaDAO implements DAO<EditalDeMonitoria, Long> {
 
     @Override
     public EditalDeMonitoria buscarPorId(Long id) {
+        // Etapa 1: Buscar o edital e suas disciplinas
         TypedQuery<EditalDeMonitoria> query = em.createQuery(
-                "SELECT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.disciplinas WHERE e.id = :id", EditalDeMonitoria.class);
+                "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.disciplinas WHERE e.id = :id", EditalDeMonitoria.class);
         query.setParameter("id", id);
-        return query.getSingleResult();
+        EditalDeMonitoria edital = query.getSingleResult();
+
+        // Etapa 2: Buscar as inscrições para o edital encontrado
+        if (edital != null) {
+            TypedQuery<EditalDeMonitoria> inscricoesQuery = em.createQuery(
+                    "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.inscricoes WHERE e.id = :id", EditalDeMonitoria.class);
+            inscricoesQuery.setParameter("id", edital.getId());
+            inscricoesQuery.getSingleResult(); // Apenas para inicializar a coleção
+        }
+
+        return edital;
     }
 
     @Override
     public List<EditalDeMonitoria> retornarTodos() {
-        // Usando LEFT JOIN FETCH para garantir que editais sem disciplinas também sejam retornados
-        return em.createQuery("SELECT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.disciplinas", EditalDeMonitoria.class)
+        // Buscar todos os editais e suas disciplinas
+        List<EditalDeMonitoria> editais = em.createQuery(
+                "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.disciplinas", EditalDeMonitoria.class)
                 .getResultList();
+
+        // Buscar as inscrições para os editais encontrados
+        if (editais != null && !editais.isEmpty()) {
+            em.createQuery(
+                "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.inscricoes WHERE e IN :editais", EditalDeMonitoria.class)
+                .setParameter("editais", editais)
+                .getResultList(); // Apenas para inicializar as coleções
+        }
+
+        return editais;
     }
 }

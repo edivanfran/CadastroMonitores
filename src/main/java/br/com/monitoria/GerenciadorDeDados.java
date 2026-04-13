@@ -32,7 +32,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new AlunoDAO(em).salvar(aluno);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -50,7 +49,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new AlunoDAO(em).atualizar(aluno);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -68,7 +66,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new AlunoDAO(em).excluir(aluno);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -115,7 +112,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new CoordenadorDAO(em).salvar(coordenador);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -133,7 +129,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new CoordenadorDAO(em).atualizar(coordenador);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -151,7 +146,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new CoordenadorDAO(em).excluir(coordenador);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -199,7 +193,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new EditalDeMonitoriaDAO(em).salvar(edital);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -217,7 +210,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new EditalDeMonitoriaDAO(em).atualizar(edital);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -235,7 +227,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new EditalDeMonitoriaDAO(em).excluir(edital);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -279,7 +270,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new DisciplinaDAO(em).salvar(disciplina);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -297,7 +287,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new DisciplinaDAO(em).atualizar(disciplina);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -315,7 +304,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             new DisciplinaDAO(em).excluir(disciplina);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -345,6 +333,57 @@ public class GerenciadorDeDados {
         }
     }
 
+    /**
+     * Adiciona uma disciplina a um edital dentro de uma única transação.
+     * @param edital O edital (pode estar desanexado)
+     * @param novaDisciplina A nova disciplina a ser adicionada
+     */
+    public void adicionarDisciplinaAoEdital(EditalDeMonitoria edital, Disciplina novaDisciplina) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            // Traz o edital para o estado gerenciado
+            EditalDeMonitoria editalGerenciado = em.merge(edital);
+
+            // Adiciona a nova disciplina (que ainda não foi persistida)
+            editalGerenciado.adicionarDisciplina(novaDisciplina);
+
+            em.getTransaction().commit();
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    public void removerDisciplinaDoEdital(EditalDeMonitoria edital, Disciplina disciplina) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            EditalDeMonitoria editalGerenciado = em.find(EditalDeMonitoria.class, edital.getId());
+            Disciplina disciplinaGerenciada = em.find(Disciplina.class, disciplina.getId());
+
+            if (editalGerenciado != null && disciplinaGerenciada != null) {
+                editalGerenciado.getDisciplinas().remove(disciplinaGerenciada);
+                em.remove(disciplinaGerenciada);
+            }
+            em.getTransaction().commit();
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+
     // Métodos de Autenticação e Usuário Genérico
 
     public void atualizarUsuario(Usuario usuario) {
@@ -353,7 +392,6 @@ public class GerenciadorDeDados {
             em.getTransaction().begin();
             em.merge(usuario);
             em.getTransaction().commit();
-            // Notifica a UI que os dados mudaram
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {

@@ -30,8 +30,14 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
         this.edital = edital;
         setSize(700, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    }
 
-        criarComponentes();
+    @Override
+    public void inicializar() {
+        // Busca uma instância gerenciada do edital para evitar LazyInitializationException
+        // e garantir que a lista de disciplinas no JComboBox seja consistente.
+        this.edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(this.edital.getId());
+        super.inicializar();
     }
 
     @Override

@@ -176,7 +176,7 @@ public class TelaListagemEditais extends TelaBase implements Observador {
      * Fecha a tela atual e volta para a tela principal.
      */
     private void voltarParaTelaPrincipal() {
-        TelaPrincipal telaPrincipal = new TelaPrincipal(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaPrincipal telaPrincipal = new TelaPrincipal();
         telaPrincipal.inicializar();
         this.dispose();
     }

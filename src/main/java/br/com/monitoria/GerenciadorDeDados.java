@@ -384,6 +384,47 @@ public class GerenciadorDeDados {
         }
     }
 
+    // Métodos de Inscricao
+    public void inscreverAlunoEmEdital(EditalDeMonitoria edital, Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws Exception {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            EditalDeMonitoria editalGerenciado = em.find(EditalDeMonitoria.class, edital.getId());
+            if (editalGerenciado == null) {
+                throw new IllegalArgumentException("Edital não encontrado.");
+            }
+
+            // Encontra a disciplina gerenciada e inicializa suas coleções LAZY
+            Disciplina disciplinaGerenciada = null;
+            DisciplinaDAO disciplinaDAO = new DisciplinaDAO(em); // Instancia o DAO aqui
+            for (Disciplina d : editalGerenciado.getDisciplinas()) {
+                if (d.getId().equals(disciplina.getId())) {
+                    disciplinaGerenciada = d;
+                    disciplinaDAO.inicializarColecoesAlunos(disciplinaGerenciada);
+                    break;
+                }
+            }
+
+            if (disciplinaGerenciada == null) {
+                throw new IllegalArgumentException("Disciplina não encontrada no edital.");
+            }
+
+            editalGerenciado.inscreverAluno(aluno, disciplinaGerenciada.getNomeDisciplina(), cre, nota, tipoVaga, ordem, pref);
+
+            em.getTransaction().commit();
+            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw e; // Relança a exceção para a camada de UI
+        } finally {
+            em.close();
+        }
+    }
+
+
     // Métodos de Autenticação e Usuário Genérico
 
     public void atualizarUsuario(Usuario usuario) {

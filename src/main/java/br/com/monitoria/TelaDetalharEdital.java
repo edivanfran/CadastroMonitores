@@ -37,6 +37,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
 
     @Override
     public void inicializar() {
+        this.edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(this.edital.getId());
         super.inicializar();
         if (isCoordenador()) {
             atualizarBotaoEncerramento();

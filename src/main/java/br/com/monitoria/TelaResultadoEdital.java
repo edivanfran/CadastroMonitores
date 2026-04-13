@@ -39,6 +39,12 @@ public class TelaResultadoEdital extends TelaBase {
         setLocationRelativeTo(null);
     }
 
+    @Override
+    public void inicializar() {
+        // Busca uma instância gerenciada do edital para evitar LazyInitializationException
+        this.edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(this.edital.getId());
+        super.inicializar();
+    }
 
     @Override
     protected void criarComponentes() {

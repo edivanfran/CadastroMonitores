@@ -174,24 +174,6 @@ public class TelaLogin extends TelaBase {
             return;
         }
 
-        // Remover no futuro
-        try {
-            Usuario usuarioLogado = gerenciadorDeDados.autenticarUsuario(email, senha);
-
-            if (usuarioLogado == null){
-                mostrarErro("E-mail ou senha inválidos.");
-                campoEmail.requestFocus();
-                campoSenha.setText("");
-            }
-
-            sessao.setUsuarioLogado(usuarioLogado);
-            abrirTelaPrincipal();
-
-        } catch (Exception e){
-            mostrarErro("Ocorreu um erro inesperado. Tente novamente.");
-            e.printStackTrace();
-        }
-
         // Verifica se é coordenador
         Coordenador coordenador = gerenciadorDeDados.getCoordenador();
         if (coordenador.getEmail().equalsIgnoreCase(email) && 

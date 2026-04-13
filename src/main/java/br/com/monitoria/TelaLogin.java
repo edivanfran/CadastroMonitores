@@ -152,7 +152,7 @@ public class TelaLogin extends TelaBase {
 
         Boolean temCoordenador;
 
-        if (coordenadores != null) {
+        if (!coordenadores.isEmpty()) {
             temCoordenador = Boolean.TRUE;
         } else {
             temCoordenador = Boolean.FALSE;
@@ -307,7 +307,7 @@ public class TelaLogin extends TelaBase {
      * Abre a tela principal após login bem-sucedido.
      */
     private void abrirTelaPrincipal() {
-        TelaPrincipal telaPrincipal = new TelaPrincipal(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaPrincipal telaPrincipal = new TelaPrincipal();
         telaPrincipal.inicializar();
         this.dispose();
     }

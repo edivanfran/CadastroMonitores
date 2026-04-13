@@ -559,7 +559,9 @@ public class TelaPrincipal extends TelaBase implements Observador {
             
             if (opcao == JOptionPane.YES_OPTION) {
                 sessao.limparSessao();
-                System.exit(0);
+                TelaLogin telaLogin = new TelaLogin();
+                telaLogin.inicializar();
+                this.dispose();
             }
         });
         

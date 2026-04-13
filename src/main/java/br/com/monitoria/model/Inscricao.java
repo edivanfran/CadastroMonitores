@@ -12,7 +12,6 @@ import jakarta.persistence.*;
  */
 
 @Entity
-@Table (name = "inscricao")
 public class Inscricao {
 
     @Id

@@ -11,6 +11,7 @@ import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.*;
 import br.com.monitoria.interfaces.ICalculadoraPontuacao;
 import br.com.monitoria.servico.CalculadoraPontuacaoPadrao;
+import br.com.monitoria.servico.ServicoDeCalculoDeResultado;
 
 import jakarta.persistence.*;
 import java.util.*;
@@ -181,8 +182,16 @@ public class EditalDeMonitoria {
         return ranquePorDisciplina;
     }
 
+    public void setRanquePorDisciplina(Map<String, ArrayList<Inscricao>> ranquePorDisciplina) {
+        this.ranquePorDisciplina = ranquePorDisciplina;
+    }
+
     public boolean isResultadoCalculado() {
         return resultadoCalculado;
+    }
+
+    public void setResultadoCalculado(boolean resultadoCalculado) {
+        this.resultadoCalculado = resultadoCalculado;
     }
 
     public boolean isPeriodoDesistenciaEncerrado() {
@@ -253,90 +262,13 @@ public class EditalDeMonitoria {
 
    /**
     * Calcula o resultado do edital (ranqueamento dos alunos).
-    * <p>Para cada disciplina, gera um ranque ordenado pela pontuação obtida usando a fórmula:</p>
-    * <p>PONTUAÇÃO = PESO_CRE * CRE_ALUNO + PESO_NOTA * NOTA_ALUNO</p>
-    * <p>A verificação de permissão (se o usuário é Coordenador) deve ser feita antes de chamar este método.</p>
+    * A lógica de negócio foi delegada para a classe ServicoDeCalculoDeResultado.
     * @throws EditalAbertoException Se o edital ainda estiver aberto
     * @throws SemInscricoesException Se não houver inscrições no edital
     */
-   public void calcularResultado()
-           throws EditalAbertoException, SemInscricoesException {
-       if (aberto) {
-           throw new EditalAbertoException(numero);
-       }
-
-       if (inscricoes.isEmpty()) {
-           throw new SemInscricoesException();
-       }
-
-       System.out.println("Calculando resultado do edital " + numero + "...");
-       ranquePorDisciplina.clear();
-
-       // Agrupa inscrições por disciplina
-       Map<String, ArrayList<Inscricao>> inscricoesPorDisciplina = new HashMap<>();
-       for (Inscricao inscricao : inscricoes) {
-           if (inscricao.isDesistiu()) {
-               continue;
-           }
-           String nomeDisciplina = inscricao.getDisciplina().getNomeDisciplina();
-           inscricoesPorDisciplina.computeIfAbsent(nomeDisciplina, k -> new ArrayList<>()).add(inscricao);
-       }
-
-       for (Map.Entry<String, ArrayList<Inscricao>> entry : inscricoesPorDisciplina.entrySet()) {
-           String nomeDisciplina = entry.getKey();
-           ArrayList<Inscricao> inscricoesDisciplina = entry.getValue();
-           Disciplina disciplina = inscricoesDisciplina.get(0).getDisciplina();
-
-           // Calcula a pontuação usando a ESTRATÉGIA definida
-           for (Inscricao inscricao : inscricoesDisciplina) {
-               double pontuacao = calculadoraPontuacao.calcular(inscricao, pesoCre, pesoNota);
-               inscricao.setPontuacaoFinal(pontuacao);
-           }
-           
-           // Ordena a lista de inscritos
-           inscricoesDisciplina.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
-
-           int vagasRemuneradasRestantes = disciplina.getVagasRemuneradas();
-           int vagasVoluntariasRestantes = disciplina.getVagasVoluntarias();
-
-           for (Inscricao inscricao : inscricoesDisciplina) {
-               PreferenciaInscricao pref = inscricao.getPreferenciaVaga();
-               boolean conseguiuVaga = false;
-
-               if (pref == PreferenciaInscricao.SOMENTE_REMUNERADA) {
-                   if (vagasRemuneradasRestantes > 0) {
-                       inscricao.setTipoVaga(Vaga.REMUNERADA);
-                       vagasRemuneradasRestantes--;
-                       conseguiuVaga = true;
-                   }
-               } else if (pref == PreferenciaInscricao.REMUNERADA_OU_VOLUNTARIA) {
-                   if (vagasRemuneradasRestantes > 0) {
-                       inscricao.setTipoVaga(Vaga.REMUNERADA);
-                       vagasRemuneradasRestantes--;
-                       conseguiuVaga = true;
-                   } else if (vagasVoluntariasRestantes > 0) {
-                       inscricao.setTipoVaga(Vaga.VOLUNTARIA);
-                       vagasVoluntariasRestantes--;
-                       conseguiuVaga = true;
-                   }
-               } else if (pref == PreferenciaInscricao.SOMENTE_VOLUNTARIA) {
-                   if (vagasVoluntariasRestantes > 0) {
-                       inscricao.setTipoVaga(Vaga.VOLUNTARIA);
-                       vagasVoluntariasRestantes--;
-                       conseguiuVaga = true;
-                   }
-               }
-
-               if (!conseguiuVaga) {
-                   inscricao.setTipoVaga(null);
-               }
-           }
-
-           ranquePorDisciplina.put(nomeDisciplina, inscricoesDisciplina);
-       }
-
-       resultadoCalculado = true;
-       System.out.println("Resultado calculado com sucesso para " + ranquePorDisciplina.size() + " disciplina(s).");
+   public void calcularResultado() throws EditalAbertoException, SemInscricoesException {
+       ServicoDeCalculoDeResultado servico = new ServicoDeCalculoDeResultado();
+       servico.calcular(this);
    }
 
     /**

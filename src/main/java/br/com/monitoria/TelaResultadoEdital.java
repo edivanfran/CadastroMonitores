@@ -125,35 +125,26 @@ public class TelaResultadoEdital extends TelaBase {
             }
         };
 
-
-        ArrayList<Inscricao> ranqueAtivo = edital.getRanquePorDisciplina().get(disciplina.getNomeDisciplina());
-        if (ranqueAtivo == null) ranqueAtivo = new ArrayList<>();
-
-
         inscricoes.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
 
-
+        int posicao = 1;
         for (Inscricao inscricao : inscricoes) {
             String status;
-            int pos = ranqueAtivo.indexOf(inscricao) + 1;
-
+            Vaga vagaContemplada = inscricao.getTipoVaga(); // Lê o resultado que já foi calculado!
 
             if (inscricao.isDesistiu()) {
                 status = "Desistente";
-                pos = 0;
+            } else if (vagaContemplada == Vaga.REMUNERADA) {
+                status = "Contemplado (Bolsa)";
+            } else if (vagaContemplada == Vaga.VOLUNTARIA) {
+                status = "Contemplado (Voluntário)";
             } else {
-                if (pos > 0 && pos <= disciplina.getVagasRemuneradas()) {
-                    status = "Contemplado (Bolsa)";
-                } else if (pos > 0 && pos <= disciplina.getVagasRemuneradas() + disciplina.getVagasVoluntarias()) {
-                    status = "Contemplado (Voluntário)";
-                } else {
-                    status = "Não Contemplado";
-                }
+                status = "Não Contemplado";
             }
 
-
             modeloTabela.addRow(new Object[]{
-                    (pos > 0) ? String.valueOf(pos) : "-",
+                    // A posição só é relevante se o aluno foi contemplado e não desistiu
+                    (vagaContemplada != null && !inscricao.isDesistiu()) ? String.valueOf(posicao++) : "-",
                     inscricao.getNomeAluno(),
                     inscricao.getMatriculaAluno(),
                     String.format("%.2f", inscricao.getPontuacaoFinal()),

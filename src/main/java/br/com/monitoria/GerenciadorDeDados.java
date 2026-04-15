@@ -401,6 +401,7 @@ public class GerenciadorDeDados {
             for (Disciplina d : editalGerenciado.getDisciplinas()) {
                 if (d.getId().equals(disciplina.getId())) {
                     disciplinaGerenciada = d;
+                    // Usa o métoodo do DAO para inicializar as coleções LAZY
                     disciplinaDAO.inicializarColecoesAlunos(disciplinaGerenciada);
                     break;
                 }
@@ -410,7 +411,8 @@ public class GerenciadorDeDados {
                 throw new IllegalArgumentException("Disciplina não encontrada no edital.");
             }
 
-            editalGerenciado.inscreverAluno(aluno, disciplinaGerenciada.getNomeDisciplina(), cre, nota, tipoVaga, ordem, pref);
+            // Passa o objeto Disciplina em vez do nome
+            editalGerenciado.inscreverAluno(aluno, disciplinaGerenciada, cre, nota, tipoVaga, ordem, pref);
 
             em.getTransaction().commit();
             GerenciadorDeEventos.getInstancia().notificarAtualizacao();

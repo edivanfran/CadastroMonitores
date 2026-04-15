@@ -54,7 +54,7 @@ public class EditalDeMonitoria {
     private List<Inscricao> inscricoes = new ArrayList<>();
 
     @Transient
-    private Map<String, ArrayList<Inscricao>> ranquePorDisciplina;
+    private Map<String, ArrayList<Inscricao>> ranquePorDisciplina = new HashMap<>();
 
     @Column(name = "resultado_calculado", nullable = false)
     private boolean resultadoCalculado;
@@ -66,7 +66,7 @@ public class EditalDeMonitoria {
 
     // Estratégia de cálculo (OCP)
     @Transient
-    private ICalculadoraPontuacao calculadoraPontuacao;
+    private ICalculadoraPontuacao calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
 
     public long getId() {
         return id;
@@ -207,7 +207,7 @@ public class EditalDeMonitoria {
     /**
      * Inscreve um aluno em uma disciplina do edital.
      * @param aluno O aluno que se deseja inscrever no edital
-     * @param nomeDisciplina O nome da disciplina do edital a qual aluno deseja concorrer
+     * @param disciplina A disciplina do edital na qual o aluno deseja concorrer
      * @param cre O CRE do aluno
      * @param nota A média do aluno na disciplina específica
      * @param tipoVaga O tipo de vaga (remunerada ou voluntária)
@@ -215,38 +215,37 @@ public class EditalDeMonitoria {
      * @param preferenciaVaga A preferência do aluno pelo tipo de vaga
      * @throws EditalFechadoException Se o edital estiver fechado
      * @throws PrazoInscricaoVencidoException Se o prazo de inscrição tiver vencido
-     * @throws DisciplinaNaoEncontradaException Se a disciplina não for encontrada no edital
+     * @throws DisciplinaNaoEncontradaException Se a disciplina não pertencer a este edital
      * @throws ValoresInvalidosException Se o CRE ou a nota estiverem fora do intervalo válido (0-100)
      * @throws VagasEsgotadasException se não houver mais vagas do tipo solicitado.
      */
-   public void inscreverAluno(Aluno aluno, String nomeDisciplina, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga)
-           throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException, VagasEsgotadasException {
-       if (!aberto) {
-           throw new EditalFechadoException(numero);
-       }
-       if (LocalDate.now().isAfter(dataLimite)) {
-           throw new PrazoInscricaoVencidoException(dataLimite);
-       }
-       
-       // Valida valores de CRE e nota
-       if (cre < 0 || cre > 100) {
-           throw new ValoresInvalidosException("CRE", cre, 0, 100);
-       }
-       if (nota < 0 || nota > 100) {
-           throw new ValoresInvalidosException("Nota", nota, 0, 100);
-       }
-       
-       for (Disciplina d : disciplinas) {
-           if (d.getNomeDisciplina().equalsIgnoreCase(nomeDisciplina)) {
-               d.adicionarAluno(aluno, tipoVaga);
-               Inscricao inscricao = new Inscricao(aluno, d, this, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);
-               inscricoes.add(inscricao);
-               System.out.println("Inscrição de " + aluno.getNome() + " em " + nomeDisciplina + " (" + tipoVaga + ") confirmada.");
-               return;
-           }
-       }
-       throw new DisciplinaNaoEncontradaException(nomeDisciplina);
-   }
+    public void inscreverAluno(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga)
+            throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException, VagasEsgotadasException {
+        if (!aberto) {
+            throw new EditalFechadoException(numero);
+        }
+        if (LocalDate.now().isAfter(dataLimite)) {
+            throw new PrazoInscricaoVencidoException(dataLimite);
+        }
+
+        // Valida valores de CRE e nota
+        if (cre < 0 || cre > 100) {
+            throw new ValoresInvalidosException("CRE", cre, 0, 100);
+        }
+        if (nota < 0 || nota > 100) {
+            throw new ValoresInvalidosException("Nota", nota, 0, 100);
+        }
+
+        // Verifica se a disciplina pertence a este edital
+        if (!disciplinas.contains(disciplina)) {
+            throw new DisciplinaNaoEncontradaException(disciplina.getNomeDisciplina());
+        }
+
+        disciplina.adicionarAluno(aluno, tipoVaga);
+        Inscricao inscricao = new Inscricao(aluno, disciplina, this, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);
+        inscricoes.add(inscricao);
+        System.out.println("Inscrição de " + aluno.getNome() + " em " + disciplina.getNomeDisciplina() + " (" + tipoVaga + ") confirmada.");
+    }
 
    public boolean jaAcabou() {
        return LocalDate.now().isAfter(dataLimite);

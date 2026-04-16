@@ -181,9 +181,6 @@ public class TelaListagemEditais extends TelaBase implements Observador {
         this.dispose();
     }
 
-    /**
-     * Método da interface Observador. É chamado pelo GerenciadorDeEventos quando os dados mudam.
-     */
     @Override
     public void atualizar() {
         SwingUtilities.invokeLater(this::recarregarDadosDaTabela);
@@ -191,7 +188,6 @@ public class TelaListagemEditais extends TelaBase implements Observador {
 
     @Override
     public void dispose() {
-        // Remove o observador para evitar memory leaks quando a tela for fechada
         GerenciadorDeEventos.getInstancia().removerObservador(this);
         super.dispose();
     }

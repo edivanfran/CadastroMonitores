@@ -337,7 +337,7 @@ public class GerenciadorDeDados {
             // Traz o edital para o estado gerenciado
             EditalDeMonitoria editalGerenciado = em.merge(edital);
 
-            // Adiciona a nova disciplina (que ainda não foi persistida)
+            // Adiciona a nova disciplina que ainda não foi persistida
             editalGerenciado.adicionarDisciplina(novaDisciplina);
 
             em.getTransaction().commit();
@@ -396,13 +396,13 @@ public class GerenciadorDeDados {
                 throw new IllegalArgumentException("Edital não encontrado.");
             }
 
-            // Encontra a disciplina gerenciada e inicializa suas coleções LAZY
+            // Encontra a disciplina gerenciada e inicializa suas coleções
             Disciplina disciplinaGerenciada = null;
-            DisciplinaDAO disciplinaDAO = new DisciplinaDAO(em); // Instancia o DAO aqui
+            DisciplinaDAO disciplinaDAO = new DisciplinaDAO(em);
             for (Disciplina d : editalGerenciado.getDisciplinas()) {
                 if (d.getId().equals(disciplina.getId())) {
                     disciplinaGerenciada = d;
-                    // Usa o métoodo do DAO para inicializar as coleções LAZY
+                    // Usa o métoodo do DAO para inicializar as coleções
                     disciplinaDAO.inicializarColecoesAlunos(disciplinaGerenciada);
                     break;
                 }
@@ -421,7 +421,7 @@ public class GerenciadorDeDados {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            throw e; // Relança a exceção para a camada de UI
+            throw e;
         } finally {
             em.close();
         }

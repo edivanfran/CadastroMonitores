@@ -32,18 +32,18 @@ public class EditalDeMonitoriaDAO implements DAO<EditalDeMonitoria, Long> {
 
     @Override
     public EditalDeMonitoria buscarPorId(Long id) {
-        // Etapa 1: Buscar o edital e suas disciplinas
+        // Buscar o edital e suas disciplinas
         TypedQuery<EditalDeMonitoria> query = em.createQuery(
                 "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.disciplinas WHERE e.id = :id", EditalDeMonitoria.class);
         query.setParameter("id", id);
         EditalDeMonitoria edital = query.getSingleResult();
 
-        // Etapa 2: Buscar as inscrições para o edital encontrado
+        // Buscar as inscrições para o edital encontrado
         if (edital != null) {
             TypedQuery<EditalDeMonitoria> inscricoesQuery = em.createQuery(
                     "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.inscricoes WHERE e.id = :id", EditalDeMonitoria.class);
             inscricoesQuery.setParameter("id", id);
-            edital = inscricoesQuery.getSingleResult(); // Atribuir o resultado de volta
+            edital = inscricoesQuery.getSingleResult();
         }
 
         return edital;
@@ -58,7 +58,7 @@ public class EditalDeMonitoriaDAO implements DAO<EditalDeMonitoria, Long> {
 
         // Buscar as inscrições para os editais encontrados
         if (editais != null && !editais.isEmpty()) {
-            // A lista retornada por esta query terá os mesmos editais, mas com a coleção 'inscricoes' inicializada.
+            // A lista retornada terá os mesmos editais
             editais = em.createQuery(
                 "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.inscricoes WHERE e IN :editais", EditalDeMonitoria.class)
                 .setParameter("editais", editais)

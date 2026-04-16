@@ -32,6 +32,12 @@
             <version>8.3.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+        </dependency>
+
         <!-- iText 5 para geração de PDF (usado em main.java.br.com.monitoria.GeradorDeRelatorios.java) -->
         <dependency>
             <groupId>com.itextpdf</groupId>

@@ -174,10 +174,18 @@ public class TelaCadastroCoordenador extends TelaBase {
             campoEmail.requestFocus();
             return;
         }
+
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+
+        // Adiciona verificação de e-mail existente
+        if (gerenciadorDeDados.getUsuarioPorEmail(email) != null) {
+            mostrarErro("Este e-mail já está em uso. Por favor, escolha outro.");
+            campoEmail.requestFocus();
+            return;
+        }
         
         // Cadastra o coordenador
         try {
-            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
             // Define o coordenador como usuário logado
             Coordenador coordenador = new Coordenador(email, senha, nome);
             gerenciadorDeDados.salvarCoordenador(coordenador);

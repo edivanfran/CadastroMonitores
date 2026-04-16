@@ -150,24 +150,16 @@ public class TelaCadastroAluno extends TelaBase {
 
         GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
 
-        List<Aluno> alunos = gerenciadorDeDados.getTodosOsAlunos();
-
-        for (Aluno aluno : alunos){
-            if (aluno.getEmail().equals(email)) {
-                mostrarErro("Já existe um usuário cadastrado com este e-mail.");
-                campoEmail.requestFocus();
-                return;
-            }
-            if (aluno.getMatricula().equals(matricula)) {
-                mostrarErro("Já existe um usuário cadastrado com esta matrícula.");
-                campoMatricula.requestFocus();
-                return;
-            }
-            if (email.equals(gerenciadorDeDados.getCoordenador().getEmail())) {
-                mostrarErro("Já existe um usuário cadastrado com este e-mail.");
-                campoEmail.requestFocus();
-                return;
-            }
+        // Validação de E-mail e Matrícula (MUITO MAIS EFICIENTE)
+        if (gerenciadorDeDados.getUsuarioPorEmail(email) != null) {
+            mostrarErro("Já existe um usuário cadastrado com este e-mail.");
+            campoEmail.requestFocus();
+            return;
+        }
+        if (gerenciadorDeDados.buscarAlunoPorMatricula(matricula) != null) {
+            mostrarErro("Já existe um usuário cadastrado com esta matrícula.");
+            campoMatricula.requestFocus();
+            return;
         }
 
         try {

@@ -239,12 +239,7 @@ public class GerenciadorDeDados {
         }
     }
 
-    /**
-     * Tenta buscar e recuperar um edital específico através de sua ID.
-     *
-     * @param id ID do edital
-     * @return O edital, ou {@code null}, caso ele não seja encontrado
-     */
+
     public EditalDeMonitoria buscarEditalPorId(Long id) {
         EntityManager em = emf.createEntityManager();
         try {
@@ -334,11 +329,6 @@ public class GerenciadorDeDados {
         }
     }
 
-    /**
-     * Adiciona uma disciplina a um edital dentro de uma única transação.
-     * @param edital O edital (pode estar desanexado)
-     * @param novaDisciplina A nova disciplina a ser adicionada
-     */
     public void adicionarDisciplinaAoEdital(EditalDeMonitoria edital, Disciplina novaDisciplina) {
         EntityManager em = emf.createEntityManager();
         try {

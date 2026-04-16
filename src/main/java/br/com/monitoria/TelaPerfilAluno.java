@@ -138,26 +138,21 @@ public class TelaPerfilAluno extends TelaBase {
         modeloTabelaHistorico.setRowCount(0);
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+        List<Inscricao> inscricoes = GerenciadorDeDados.getInstancia().getInscricoesPorAluno(this.aluno);
 
-        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
-
-        if (editais != null) {
-            for (EditalDeMonitoria edital : editais) {
-                for (Inscricao inscricao : edital.getInscricoes()) {
-                    // Verifica se a inscrição pertence ao aluno e se ele não desistiu
-                    if (inscricao.getAluno().getMatricula().equals(aluno.getMatricula()) && !inscricao.isDesistiu()) {
-                        
-                        String periodo = edital.getDataInicio().format(formatador) + " - " + 
-                                         edital.getDataLimite().format(formatador);
-                        
-                        modeloTabelaHistorico.addRow(new Object[]{
-                            edital.getNumero(),
-                            inscricao.getDisciplina().getNomeDisciplina(),
-                            periodo,
-                            inscricao.getTipoVaga()
-                        });
-                    }
+        if (inscricoes != null) {
+            for (Inscricao inscricao : inscricoes) {
+                if (!inscricao.isDesistiu()) {
+                    EditalDeMonitoria edital = inscricao.getEdital();
+                    String periodo = edital.getDataInicio().format(formatador) + " - " + 
+                                     edital.getDataLimite().format(formatador);
+                    
+                    modeloTabelaHistorico.addRow(new Object[]{
+                        edital.getNumero(),
+                        inscricao.getDisciplina().getNomeDisciplina(),
+                        periodo,
+                        inscricao.getTipoVaga()
+                    });
                 }
             }
         }

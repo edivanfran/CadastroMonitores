@@ -65,7 +65,6 @@ public class EditalDeMonitoria {
 
     protected EditalDeMonitoria() {}
 
-    // Estratégia de cálculo (OCP)
     @Transient
     private ICalculadoraPontuacao calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
 

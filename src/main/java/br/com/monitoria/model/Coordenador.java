@@ -24,11 +24,4 @@ public class Coordenador extends Usuario {
         // Construtor para JPA
     }
 
-    @Override
-    public void abrirTelaCadastroEdital(JFrame telaPai) {
-        // O Coordenador PODE. Então ele abre a tela.
-        // new TelaCadastroEdital(telaPai).setVisible(true);
-        System.out.println("LOG: Coordenador abrindo tela de cadastro de edital."); // Placeholder
-    }
-
 }

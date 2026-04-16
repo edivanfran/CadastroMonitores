@@ -80,10 +80,4 @@ public abstract class Usuario {
         }
         return true;
     }
-
-    /**
-     * Tenta abrir a tela de cadastro de edital. A implementação varia conforme o tipo de usuário.
-     * @param telaPai A tela que está chamando a ação, para posicionamento de janelas de diálogo.
-     */
-    public abstract void abrirTelaCadastroEdital(JFrame telaPai);
 }

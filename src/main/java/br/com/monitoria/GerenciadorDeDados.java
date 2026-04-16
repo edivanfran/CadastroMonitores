@@ -4,6 +4,7 @@ import br.com.monitoria.dao.AlunoDAO;
 import br.com.monitoria.dao.CoordenadorDAO;
 import br.com.monitoria.dao.DisciplinaDAO;
 import br.com.monitoria.dao.EditalDeMonitoriaDAO;
+import br.com.monitoria.dao.InscricaoDAO;
 import br.com.monitoria.model.*;
 import jakarta.persistence.*;
 
@@ -385,6 +386,16 @@ public class GerenciadorDeDados {
     }
 
     // Métodos de Inscricao
+    public List<Inscricao> getInscricoesPorAluno(Aluno aluno) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            InscricaoDAO inscricaoDAO = new InscricaoDAO(em);
+            return inscricaoDAO.buscarPorAluno(aluno);
+        } finally {
+            em.close();
+        }
+    }
+
     public void inscreverAlunoEmEdital(EditalDeMonitoria edital, Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws Exception {
         EntityManager em = emf.createEntityManager();
         try {

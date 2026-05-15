@@ -30,8 +30,8 @@ public class TelaPerfilAluno extends TelaBase {
     private DefaultTableModel modeloTabelaHistorico;
     private JScrollPane painelTabelaHistorico;
 
-    public TelaPerfilAluno(Aluno aluno, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Perfil do Aluno", central, persistencia, nomeArquivo);
+    public TelaPerfilAluno(Aluno aluno) {
+        super("Perfil do Aluno");
         this.aluno = aluno;
 
         setSize(700, 650);
@@ -138,26 +138,21 @@ public class TelaPerfilAluno extends TelaBase {
         modeloTabelaHistorico.setRowCount(0);
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+        List<Inscricao> inscricoes = GerenciadorDeDados.getInstancia().getInscricoesPorAluno(this.aluno);
 
-        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
-
-        if (editais != null) {
-            for (EditalDeMonitoria edital : editais) {
-                for (Inscricao inscricao : edital.getInscricoes()) {
-                    // Verifica se a inscrição pertence ao aluno e se ele não desistiu
-                    if (inscricao.getAluno().getMatricula().equals(aluno.getMatricula()) && !inscricao.isDesistiu()) {
-                        
-                        String periodo = edital.getDataInicio().format(formatador) + " - " + 
-                                         edital.getDataLimite().format(formatador);
-                        
-                        modeloTabelaHistorico.addRow(new Object[]{
-                            edital.getNumero(),
-                            inscricao.getDisciplina().getNomeDisciplina(),
-                            periodo,
-                            inscricao.getTipoVaga()
-                        });
-                    }
+        if (inscricoes != null) {
+            for (Inscricao inscricao : inscricoes) {
+                if (!inscricao.isDesistiu()) {
+                    EditalDeMonitoria edital = inscricao.getEdital();
+                    String periodo = edital.getDataInicio().format(formatador) + " - " + 
+                                     edital.getDataLimite().format(formatador);
+                    
+                    modeloTabelaHistorico.addRow(new Object[]{
+                        edital.getNumero(),
+                        inscricao.getDisciplina().getNomeDisciplina(),
+                        periodo,
+                        inscricao.getTipoVaga()
+                    });
                 }
             }
         }
@@ -183,10 +178,7 @@ public class TelaPerfilAluno extends TelaBase {
         botaoCancelar = new JButton("Cancelar");
         botaoCancelar.setBounds(260, 530, 100, 40);
         botaoCancelar.setBackground(Estilos.COR_PERIGO);
-        botaoCancelar.addActionListener(e -> {
-            preencherCampos();
-            alternarModoEdicao(false);
-        });
+        botaoCancelar.addActionListener(new OuvinteBotaoCancelar());
         painelPrincipal.add(botaoCancelar);
     }
 
@@ -236,7 +228,8 @@ public class TelaPerfilAluno extends TelaBase {
             aluno.setGenero((Sexo) campoGenero.getSelectedItem());
 
             // Salva na central
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+            gerenciadorDeDados.atualizarAluno(aluno);
             mostrarSucesso("Dados do aluno atualizados com sucesso!");
             
             alternarModoEdicao(false);

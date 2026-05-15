@@ -10,12 +10,19 @@ import br.com.monitoria.model.Usuario;
 import java.util.*;
 
 /**
- * Descreve o objeto cujas funções são armazenar as alterações feitas na base de informações para posteriormente tê-las serializadas em um arquivo XML por meio de um objeto {@link Persistencia}, assim como receber as informações que forem desserializadas por este para que sejam utilizadas pelo programa.
+ * Descreve o objeto cujas funções são armazenar as alterações feitas na base de informações para posteriormente
+ * tê-las serializadas em um arquivo XML por meio de um objeto <s>{@code Persistencia}</s>, assim como receber as
+ * informações que forem desserializadas por este para que sejam utilizadas pelo programa.
  * <p>Cada central só pode ter um coordenador — além disso, as centrais armazenam um {@code ArrayList} contendo as informações de todos os alunos cadastrados na central, e outro contendo as informações de todos os editais cadastrados na central.</p>
  * @see Coordenador
  * @see Aluno
  * @see EditalDeMonitoria
+ * @deprecated O projeto não usa mais persistência por XML, a qual era atribuída a essa classe a função de
+ * controlá-lo, portanto, ao serem removidas todas as referências desta classe em outros módulos, ela será removida.
+ * <u>Não a use.</u>
+ * Prefira usar {@link GerenciadorDeDados}
  */
+@Deprecated(forRemoval = true)
 public class CentralDeInformacoes {
     private Coordenador coordenador;
     private ArrayList<Aluno> todosOsAlunos = new ArrayList<>();
@@ -119,12 +126,14 @@ public class CentralDeInformacoes {
         }
         return null;
     }
+
+    //<editor-fold desc="/** ... */">
+
     /**
-     * Tenta recuperar um edital específico.
-     * @param id ID do edital
-     * @return O edital, ou {@code null} caso ele não seja encontrado
-     * @see EditalDeMonitoria
+     * @deprecated – Prefira: {@code GerenciadorDeDados...buscarEditalPorId(...)}
      */
+    //</editor-fold>
+    @Deprecated
     public EditalDeMonitoria recuperarEdital(long id) {
         for (EditalDeMonitoria edital : todosOsEditais) {
             if (edital.getId() == id) {
@@ -134,6 +143,13 @@ public class CentralDeInformacoes {
         return null;
     }
 
+    //<editor-fold desc="/** ... */">
+
+    /**
+     * @deprecated – Prefira: {@code GerenciadorDeDados...salvarEdital(...)}
+     */
+    //</editor-fold>
+    @Deprecated
     public boolean adicionarEdital(EditalDeMonitoria edital) {
         for (EditalDeMonitoria e : todosOsEditais) {
             if (e.getId() == edital.getId()) {

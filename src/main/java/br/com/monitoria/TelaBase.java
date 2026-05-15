@@ -12,15 +12,9 @@ public abstract class TelaBase extends JFrame {
     
     protected JPanel painelPrincipal;
     protected SessaoUsuario sessao;
-    private CentralDeInformacoes central;
-    private Persistencia persistencia;
-    private String nomeArquivo;
 
-    public TelaBase(String titulo, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
+    public TelaBase(String titulo) {
         super(titulo);
-        this.central = central;
-        this.persistencia = persistencia;
-        this.nomeArquivo = nomeArquivo;
         this.sessao = SessaoUsuario.getInstancia();
         configurarJanela();
         criarPainelPrincipal();
@@ -193,17 +187,5 @@ public abstract class TelaBase extends JFrame {
     public void inicializar() {
         criarComponentes();
         setVisible(true);
-    }
-
-    public CentralDeInformacoes getCentral() {
-        return central;
-    }
-
-    public Persistencia getPersistencia() {
-        return persistencia;
-    }
-
-    public String getNomeArquivo() {
-        return nomeArquivo;
     }
 }

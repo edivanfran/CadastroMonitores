@@ -17,6 +17,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -46,10 +48,10 @@ public class TelaPrincipal extends TelaBase implements Observador {
     private JButton botaoVerRanque;
     private JButton botaoSair;
 
-    public TelaPrincipal(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Sistema de Cadastro de Monitores", central, persistencia, nomeArquivo);
+    public TelaPrincipal() {
+        super("Sistema de Cadastro de Monitores");
         // Registra a TelaPrincipal para observar a Central
-        getCentral().adicionarObservador(this);
+        GerenciadorDeEventos.getInstancia().adicionarObservador(this);
     }
 
     @Override
@@ -400,10 +402,10 @@ public class TelaPrincipal extends TelaBase implements Observador {
             }
             long id = (long) tabelaEditais.getValueAt(linhaSelecionada, 0);
 
-            EditalDeMonitoria edital = getCentral().recuperarEdital(id);
+            EditalDeMonitoria edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(id);
 
             if (edital != null) {
-                TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(edital, getCentral(), getPersistencia(), getNomeArquivo());
+                TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(edital);
                 telaDetalhes.inicializar();
                 telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             } else {
@@ -422,7 +424,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
             }
 
             long id = (long) tabelaEditais.getValueAt(linhaSelecionada, 0);
-            EditalDeMonitoria edital = getCentral().recuperarEdital(id);
+            EditalDeMonitoria edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(id);
 
             if (edital == null) {
                 mostrarErro("Edital não encontrado. Selecione novamente.");
@@ -431,7 +433,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
             try {
                 edital.calcularResultado();
-                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                GerenciadorDeDados.getInstancia().atualizarEdital(edital);
                 mostrarSucesso("Resultado do edital '" + edital.getNumero() + "' calculado e vagas alocadas com sucesso!");
             } catch (EditalAbertoException | SemInscricoesException ex) {
                 mostrarErro(ex.getMessage());
@@ -453,10 +455,9 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
             // Obter a matrícula do aluno da linha selecionada
             String matricula = (String) tabelaAlunos.getValueAt(linhaSelecionada, 0);
-            Aluno aluno = getCentral().recuperarAluno(matricula);
-
+            Aluno aluno = GerenciadorDeDados.getInstancia().buscarAlunoPorMatricula(matricula);
             if (aluno != null) {
-                TelaPerfilAluno telaPerfil = new TelaPerfilAluno(aluno, getCentral(), getPersistencia(), getNomeArquivo());
+                TelaPerfilAluno telaPerfil = new TelaPerfilAluno(aluno);
                 telaPerfil.setVisible(true);
             } else {
                 mostrarErro("Aluno não encontrado!");
@@ -474,10 +475,10 @@ public class TelaPrincipal extends TelaBase implements Observador {
             }
             long id = (long) tabelaEditais.getValueAt(linhaSelecionada, 0);
 
-            EditalDeMonitoria edital = getCentral().recuperarEdital(id);
+            EditalDeMonitoria edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(id);
 
             if (edital != null) {
-                TelaInscreverEmEditalAluno telaDetalhes = new TelaInscreverEmEditalAluno(edital, getCentral(), getPersistencia(), getNomeArquivo());
+                TelaInscreverEmEditalAluno telaDetalhes = new TelaInscreverEmEditalAluno(edital);
                 telaDetalhes.inicializar();
                 telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             } else {
@@ -491,7 +492,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
         public void actionPerformed(ActionEvent e) {
             Aluno alunoLogado = (Aluno) sessao.getUsuarioLogado();
             if (alunoLogado != null) {
-                TelaPerfilAluno telaPerfil = new TelaPerfilAluno(alunoLogado, getCentral(), getPersistencia(), getNomeArquivo());
+                TelaPerfilAluno telaPerfil = new TelaPerfilAluno(alunoLogado);
                 telaPerfil.setVisible(true);
             } else {
                 mostrarErro("Não foi possível encontrar os dados do seu perfil.");
@@ -502,7 +503,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
     public class OuvinteBotaoCadastrarEdital implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            TelaCadastrarEdital telaCadastrarEdital = new TelaCadastrarEdital(getCentral(), getPersistencia(), getNomeArquivo());
+            TelaCadastrarEdital telaCadastrarEdital = new TelaCadastrarEdital();
             telaCadastrarEdital.inicializar();
             telaCadastrarEdital.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
@@ -535,7 +536,14 @@ public class TelaPrincipal extends TelaBase implements Observador {
     }
 
     private void abrirTelaListagemEditais() {
-        TelaListagemEditais telaListagem = new TelaListagemEditais(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaListagemEditais telaListagem = new TelaListagemEditais();
+        telaListagem.addWindowListener(new WindowAdapter() {
+            public void windowClosed(WindowEvent e) {
+                // Quando a tela de detalhes fechar, apenas reexibe e atualiza a tela de listagem
+                TelaPrincipal telaPrincipal = new TelaPrincipal();
+                telaPrincipal.inicializar();
+            }
+        });
         telaListagem.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         telaListagem.inicializar();
         this.dispose();
@@ -560,7 +568,9 @@ public class TelaPrincipal extends TelaBase implements Observador {
             
             if (opcao == JOptionPane.YES_OPTION) {
                 sessao.limparSessao();
-                System.exit(0);
+                TelaLogin telaLogin = new TelaLogin();
+                telaLogin.inicializar();
+                this.dispose();
             }
         });
         

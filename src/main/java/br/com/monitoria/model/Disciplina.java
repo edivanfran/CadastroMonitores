@@ -4,6 +4,7 @@ import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.VagasEsgotadasException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects; // Importar Objects
 
 import jakarta.persistence.*;
 
@@ -12,7 +13,6 @@ import jakarta.persistence.*;
  */
 
 @Entity
-@Table(name = "disciplina")
 public class Disciplina {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -85,6 +85,7 @@ public class Disciplina {
     public int getTotalAlunos() {
         return totalAlunos;
     }
+    public Long getId() {return id;}
 
 
     /**
@@ -125,5 +126,18 @@ public class Disciplina {
      */
     public String toString() {
         return nomeDisciplina;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Disciplina that = (Disciplina) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

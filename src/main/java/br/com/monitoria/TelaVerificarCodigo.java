@@ -15,8 +15,8 @@ public class TelaVerificarCodigo extends TelaBase {
     private JButton botaoRedefinir;
     private JButton botaoVoltar;
 
-    public TelaVerificarCodigo(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo, String email) {
-        super("Redefinir Senha", central, persistencia, nomeArquivo);
+    public TelaVerificarCodigo(String email) {
+        super("Redefinir Senha");
         this.email = email;
     }
 
@@ -103,7 +103,7 @@ public class TelaVerificarCodigo extends TelaBase {
     }
 
     private void voltarParaLogin() {
-        TelaLogin telaLogin = new TelaLogin(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaLogin telaLogin = new TelaLogin();
         telaLogin.inicializar();
         this.dispose();
     }

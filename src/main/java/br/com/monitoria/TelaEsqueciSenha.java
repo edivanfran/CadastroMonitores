@@ -13,8 +13,8 @@ public class TelaEsqueciSenha extends TelaBase {
     private JButton botaoEnviar;
     private JButton botaoVoltar;
 
-    public TelaEsqueciSenha(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Recuperação de Senha", central, persistencia, nomeArquivo);
+    public TelaEsqueciSenha() {
+        super("Recuperação de Senha");
     }
 
     @Override
@@ -87,13 +87,13 @@ public class TelaEsqueciSenha extends TelaBase {
     }
 
     private void abrirTelaVerificacao(String email) {
-        TelaVerificarCodigo tela = new TelaVerificarCodigo(getCentral(), getPersistencia(), getNomeArquivo(), email);
+        TelaVerificarCodigo tela = new TelaVerificarCodigo(email);
         tela.inicializar();
         this.dispose();
     }
 
     private void voltarParaLogin() {
-        TelaLogin telaLogin = new TelaLogin(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaLogin telaLogin = new TelaLogin();
         telaLogin.inicializar();
         this.dispose();
     }

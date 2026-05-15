@@ -1,23 +1,23 @@
 package br.com.monitoria;
 
-import javax.swing.JButton;
+import br.com.monitoria.excecoes.PesosInvalidosException;
+import br.com.monitoria.model.EditalDeMonitoria;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import br.com.monitoria.excecoes.PesosInvalidosException;
-import br.com.monitoria.model.EditalDeMonitoria;
-
 public class TelaCadastrarEdital extends TelaEditalBase {
 
     private JButton botaoSalvar;
     private JButton botaoVoltar;
 
-    public TelaCadastrarEdital(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
+    public TelaCadastrarEdital() {
         // Passa null porque não tem um edital cadastrado.
-        super("Cadastrar Novo Edital", null, central, persistencia, nomeArquivo);
+        super("Cadastrar Novo Edital", null);
     }
 
     protected void criarComponentes() {
@@ -90,10 +90,7 @@ public class TelaCadastrarEdital extends TelaEditalBase {
                         (Double) pesoNota.getValue()
                 );
 
-                getCentral().adicionarEdital(novoEdital);
-                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-                // Notifica a TelaPrincipal
-                getCentral().notificarObservadores();
+                gerenciadorDeDados.salvarEdital(novoEdital);
                 mostrarSucesso("Edital cadastrado com sucesso!");
 
                 voltarParaTelaPrincipal();

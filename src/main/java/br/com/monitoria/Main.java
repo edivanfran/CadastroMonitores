@@ -7,15 +7,11 @@ import java.util.Scanner;
 
 import br.com.monitoria.dao.JPAUtil;
 import br.com.monitoria.excecoes.*;
-import com.mongodb.client.MongoDatabase;
 
 public class Main {
     public static void main(String[] args) {
 
         JPAUtil.getEntityManager().close();
-
-        MongoDatabase db = PersistenciaNoSql.getDatabase();
-        System.out.println("Conectado: " + db.getName());
 
         File[] pasta = new File(System.getProperty("user.dir")).listFiles();
         ArrayList<File> arquivos = new ArrayList<>();
@@ -55,7 +51,6 @@ public class Main {
             central = persistencia.recuperarCentral(nomeArquivo);
         }
 
-        PersistenciaNoSql.fechar();
         InicializadorGUI.iniciar(central, persistencia, "CENTRAL");
 
     }

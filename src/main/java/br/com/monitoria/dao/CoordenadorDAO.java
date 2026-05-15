@@ -14,26 +14,29 @@ public class CoordenadorDAO implements DAO<Coordenador, Long> {
 
     @Override
     public void salvar(Coordenador coordenador) {
-        this.em.persist(coordenador);
+        em.persist(coordenador);
     }
 
     @Override
     public void atualizar(Coordenador coordenador) {
-        this.em.merge(coordenador);
+        em.merge(coordenador);
     }
 
     @Override
     public void excluir(Coordenador coordenador) {
-        this.em.remove(coordenador);
+        if (coordenador != null) {
+            Coordenador c = em.merge(coordenador);
+            em.remove(c);
+        }
     }
 
     @Override
     public Coordenador buscarPorId(Long aLong) {
-        return this.em.find(Coordenador.class, aLong);
+        return em.find(Coordenador.class, aLong);
     }
 
     @Override
     public List<Coordenador> retornarTodos() {
-        return this.em.createQuery("SELECT c FROM Coordenador c", Coordenador.class).getResultList();
+        return em.createQuery("SELECT c FROM Coordenador c", Coordenador.class).getResultList();
     }
 }

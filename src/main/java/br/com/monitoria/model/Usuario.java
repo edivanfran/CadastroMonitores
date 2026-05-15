@@ -1,20 +1,13 @@
 package br.com.monitoria.model;
 
-import br.com.monitoria.CentralDeInformacoes;
-import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import javax.swing.JFrame;
+import jakarta.persistence.*;
+
+import javax.swing.*;
+import java.util.Objects;
 
 /**
  * Abstração que representa usuários cadastrados em uma central de informações.
  * <p>Possui nome, e-mail e senha.</p>
- * @see CentralDeInformacoes
  */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -63,6 +56,19 @@ public abstract class Usuario {
         this.nome = nome;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Usuario usuario = (Usuario) o;
+        return Objects.equals(id, usuario.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
     /**
      * Testa a legitimidade das credenciais fornecidas.
      * @param email O endereço de e-mail do usuário que deseja autenticar-se
@@ -74,10 +80,4 @@ public abstract class Usuario {
         }
         return true;
     }
-
-    /**
-     * Tenta abrir a tela de cadastro de edital. A implementação varia conforme o tipo de usuário.
-     * @param telaPai A tela que está chamando a ação, para posicionamento de janelas de diálogo.
-     */
-    public abstract void abrirTelaCadastroEdital(JFrame telaPai);
 }

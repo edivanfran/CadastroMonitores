@@ -1,5 +1,6 @@
 package br.com.monitoria.dao;
 
+import br.com.monitoria.model.Aluno;
 import br.com.monitoria.model.Inscricao;
 import jakarta.persistence.EntityManager;
 
@@ -38,5 +39,10 @@ public class InscricaoDAO implements DAO<Inscricao, Long> {
     public List<Inscricao> retornarTodos() {
         return em.createQuery("SELECT i FROM Inscricao i", Inscricao.class)
                 .getResultList();
+    }
+
+    public List<Inscricao> buscarPorAluno(Aluno aluno) {
+        String jpql = "SELECT i FROM Inscricao i JOIN FETCH i.edital e JOIN FETCH i.disciplina d WHERE i.aluno = :aluno";
+        return em.createQuery(jpql, Inscricao.class).setParameter("aluno", aluno).getResultList();
     }
 }

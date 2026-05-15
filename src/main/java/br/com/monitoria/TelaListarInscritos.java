@@ -24,8 +24,8 @@ public class TelaListarInscritos extends TelaBase {
     private JButton botaoEnviarEmail;
     private JButton botaoFechar;
 
-    public TelaListarInscritos(EditalDeMonitoria edital, Disciplina disciplina, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Inscritos em " + disciplina.getNomeDisciplina(), central, persistencia, nomeArquivo);
+    public TelaListarInscritos(EditalDeMonitoria edital, Disciplina disciplina) {
+        super("Inscritos em " + disciplina.getNomeDisciplina());
         this.edital = edital;
         this.disciplina = disciplina;
         setSize(600, 400);

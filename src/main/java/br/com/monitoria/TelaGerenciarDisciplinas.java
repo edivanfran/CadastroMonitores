@@ -11,7 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.List;
 
 public class TelaGerenciarDisciplinas extends TelaBase {
 
@@ -26,10 +26,17 @@ public class TelaGerenciarDisciplinas extends TelaBase {
     private JButton botaoApagar;
     private JButton botaoFechar;
 
-    public TelaGerenciarDisciplinas(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Gerenciar Disciplinas do Edital " + edital.getNumero(), central, persistencia, nomeArquivo);
+    public TelaGerenciarDisciplinas(EditalDeMonitoria edital) {
+        super("Gerenciar Disciplinas do Edital " + edital.getNumero());
         this.edital = edital;
         setSize(700, 500);
+    }
+
+    @Override
+    public void inicializar() {
+        // Busca uma instância gerenciada do edital para evitar LazyInitializationException
+        this.edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(this.edital.getId());
+        super.inicializar();
     }
 
     @Override
@@ -53,11 +60,9 @@ public class TelaGerenciarDisciplinas extends TelaBase {
         painelPrincipal.add(labelLista);
 
         listModel = new DefaultListModel<>();
-        ArrayList<Disciplina> disciplinasDoEdital = edital.getDisciplinas();
-        if (disciplinasDoEdital != null) {
-            for (Disciplina disciplina : disciplinasDoEdital) {
-                listModel.addElement(disciplina);
-            }
+        List<Disciplina> disciplinasDoEdital = edital.getDisciplinas();
+        for (Disciplina disciplina : disciplinasDoEdital) {
+            listModel.addElement(disciplina);
         }
 
         listaDisciplinas = new JList<>(listModel);
@@ -170,14 +175,20 @@ public class TelaGerenciarDisciplinas extends TelaBase {
             int vagasRemuneradas = (int) spinnerVagasRemuneradas.getValue();
             int vagasVoluntarias = (int) spinnerVagasVoluntarias.getValue();
 
-            Disciplina novaDisciplina = new Disciplina(nome, vagasVoluntarias, vagasRemuneradas);
-            edital.adicionarDisciplina(novaDisciplina);
-            listModel.addElement(novaDisciplina);
+            try {
+                Disciplina novaDisciplina = new Disciplina(nome, vagasVoluntarias, vagasRemuneradas);
 
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-            getCentral().forcarAtualizacaoObservadores(); // Notifica a TelaPrincipal
-            mostrarSucesso("Disciplina adicionada com sucesso!");
-            limparCampos();
+                GerenciadorDeDados.getInstancia().adicionarDisciplinaAoEdital(edital, novaDisciplina);
+
+                // Atualiza a UI somente após o sucesso da persistência
+                listModel.addElement(novaDisciplina);
+                edital.adicionarDisciplina(novaDisciplina);
+                mostrarSucesso("Disciplina adicionada com sucesso!");
+                limparCampos();
+            } catch (Exception ex) {
+                mostrarErro("Ocorreu um erro ao adicionar a disciplina: " + ex.getMessage());
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -208,14 +219,12 @@ public class TelaGerenciarDisciplinas extends TelaBase {
             try {
                 selecionada.setVagasRemuneradas(novasVagasRem);
                 selecionada.setVagasVoluntarias(novasVagasVol);
-
-                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-                getCentral().forcarAtualizacaoObservadores(); // Notifica a TelaPrincipal
+                GerenciadorDeDados.getInstancia().atualizarDisciplina(selecionada);
                 mostrarSucesso("Alterações salvas com sucesso!");
                 listaDisciplinas.repaint(); // Para garantir que a exibição (se houver) seja atualizada
                 limparCampos();
             } catch (Exception ex) {
-                mostrarErro("Erro ao salvar: " + ex.getMessage());
+                mostrarErro("Ocorreu um erro ao salvar as alterações: " + ex.getMessage());
             }
         }
     }
@@ -246,13 +255,16 @@ public class TelaGerenciarDisciplinas extends TelaBase {
             );
 
             if (confirmacao == JOptionPane.YES_OPTION) {
-                edital.getDisciplinas().remove(selecionada);
-                listModel.removeElement(selecionada);
-
-                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-                getCentral().forcarAtualizacaoObservadores(); // Notifica a TelaPrincipal
-                mostrarSucesso("Disciplina apagada com sucesso.");
-                limparCampos();
+                try {
+                    GerenciadorDeDados.getInstancia().removerDisciplinaDoEdital(edital, selecionada);
+                    edital.getDisciplinas().remove(selecionada);
+                    listModel.removeElement(selecionada);
+                    mostrarSucesso("Disciplina apagada com sucesso.");
+                    limparCampos();
+                } catch (Exception ex) {
+                    mostrarErro("Ocorreu um erro ao apagar a disciplina: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
             }
         }
     }

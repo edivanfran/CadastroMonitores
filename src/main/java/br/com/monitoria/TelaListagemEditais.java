@@ -1,23 +1,28 @@
 package br.com.monitoria;
 
+import br.com.monitoria.interfaces.Observador;
+import br.com.monitoria.model.EditalDeMonitoria;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Tela que exibe uma lista de todos os editais cadastrados no sistema.
  */
-public class TelaListagemEditais extends TelaBase {
+public class TelaListagemEditais extends TelaBase implements Observador {
 
     private JTable tabelaEditais;
     private DefaultTableModel modeloTabela;
     private JButton botaoVerDetalhes;
     private JButton botaoVoltar;
 
-    public TelaListagemEditais(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Listagem de Editais", central, persistencia, nomeArquivo);
+    public TelaListagemEditais() {
+        super("Listagem de Editais");
+        GerenciadorDeEventos.getInstancia().adicionarObservador(this);
     }
 
     @Override
@@ -54,20 +59,8 @@ public class TelaListagemEditais extends TelaBase {
         tabelaEditais.setFont(Estilos.FONTE_NORMAL);
         tabelaEditais.getTableHeader().setFont(Estilos.FONTE_BOTAO);
 
-        // Preenche a tabela com os dados dos editais
-        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        for (EditalDeMonitoria edital : getCentral().getTodosOsEditais()) {
-            String status = edital.isAberto() ? "Aberto" : "Fechado";
-            String resultado = edital.isResultadoCalculado() ? "Calculado" : "Pendente";
-            Object[] linha = {
-                edital.getNumero(),
-                edital.getDataInicio().format(formatador),
-                edital.getDataLimite().format(formatador),
-                status,
-                resultado
-            };
-            modeloTabela.addRow(linha);
-        }
+        // Carrega os dados iniciais na tabela
+        recarregarDadosDaTabela();
 
         JScrollPane painelTabela = new JScrollPane(tabelaEditais);
         painelTabela.setBounds(50, 80, Estilos.LARGURA_TELA - 100, 450);
@@ -99,9 +92,12 @@ public class TelaListagemEditais extends TelaBase {
             return;
         }
 
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+
         String numeroEdital = (String) modeloTabela.getValueAt(linhaSelecionada, 0);
         EditalDeMonitoria editalSelecionado = null;
-        for (EditalDeMonitoria edital : getCentral().getTodosOsEditais()) {
+        for (EditalDeMonitoria edital : editais) {
             if (edital.getNumero().equals(numeroEdital)) {
                 editalSelecionado = edital;
                 break;
@@ -115,7 +111,7 @@ public class TelaListagemEditais extends TelaBase {
             // Lógica condicional para abrir a tela correta
             if (editalSelecionado.isResultadoCalculado()) {
                 // Se o resultado já foi calculado, abre a tela de resultados
-                TelaResultadoEdital telaResultado = new TelaResultadoEdital(editalSelecionado, getCentral(), getPersistencia(), getNomeArquivo());
+                TelaResultadoEdital telaResultado = new TelaResultadoEdital(editalSelecionado);
                 telaResultado.addWindowListener(new WindowAdapter() {
                     public void windowClosed(WindowEvent e) {
                         // Quando a tela de resultado fechar, apenas reexibe e atualiza a tela de listagem
@@ -126,7 +122,7 @@ public class TelaListagemEditais extends TelaBase {
                 telaResultado.inicializar();
             } else {
                 // Se não, abre a tela de edição de detalhes
-                TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(editalSelecionado, getCentral(), getPersistencia(), getNomeArquivo());
+                TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(editalSelecionado);
                 telaDetalhes.addWindowListener(new WindowAdapter() {
                     public void windowClosed(WindowEvent e) {
                         // Quando a tela de detalhes fechar, apenas reexibe e atualiza a tela de listagem
@@ -146,34 +142,53 @@ public class TelaListagemEditais extends TelaBase {
      * Usado para "voltar" de outra tela.
      */
     private void recarregarDadosETornarVisivel() {
-        // Limpa a tabela
+        recarregarDadosDaTabela();
+        // Reexibe a janela
+        this.setVisible(true);
+    }
+
+    /**
+     * Limpa a tabela e a preenche novamente com os dados mais recentes do banco.
+     */
+    private void recarregarDadosDaTabela() {
         modeloTabela.setRowCount(0);
 
-        // Preenche novamente com os dados atualizados da central
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+
+        // Preenche a tabela com os dados dos editais
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        for (EditalDeMonitoria edital : getCentral().getTodosOsEditais()) {
+        for (EditalDeMonitoria edital : editais) {
             String status = edital.isAberto() ? "Aberto" : "Fechado";
             String resultado = edital.isResultadoCalculado() ? "Calculado" : "Pendente";
             Object[] linha = {
-                    edital.getNumero(),
-                    edital.getDataInicio().format(formatador),
-                    edital.getDataLimite().format(formatador),
-                    status,
-                    resultado
+                edital.getNumero(),
+                edital.getDataInicio().format(formatador),
+                edital.getDataLimite().format(formatador),
+                status,
+                resultado
             };
             modeloTabela.addRow(linha);
         }
-
-        // Reexibe a janela
-        this.setVisible(true);
     }
 
     /**
      * Fecha a tela atual e volta para a tela principal.
      */
     private void voltarParaTelaPrincipal() {
-        TelaPrincipal telaPrincipal = new TelaPrincipal(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaPrincipal telaPrincipal = new TelaPrincipal();
         telaPrincipal.inicializar();
         this.dispose();
+    }
+
+    @Override
+    public void atualizar() {
+        SwingUtilities.invokeLater(this::recarregarDadosDaTabela);
+    }
+
+    @Override
+    public void dispose() {
+        GerenciadorDeEventos.getInstancia().removerObservador(this);
+        super.dispose();
     }
 }

@@ -1,34 +1,72 @@
-package br.com.monitoria;
+package br.com.monitoria.model;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import br.com.monitoria.PreferenciaInscricao;
+import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.*;
 import br.com.monitoria.interfaces.ICalculadoraPontuacao;
 import br.com.monitoria.servico.CalculadoraPontuacaoPadrao;
+import br.com.monitoria.servico.ServicoDeCalculoDeResultado;
+
+import jakarta.persistence.*;
+import java.util.*;
 
 /**
  * Representa editais de monitoria de disciplinas do Curso, registradas em uma central de informações. Possui ID {@code long}, um número {@code String}, uma data de início e uma de limite — ambas {@link LocalDate} —, uma lista de disciplinas que esse edital compreende em seu processo seletivo, e um booleano determinando se o edital se encontra ainda aberto.
  */
+
+@Entity
 public class EditalDeMonitoria {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column(nullable = false)
     private String numero;
+
+    @Column(name = "data_inicio", nullable = false)
     private LocalDate dataInicio;
+
+    @Column(name = "data_limite", nullable = false)
     private LocalDate dataLimite;
-    private ArrayList<Disciplina> disciplinas;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "edital_disciplina",
+              joinColumns = @JoinColumn(name = "edital_id"),
+              inverseJoinColumns = @JoinColumn(name = "disciplina_id")
+    )
+    private List<Disciplina> disciplinas = new ArrayList<>();
+
+    @Column(nullable = false)
     private boolean aberto;
+
+    @Column(name = "peso_cre", nullable = false)
     private double pesoCre;
+
+    @Column(name = "peso_nota", nullable = false)
     private double pesoNota;
-    private ArrayList<Inscricao> inscricoes;
-    // Nome da disciplina -> Lista ordenada de inscrições
-    private Map<String, ArrayList<Inscricao>> ranquePorDisciplina;
+
+    @OneToMany(mappedBy = "edital", cascade = {CascadeType.ALL, CascadeType.MERGE}, orphanRemoval = true)
+    private List<Inscricao> inscricoes = new ArrayList<>();
+
+    @Transient
+    private Map<String, ArrayList<Inscricao>> ranquePorDisciplina = new HashMap<>();
+
+    @Column(name = "resultado_calculado", nullable = false)
     private boolean resultadoCalculado;
+
+    @Column(name = "periodo_desistencia_encerrado", nullable = false)
     private boolean periodoDesistenciaEncerrado;
-    
-    // Estratégia de cálculo (OCP)
-    private ICalculadoraPontuacao calculadoraPontuacao;
+
+    protected EditalDeMonitoria() {}
+
+    @Transient
+    private ICalculadoraPontuacao calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
 
     public long getId() {
         return id;
@@ -42,7 +80,7 @@ public class EditalDeMonitoria {
     public LocalDate getDataLimite() {
         return dataLimite;
     }
-    public ArrayList<Disciplina> getDisciplinas() {
+    public List<Disciplina> getDisciplinas() {
         return disciplinas;
     }
     public void setDataInicio(LocalDate dataInicio) {
@@ -59,11 +97,10 @@ public class EditalDeMonitoria {
     }
 
     /**
-     * Construtor privado para uso interno do método clonar.
+     * Construtor para clonagem, sem ID.
      */
-    private EditalDeMonitoria(long id, String numero, LocalDate dataInicio, LocalDate dataLimite,
-                              ArrayList<Disciplina> disciplinas, boolean aberto, double pesoCre, double pesoNota) {
-        this.id = id;
+    private EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite,
+                              List<Disciplina> disciplinas, boolean aberto, double pesoCre, double pesoNota) {
         this.numero = numero;
         this.dataInicio = dataInicio;
         this.dataLimite = dataLimite;
@@ -92,7 +129,6 @@ public class EditalDeMonitoria {
        if (Math.abs((pesoCre + pesoNota) - 1.0) > 0.0001) {
            throw new PesosInvalidosException(pesoCre, pesoNota);
        }
-       this.id = System.currentTimeMillis();
        this.numero = numero;
        this.dataInicio = dataInicio;
        this.dataLimite = dataLimite;
@@ -119,14 +155,7 @@ public class EditalDeMonitoria {
     public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite) throws PesosInvalidosException {
         this(numero, dataInicio, dataLimite, 0.5, 0.5);
     }
-    
-    /**
-     * Permite alterar a estratégia de cálculo de pontuação em tempo de execução.
-     * @param calculadora A nova estratégia de cálculo.
-     */
-    public void setCalculadoraPontuacao(ICalculadoraPontuacao calculadora) {
-        this.calculadoraPontuacao = calculadora;
-    }
+
 
     public double getPesoCre() {
         return pesoCre;
@@ -144,7 +173,7 @@ public class EditalDeMonitoria {
         this.pesoNota = pesoNota;
     }
 
-    public ArrayList<Inscricao> getInscricoes() {
+    public List<Inscricao> getInscricoes() {
         return inscricoes;
     }
 
@@ -152,8 +181,16 @@ public class EditalDeMonitoria {
         return ranquePorDisciplina;
     }
 
+    public void setRanquePorDisciplina(Map<String, ArrayList<Inscricao>> ranquePorDisciplina) {
+        this.ranquePorDisciplina = ranquePorDisciplina;
+    }
+
     public boolean isResultadoCalculado() {
         return resultadoCalculado;
+    }
+
+    public void setResultadoCalculado(boolean resultadoCalculado) {
+        this.resultadoCalculado = resultadoCalculado;
     }
 
     public boolean isPeriodoDesistenciaEncerrado() {
@@ -178,7 +215,7 @@ public class EditalDeMonitoria {
     /**
      * Inscreve um aluno em uma disciplina do edital.
      * @param aluno O aluno que se deseja inscrever no edital
-     * @param nomeDisciplina O nome da disciplina do edital a qual aluno deseja concorrer
+     * @param disciplina A disciplina do edital na qual o aluno deseja concorrer
      * @param cre O CRE do aluno
      * @param nota A média do aluno na disciplina específica
      * @param tipoVaga O tipo de vaga (remunerada ou voluntária)
@@ -186,42 +223,37 @@ public class EditalDeMonitoria {
      * @param preferenciaVaga A preferência do aluno pelo tipo de vaga
      * @throws EditalFechadoException Se o edital estiver fechado
      * @throws PrazoInscricaoVencidoException Se o prazo de inscrição tiver vencido
-     * @throws DisciplinaNaoEncontradaException Se a disciplina não for encontrada no edital
+     * @throws DisciplinaNaoEncontradaException Se a disciplina não pertencer a este edital
      * @throws ValoresInvalidosException Se o CRE ou a nota estiverem fora do intervalo válido (0-100)
      * @throws VagasEsgotadasException se não houver mais vagas do tipo solicitado.
      */
-   public void inscreverAluno(Aluno aluno, String nomeDisciplina, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga)
-           throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException, VagasEsgotadasException {
-       if (!aberto) {
-           throw new EditalFechadoException(numero);
-       }
-       if (LocalDate.now().isAfter(dataLimite)) {
-           throw new PrazoInscricaoVencidoException(dataLimite);
-       }
-       
-       // Valida valores de CRE e nota
-       if (cre < 0 || cre > 100) {
-           throw new ValoresInvalidosException("CRE", cre, 0, 100);
-       }
-       if (nota < 0 || nota > 100) {
-           throw new ValoresInvalidosException("Nota", nota, 0, 100);
-       }
-       
-       for (Disciplina d : disciplinas) {
-           if (d.getNomeDisciplina().equalsIgnoreCase(nomeDisciplina)) {
-               // Tenta adicionar o aluno na disciplina, lança exceção se não conseguir
-               d.adicionarAluno(aluno, tipoVaga);
+    public void inscreverAluno(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga)
+            throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException, VagasEsgotadasException {
+        if (!aberto) {
+            throw new EditalFechadoException(numero);
+        }
+        if (LocalDate.now().isAfter(dataLimite)) {
+            throw new PrazoInscricaoVencidoException(dataLimite);
+        }
 
-               // Se não lançou exceção, a vaga foi garantida. Cria a inscrição.
-               Inscricao inscricao = new Inscricao(aluno, d, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);
-               inscricoes.add(inscricao);
+        // Valida valores de CRE e nota
+        if (cre < 0 || cre > 100) {
+            throw new ValoresInvalidosException("CRE", cre, 0, 100);
+        }
+        if (nota < 0 || nota > 100) {
+            throw new ValoresInvalidosException("Nota", nota, 0, 100);
+        }
 
-               System.out.println("Inscrição de " + aluno.getNome() + " em " + nomeDisciplina + " (" + tipoVaga + ") confirmada.");
-               return;
-           }
-       }
-       throw new DisciplinaNaoEncontradaException(nomeDisciplina);
-   }
+        // Verifica se a disciplina pertence a este edital
+        if (!disciplinas.contains(disciplina)) {
+            throw new DisciplinaNaoEncontradaException(disciplina.getNomeDisciplina());
+        }
+
+        disciplina.adicionarAluno(aluno, tipoVaga);
+        Inscricao inscricao = new Inscricao(aluno, disciplina, this, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);
+        inscricoes.add(inscricao);
+        System.out.println("Inscrição de " + aluno.getNome() + " em " + disciplina.getNomeDisciplina() + " (" + tipoVaga + ") confirmada.");
+    }
 
    public boolean jaAcabou() {
        return LocalDate.now().isAfter(dataLimite);
@@ -229,90 +261,13 @@ public class EditalDeMonitoria {
 
    /**
     * Calcula o resultado do edital (ranqueamento dos alunos).
-    * <p>Para cada disciplina, gera um ranque ordenado pela pontuação obtida usando a fórmula:</p>
-    * <p>PONTUAÇÃO = PESO_CRE * CRE_ALUNO + PESO_NOTA * NOTA_ALUNO</p>
-    * <p>A verificação de permissão (se o usuário é Coordenador) deve ser feita antes de chamar este método.</p>
+    * A lógica de negócio foi delegada para a classe ServicoDeCalculoDeResultado.
     * @throws EditalAbertoException Se o edital ainda estiver aberto
     * @throws SemInscricoesException Se não houver inscrições no edital
     */
-   public void calcularResultado() 
-           throws EditalAbertoException, SemInscricoesException {
-       if (aberto) {
-           throw new EditalAbertoException(numero);
-       }
-
-       if (inscricoes.isEmpty()) {
-           throw new SemInscricoesException();
-       }
-
-       System.out.println("Calculando resultado do edital " + numero + "...");
-       ranquePorDisciplina.clear();
-
-       // Agrupa inscrições por disciplina
-       Map<String, ArrayList<Inscricao>> inscricoesPorDisciplina = new HashMap<>();
-       for (Inscricao inscricao : inscricoes) {
-           if (inscricao.isDesistiu()) {
-               continue;
-           }
-           String nomeDisciplina = inscricao.getDisciplina().getNomeDisciplina();
-           inscricoesPorDisciplina.computeIfAbsent(nomeDisciplina, k -> new ArrayList<>()).add(inscricao);
-       }
-
-       for (Map.Entry<String, ArrayList<Inscricao>> entry : inscricoesPorDisciplina.entrySet()) {
-           String nomeDisciplina = entry.getKey();
-           ArrayList<Inscricao> inscricoesDisciplina = entry.getValue();
-           Disciplina disciplina = inscricoesDisciplina.get(0).getDisciplina();
-
-           // Calcula a pontuação usando a ESTRATÉGIA definida
-           for (Inscricao inscricao : inscricoesDisciplina) {
-               double pontuacao = calculadoraPontuacao.calcular(inscricao, pesoCre, pesoNota);
-               inscricao.setPontuacaoFinal(pontuacao);
-           }
-           
-           // Ordena a lista de inscritos
-           inscricoesDisciplina.sort((i1, i2) -> Double.compare(i2.getPontuacaoFinal(), i1.getPontuacaoFinal()));
-
-           int vagasRemuneradasRestantes = disciplina.getVagasRemuneradas();
-           int vagasVoluntariasRestantes = disciplina.getVagasVoluntarias();
-
-           for (Inscricao inscricao : inscricoesDisciplina) {
-               PreferenciaInscricao pref = inscricao.getPreferenciaVaga();
-               boolean conseguiuVaga = false;
-
-               if (pref == PreferenciaInscricao.SOMENTE_REMUNERADA) {
-                   if (vagasRemuneradasRestantes > 0) {
-                       inscricao.setTipoVaga(Vaga.REMUNERADA);
-                       vagasRemuneradasRestantes--;
-                       conseguiuVaga = true;
-                   }
-               } else if (pref == PreferenciaInscricao.REMUNERADA_OU_VOLUNTARIA) {
-                   if (vagasRemuneradasRestantes > 0) {
-                       inscricao.setTipoVaga(Vaga.REMUNERADA);
-                       vagasRemuneradasRestantes--;
-                       conseguiuVaga = true;
-                   } else if (vagasVoluntariasRestantes > 0) {
-                       inscricao.setTipoVaga(Vaga.VOLUNTARIA);
-                       vagasVoluntariasRestantes--;
-                       conseguiuVaga = true;
-                   }
-               } else if (pref == PreferenciaInscricao.SOMENTE_VOLUNTARIA) {
-                   if (vagasVoluntariasRestantes > 0) {
-                       inscricao.setTipoVaga(Vaga.VOLUNTARIA);
-                       vagasVoluntariasRestantes--;
-                       conseguiuVaga = true;
-                   }
-               }
-
-               if (!conseguiuVaga) {
-                   inscricao.setTipoVaga(null);
-               }
-           }
-
-           ranquePorDisciplina.put(nomeDisciplina, inscricoesDisciplina);
-       }
-
-       resultadoCalculado = true;
-       System.out.println("Resultado calculado com sucesso para " + ranquePorDisciplina.size() + " disciplina(s).");
+   public void calcularResultado() throws EditalAbertoException, SemInscricoesException {
+       ServicoDeCalculoDeResultado servico = new ServicoDeCalculoDeResultado();
+       servico.calcular(this);
    }
 
     /**
@@ -323,14 +278,12 @@ public class EditalDeMonitoria {
      * @return Uma nova instância de EditalDeMonitoria.
      */
     public EditalDeMonitoria clonar() {
-        // Cria uma cópia da lista de disciplinas
-        ArrayList<Disciplina> disciplinasClonadas = this.disciplinas.stream()
+        List<Disciplina> disciplinasClonadas = this.disciplinas.stream()
                 .map(Disciplina::clonar)
-                .collect(Collectors.toCollection(ArrayList::new));
+                .collect(Collectors.toList());
 
-        // Cria o novo edital com um novo ID e número
+        // Chama o construtor correto que não define um ID.
         return new EditalDeMonitoria(
-                System.currentTimeMillis(),
                 this.numero + " - Cópia",
                 this.dataInicio,
                 this.dataLimite,

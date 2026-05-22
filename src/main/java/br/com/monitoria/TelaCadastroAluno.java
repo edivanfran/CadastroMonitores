@@ -1,6 +1,10 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.EditalDeMonitoria;
+
 import javax.swing.*;
+import java.util.List;
 
 /**
  * Tela para o cadastro de um novo aluno no sistema.
@@ -21,8 +25,8 @@ public class TelaCadastroAluno extends TelaBase {
     private JButton botaoCadastrar;
     private JButton botaoVoltar;
 
-    public TelaCadastroAluno(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Cadastro de Aluno", central, persistencia, nomeArquivo);
+    public TelaCadastroAluno() {
+        super("Cadastro de Aluno");
     }
 
     @Override
@@ -144,28 +148,23 @@ public class TelaCadastroAluno extends TelaBase {
             return;
         }
 
-        for (Aluno aluno : getCentral().getTodosOsAlunos()) {
-            if (aluno.getEmail().equals(email)) {
-                mostrarErro("Já existe um usuário cadastrado com este e-mail.");
-                campoEmail.requestFocus();
-                return;
-            }
-            if (aluno.getMatricula().equals(matricula)) {
-                mostrarErro("Já existe um usuário cadastrado com esta matrícula.");
-                campoMatricula.requestFocus();
-                return;
-            }
-            if (email.equals(getCentral().getCoordenador().getEmail())) {
-                mostrarErro("Já existe um usuário cadastrado com este e-mail.");
-                campoEmail.requestFocus();
-                return;
-            }
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+
+        // Validação de E-mail e Matrícula (MUITO MAIS EFICIENTE)
+        if (gerenciadorDeDados.getUsuarioPorEmail(email) != null) {
+            mostrarErro("Já existe um usuário cadastrado com este e-mail.");
+            campoEmail.requestFocus();
+            return;
         }
-        
+        if (gerenciadorDeDados.buscarAlunoPorMatricula(matricula) != null) {
+            mostrarErro("Já existe um usuário cadastrado com esta matrícula.");
+            campoMatricula.requestFocus();
+            return;
+        }
+
         try {
             Aluno novoAluno = new Aluno(email, senha, nome, matricula, sexo);
-            getCentral().adicionarAluno(novoAluno);
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+            gerenciadorDeDados.salvarAluno(novoAluno);
             
             mostrarSucesso("Aluno cadastrado com sucesso! Agora você pode fazer o login.");
             voltarParaLogin();
@@ -176,7 +175,7 @@ public class TelaCadastroAluno extends TelaBase {
     }
     
     private void voltarParaLogin() {
-        TelaLogin telaLogin = new TelaLogin(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaLogin telaLogin = new TelaLogin();
         telaLogin.inicializar();
         this.dispose();
     }

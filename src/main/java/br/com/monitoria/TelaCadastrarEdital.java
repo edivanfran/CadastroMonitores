@@ -1,20 +1,23 @@
 package br.com.monitoria;
 
-import javax.swing.JButton;
+import br.com.monitoria.excecoes.PesosInvalidosException;
+import br.com.monitoria.model.EditalDeMonitoria;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import br.com.monitoria.excecoes.PesosInvalidosException;
+import java.util.List;
 
 public class TelaCadastrarEdital extends TelaEditalBase {
 
     private JButton botaoSalvar;
     private JButton botaoVoltar;
 
-    public TelaCadastrarEdital(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
+    public TelaCadastrarEdital() {
         // Passa null porque não tem um edital cadastrado.
-        super("Cadastrar Novo Edital", null, central, persistencia, nomeArquivo);
+        super("Cadastrar Novo Edital", null);
     }
 
     protected void criarComponentes() {
@@ -73,9 +76,12 @@ public class TelaCadastrarEdital extends TelaEditalBase {
                 return;
             }
 
+            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+            List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+
             try {
                 // Usando o número do edital do campo de texto, se houver um
-                String numeroEdital = "Edital " + (getCentral().getTodosOsEditais().size() + 1);
+                String numeroEdital = "Edital " + (editais.size() + 1);
                 EditalDeMonitoria novoEdital = new EditalDeMonitoria(
                         numeroEdital,
                         dataInicioFormatada,
@@ -84,10 +90,7 @@ public class TelaCadastrarEdital extends TelaEditalBase {
                         (Double) pesoNota.getValue()
                 );
 
-                getCentral().adicionarEdital(novoEdital);
-                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-                // Notifica a TelaPrincipal
-                getCentral().notificarObservadores();
+                gerenciadorDeDados.salvarEdital(novoEdital);
                 mostrarSucesso("Edital cadastrado com sucesso!");
 
                 voltarParaTelaPrincipal();

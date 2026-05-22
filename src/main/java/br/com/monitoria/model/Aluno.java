@@ -1,11 +1,25 @@
-package br.com.monitoria;
+package br.com.monitoria.model;
+
+import br.com.monitoria.Sexo;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  * Representa um usuário que tenha sido cadastrado numa central de informações como aluno. Possui e-mail, senha, nome e gênero.
  * Possui também um número de matrícula, que serve como identificador exclusivo do aluno.
  */
-public class Aluno extends Usuario{
+@Entity
+@DiscriminatorValue("A")
+public class Aluno extends Usuario {
+	@Column(unique = true, nullable = false)
 	public String matricula;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	public Sexo genero;
 
     public String getMatricula() {
@@ -16,6 +30,10 @@ public class Aluno extends Usuario{
     }
     public void setGenero(Sexo genero) {
         this.genero = genero;
+    }
+
+    protected Aluno() {
+        // Construtor para JPA
     }
 
 

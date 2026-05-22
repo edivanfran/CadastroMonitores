@@ -1,20 +1,28 @@
 package br.com.monitoria;
 
+import br.com.monitoria.excecoes.PermissaoNegadaException;
 import br.com.monitoria.interfaces.Observador;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import br.com.monitoria.excecoes.*;
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.model.Usuario;
+
+import java.util.*;
 
 /**
- * Descreve o objeto cujas funções são armazenar as alterações feitas na base de informações para posteriormente tê-las serializadas em um arquivo XML por meio de um objeto {@link Persistencia}, assim como receber as informações que forem desserializadas por este para que sejam utilizadas pelo programa.
+ * Descreve o objeto cujas funções são armazenar as alterações feitas na base de informações para posteriormente
+ * tê-las serializadas em um arquivo XML por meio de um objeto <s>{@code Persistencia}</s>, assim como receber as
+ * informações que forem desserializadas por este para que sejam utilizadas pelo programa.
  * <p>Cada central só pode ter um coordenador — além disso, as centrais armazenam um {@code ArrayList} contendo as informações de todos os alunos cadastrados na central, e outro contendo as informações de todos os editais cadastrados na central.</p>
  * @see Coordenador
  * @see Aluno
  * @see EditalDeMonitoria
+ * @deprecated O projeto não usa mais persistência por XML, a qual era atribuída a essa classe a função de
+ * controlá-lo, portanto, ao serem removidas todas as referências desta classe em outros módulos, ela será removida.
+ * <u>Não a use.</u>
+ * Prefira usar {@link GerenciadorDeDados}
  */
+@Deprecated(forRemoval = true)
 public class CentralDeInformacoes {
     private Coordenador coordenador;
     private ArrayList<Aluno> todosOsAlunos = new ArrayList<>();
@@ -27,7 +35,7 @@ public class CentralDeInformacoes {
      * Observadores são notificados quando os dados da central mudam.
      * @param observador O observador a ser adicionado.
      */
-    public void adicionarObservador(Observador observador) {
+    public void adicionarObservador(Observador observador) { // ESPECIFICO
         if (this.observadores == null) {
             this.observadores = new ArrayList<>();
         }
@@ -37,7 +45,7 @@ public class CentralDeInformacoes {
     /**
      * Notifica todos os observadores registrados que uma mudança ocorreu.
      */
-    public void notificarObservadores() {
+    public void notificarObservadores() { // ESPECIFICO
         if (this.observadores == null) {
             return;
         }
@@ -51,7 +59,7 @@ public class CentralDeInformacoes {
      * Útil quando uma alteração é feita em um objeto interno (como uma disciplina dentro de um edital)
      * e a central precisa informar as telas para se atualizarem.
      */
-    public void forcarAtualizacaoObservadores() {
+    public void forcarAtualizacaoObservadores() { // ESPECIFICO
         notificarObservadores();
     }
 
@@ -100,8 +108,10 @@ public class CentralDeInformacoes {
         todosOsAlunos.add(aluno);
         // Notifica as telas
         notificarObservadores();
-        return true; //TODO| pode ser interessante criar uma exceção para caso o aluno já exista (duplicata)
+        return true;
     }
+
+    //TODO/  ↑ William  -----------------------------------  ↓ Anderson
 
     /**
      * Tenta recuperar um {@link Aluno} salvo na central.
@@ -114,14 +124,16 @@ public class CentralDeInformacoes {
                 return algum;
             }
         }
-        return null; //TODO| criar exceção para caso não consiga recuperar o aluno, ao invés de apenas usar `null`
+        return null;
     }
+
+    //<editor-fold desc="/** ... */">
+
     /**
-     * Tenta recuperar um edital específico.
-     * @param id ID do edital
-     * @return O edital, ou {@code null} caso ele não seja encontrado
-     * @see EditalDeMonitoria
+     * @deprecated – Prefira: {@code GerenciadorDeDados...buscarEditalPorId(...)}
      */
+    //</editor-fold>
+    @Deprecated
     public EditalDeMonitoria recuperarEdital(long id) {
         for (EditalDeMonitoria edital : todosOsEditais) {
             if (edital.getId() == id) {
@@ -129,9 +141,16 @@ public class CentralDeInformacoes {
             }
         }
         return null;
-    } //TODO| pode ser interessante criar uma exceção aqui também
+    }
 
-    public boolean adicionarEdital(EditalDeMonitoria edital) { //TODO| recomendado fundir método com `cadastrarEdital()` (pode ser necessário refatorar algumas coisas)
+    //<editor-fold desc="/** ... */">
+
+    /**
+     * @deprecated – Prefira: {@code GerenciadorDeDados...salvarEdital(...)}
+     */
+    //</editor-fold>
+    @Deprecated
+    public boolean adicionarEdital(EditalDeMonitoria edital) {
         for (EditalDeMonitoria e : todosOsEditais) {
             if (e.getId() == edital.getId()) {
                 return false;
@@ -206,7 +225,7 @@ public class CentralDeInformacoes {
      * @return O código de 6 dígitos gerado, ou null se o e-mail nã
      * o for encontrado.
      */
-    public String gerarCodigoRecuperacao(String email) {
+    public String gerarCodigoRecuperacao(String email) { // ESPECIFICO
         Usuario usuario = getUsuarioPorEmail(email);
         if (usuario == null) {
             return null;
@@ -228,7 +247,7 @@ public class CentralDeInformacoes {
      * @param novaSenha A nova senha a ser definida.
      * @return true se a senha foi redefinida com sucesso, false caso contrário.
      */
-    public boolean redefinirSenhaComCodigo(String email, String codigo, String novaSenha) {
+    public boolean redefinirSenhaComCodigo(String email, String codigo, String novaSenha) { // ESPECIFICO
         if (codigosRecuperacao == null || !codigosRecuperacao.containsKey(email.toLowerCase())) {
             return false; // Nenhum código foi gerado para esse e-mail
         }
@@ -243,7 +262,7 @@ public class CentralDeInformacoes {
                 return true;
             }
         }
-        return false;  // TODO: CRIAR EXCEÇÃO
+        return false;
     }
 
     /**
@@ -252,7 +271,7 @@ public class CentralDeInformacoes {
      * @param senha A senha do usuário
      * @return {@code true} se autorizado, {@code false} caso contrário
      */
-    public boolean isLoginPermitido(String email, String senha) {
+    public boolean isLoginPermitido(String email, String senha) { // ESPECIFICO
         Usuario usuario = getUsuarioPorEmail(email);
         return usuario != null && usuario.getSenha().equals(senha);
     }
@@ -260,7 +279,7 @@ public class CentralDeInformacoes {
     /**
      * Tenta obter o gênero e o primeiro nome do usuário, e então compõe uma mensagem de boas‑vindas.
      */
-    public void darBoasVindasUsuario(String email, String senha) {
+    public void darBoasVindasUsuario(String email, String senha) { // ESPECIFICO
         Usuario usuario = getUsuarioPorEmail(email);
         if (usuario instanceof Aluno && usuario.getSenha().equals(senha)) {
             Aluno aluno = (Aluno) usuario;

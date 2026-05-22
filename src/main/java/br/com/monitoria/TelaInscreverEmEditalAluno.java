@@ -1,6 +1,9 @@
 package br.com.monitoria;
 
 import br.com.monitoria.excecoes.*;
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Disciplina;
+import br.com.monitoria.model.EditalDeMonitoria;
 
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
@@ -8,7 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.List;
 
 public class TelaInscreverEmEditalAluno extends TelaBase {
 
@@ -22,13 +25,19 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
     private JSpinner campoOrdemPreferencia;
     private JButton botaoInscrever;
 
-    public TelaInscreverEmEditalAluno(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Inscrever-se no Edital " + edital.getNumero(), central, persistencia, nomeArquivo);
+    public TelaInscreverEmEditalAluno(EditalDeMonitoria edital) {
+        super("Inscrever-se no Edital " + edital.getNumero());
         this.edital = edital;
         setSize(700, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    }
 
-        criarComponentes();
+    @Override
+    public void inicializar() {
+        // Busca uma instância gerenciada do edital para evitar LazyInitializationException
+        // e garantir que a lista de disciplinas no JComboBox seja consistente.
+        this.edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(this.edital.getId());
+        super.inicializar();
     }
 
     @Override
@@ -140,7 +149,7 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
         dataFinal.setText(edital.getDataLimite().format(formatador));
 
         campoDeDisciplina.removeAllItems();
-        ArrayList<Disciplina> disciplinas = edital.getDisciplinas();
+        List<Disciplina> disciplinas = edital.getDisciplinas();
         for (Disciplina disciplina : disciplinas) {
             campoDeDisciplina.addItem(disciplina);
         }
@@ -156,8 +165,8 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
                 return;
             }
 
-            double cre = (Integer) campoCRE.getValue();
-            double nota = (Integer) campoNota.getValue();
+            double cre = ((Number) campoCRE.getValue()).doubleValue();
+            double nota = ((Number) campoNota.getValue()).doubleValue();
             int ordemPreferencia = (Integer) campoOrdemPreferencia.getValue();
             PreferenciaInscricao preferenciaVaga = (PreferenciaInscricao) campoPreferencia.getSelectedItem();
             Aluno alunoLogado = (Aluno) sessao.getUsuarioLogado();
@@ -188,12 +197,12 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
                 }
             } catch (Exception ex) {
                 mostrarErro(ex.getMessage());
+                ex.printStackTrace(); // Para depuração
             }
         }
 
-        private void realizarInscricao(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException, VagasEsgotadasException {
-            edital.inscreverAluno(aluno, disciplina.getNomeDisciplina(), cre, nota, tipoVaga, ordem, pref);
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+        private void realizarInscricao(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws Exception {
+            GerenciadorDeDados.getInstancia().inscreverAlunoEmEdital(edital, aluno, disciplina, cre, nota, tipoVaga, ordem, pref);
             mostrarSucesso("Inscrição para vaga " + tipoVaga + " realizada com sucesso!");
             dispose();
         }

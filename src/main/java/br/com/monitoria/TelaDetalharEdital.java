@@ -13,6 +13,9 @@ import br.com.monitoria.excecoes.EditalAbertoException;
 import br.com.monitoria.excecoes.EditalFechadoException;
 import br.com.monitoria.excecoes.PermissaoNegadaException;
 import br.com.monitoria.excecoes.PrazoVencidoException;
+import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.Disciplina;
+import br.com.monitoria.model.EditalDeMonitoria;
 
 public class TelaDetalharEdital extends TelaEditalBase {
 
@@ -28,12 +31,13 @@ public class TelaDetalharEdital extends TelaEditalBase {
     // Botão do Aluno
     private JButton botaoInscrever;
 
-    public TelaDetalharEdital(EditalDeMonitoria edital, CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Detalhar Edital", edital, central, persistencia, nomeArquivo);
+    public TelaDetalharEdital(EditalDeMonitoria edital) {
+        super("Detalhar Edital", edital);
     }
 
     @Override
     public void inicializar() {
+        this.edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(this.edital.getId());
         super.inicializar();
         if (isCoordenador()) {
             atualizarBotaoEncerramento();
@@ -137,7 +141,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
     private class OuvinteBotaoInscreverEdital implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            TelaInscreverEmEditalAluno tela = new TelaInscreverEmEditalAluno(edital, getCentral(), getPersistencia(), getNomeArquivo());
+            TelaInscreverEmEditalAluno tela = new TelaInscreverEmEditalAluno(edital);
             tela.inicializar();
             dispose();
         }
@@ -164,7 +168,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 return;
             }
 
-            TelaListarInscritos telaInscritos = new TelaListarInscritos(edital, disciplinaSelecionada, getCentral(), getPersistencia(), getNomeArquivo());
+            TelaListarInscritos telaInscritos = new TelaListarInscritos(edital, disciplinaSelecionada);
             telaInscritos.inicializar();
             telaInscritos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
@@ -177,7 +181,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 mostrarErro("Apenas coordenadores podem alterar o estado do edital.");
                 return;
             }
-
+            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
             Coordenador coordenador = (Coordenador) sessao.getUsuarioLogado();
             
             if (edital.isAberto()) {
@@ -189,7 +193,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 if (confirmacao == JOptionPane.YES_OPTION) {
                     try {
                         edital.fecharEdital(coordenador);
-                        getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                        gerenciadorDeDados.atualizarEdital(edital);
                         mostrarSucesso("Edital encerrado com sucesso!");
                         atualizarBotaoEncerramento();
                     } catch (PermissaoNegadaException | EditalFechadoException ex) {
@@ -205,7 +209,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 if (confirmacao == JOptionPane.YES_OPTION) {
                     try {
                         edital.reabrirEdital(coordenador);
-                        getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+                        gerenciadorDeDados.atualizarEdital(edital);
                         mostrarSucesso("Edital reaberto para inscrições!");
                         atualizarBotaoEncerramento();
                     } catch (PermissaoNegadaException | EditalAbertoException | PrazoVencidoException ex) {
@@ -223,15 +227,15 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 return;
             }
             EditalDeMonitoria copiaEdital = edital.clonar();
-            getCentral().adicionarEdital(copiaEdital);
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+            gerenciadorDeDados.salvarEdital(copiaEdital);
             mostrarSucesso("Edital clonado com sucesso!");
         }
     }
     
     private class OuvinteBotaoEditarDisciplina implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            TelaGerenciarDisciplinas telaDisciplinas = new TelaGerenciarDisciplinas(edital, getCentral(), getPersistencia(), getNomeArquivo());
+            TelaGerenciarDisciplinas telaDisciplinas = new TelaGerenciarDisciplinas(edital);
             telaDisciplinas.inicializar();
             telaDisciplinas.addWindowListener(
                     new WindowListener() {
@@ -292,8 +296,8 @@ public class TelaDetalharEdital extends TelaEditalBase {
             edital.setDataLimite(dataFinalFormatada);
             edital.setPesoCre((Double) pesoCRE.getValue());
             edital.setPesoNota((Double) pesoNota.getValue());
-
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
+            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+            gerenciadorDeDados.atualizarEdital(edital);
             mostrarSucesso("Edital salvo com sucesso!");
 
             tornarCamposEditaveis(false);
@@ -304,7 +308,8 @@ public class TelaDetalharEdital extends TelaEditalBase {
     private class OuvinteBotaoInscrever implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            TelaInscreverEmEditalAluno telaInscricao = new TelaInscreverEmEditalAluno(edital, getCentral(), getPersistencia(), getNomeArquivo());
+            TelaInscreverEmEditalAluno telaInscricao = new TelaInscreverEmEditalAluno(edital);
+            telaInscricao.inicializar();
             telaInscricao.setVisible(true);
         }
     }

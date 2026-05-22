@@ -15,8 +15,8 @@ public class TelaVerificarCodigo extends TelaBase {
     private JButton botaoRedefinir;
     private JButton botaoVoltar;
 
-    public TelaVerificarCodigo(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo, String email) {
-        super("Redefinir Senha", central, persistencia, nomeArquivo);
+    public TelaVerificarCodigo(String email) {
+        super("Redefinir Senha");
         this.email = email;
     }
 
@@ -92,23 +92,18 @@ public class TelaVerificarCodigo extends TelaBase {
             return;
         }
 
-        boolean sucesso = getCentral().redefinirSenhaComCodigo(email, codigo, novaSenha);
+        boolean sucesso = RecuperadorDeSenhas.redefinirSenhaComCodigo(email, codigo, novaSenha);
 
         if (sucesso) {
-            try {
-                getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-                mostrarSucesso("Senha redefinida com sucesso! Você já pode fazer o login com a nova senha.");
-                voltarParaLogin();
-            } catch (Exception e) {
-                mostrarErro("Erro ao salvar a nova senha: " + e.getMessage());
-            }
+            mostrarSucesso("Senha redefinida com sucesso! Você já pode fazer o login com a nova senha.");
+            voltarParaLogin();
         } else {
-            mostrarErro("Código de recuperação inválido ou expirado. Tente novamente.");
+            mostrarErro("Código de recuperação inválido, expirado ou ocorreu um erro ao salvar. Tente novamente.");
         }
     }
 
     private void voltarParaLogin() {
-        TelaLogin telaLogin = new TelaLogin(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaLogin telaLogin = new TelaLogin();
         telaLogin.inicializar();
         this.dispose();
     }

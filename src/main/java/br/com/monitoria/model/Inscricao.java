@@ -1,40 +1,76 @@
-package br.com.monitoria;
+package br.com.monitoria.model;
 
+import br.com.monitoria.PreferenciaInscricao;
+import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.ValoresInvalidosException;
 import br.com.monitoria.servico.ValidadorInscricao;
+import jakarta.persistence.*;
 
 /**
  * Representa uma inscrição de um aluno em uma disciplina de um edital de monitoria.
  * Armazena o aluno, a disciplina, o CRE, a nota e o tipo de vaga (remunerada ou voluntária).
  */
+
+@Entity
 public class Inscricao {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "aluno_id", nullable = false)
     private Aluno aluno;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "edital_id", nullable = false)
+    private EditalDeMonitoria edital;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "disciplina_id", nullable = false)
     private Disciplina disciplina;
+
+    @Column(nullable = false)
     private double cre;
+
+    @Column(nullable = false)
     private double nota;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_Vaga", nullable = false)
     private Vaga tipoVaga;
+
+    @Column(name = "ordem_preferencia")
     private int ordemPreferencia;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "preferencia_vaga")
     private PreferenciaInscricao preferenciaVaga;
+
+    @Column(nullable = false)
     private boolean desistiu;
+
+    @Column(name = "pontuacao_final")
     private double pontuacaoFinal;
+
+    protected Inscricao() {}
 
     /**
      * Construtor da inscrição.
      * A validação dos dados é delegada para a classe ValidadorInscricao (SRP/High Cohesion).
      */
-    public Inscricao(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga) throws ValoresInvalidosException {
-        // Delega a responsabilidade de validação (Pure Fabrication / SRP)
+    public Inscricao(Aluno aluno, Disciplina disciplina, EditalDeMonitoria edital, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga) throws ValoresInvalidosException {
         ValidadorInscricao.validar(aluno, disciplina, cre, nota, tipoVaga, preferenciaVaga);
-        
         this.aluno = aluno;
         this.disciplina = disciplina;
+        this.edital = edital; // <- novo
         this.cre = cre;
         this.nota = nota;
         this.tipoVaga = tipoVaga;
         this.ordemPreferencia = ordemPreferencia;
         this.preferenciaVaga = preferenciaVaga;
         this.desistiu = false;
-        this.pontuacaoFinal = 0; 
+        this.pontuacaoFinal = 0;
     }
 
     public Aluno getAluno() {
@@ -61,10 +97,6 @@ public class Inscricao {
         this.tipoVaga = vaga;
     }
 
-    public int getOrdemPreferencia() {
-        return ordemPreferencia;
-    }
-
     public PreferenciaInscricao getPreferenciaVaga() {
         return preferenciaVaga;
     }
@@ -80,6 +112,8 @@ public class Inscricao {
     public double getPontuacaoFinal() {
         return pontuacaoFinal;
     }
+
+    public EditalDeMonitoria getEdital() { return edital; }
 
     /**
      * Define a pontuação final da inscrição.

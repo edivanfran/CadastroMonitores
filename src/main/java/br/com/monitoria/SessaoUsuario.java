@@ -1,5 +1,9 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Aluno;
+import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.Usuario;
+
 /**
  * Classe singleton para gerenciar a sessão do usuário logado.
  * Permite verificar se o usuário é coordenador ou aluno em qualquer parte da aplicação.

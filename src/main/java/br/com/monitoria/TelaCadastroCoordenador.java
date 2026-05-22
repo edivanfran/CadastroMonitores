@@ -1,5 +1,7 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Coordenador;
+
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
@@ -17,11 +19,8 @@ public class TelaCadastroCoordenador extends TelaBase {
     private JButton botaoCadastrar;
     private JButton botaoVoltar;
 
-    public TelaCadastroCoordenador(CentralDeInformacoes central, Persistencia persistencia, String nomeArquivo) {
-        super("Cadastro de Coordenador",
-                central,
-                persistencia,
-                nomeArquivo);
+    public TelaCadastroCoordenador() {
+        super("Cadastro de Coordenador");
     }
 
     protected void criarComponentes() {
@@ -175,20 +174,27 @@ public class TelaCadastroCoordenador extends TelaBase {
             campoEmail.requestFocus();
             return;
         }
+
+        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+
+        // Adiciona verificação de e-mail existente
+        if (gerenciadorDeDados.getUsuarioPorEmail(email) != null) {
+            mostrarErro("Este e-mail já está em uso. Por favor, escolha outro.");
+            campoEmail.requestFocus();
+            return;
+        }
         
         // Cadastra o coordenador
         try {
-            getCentral().cadastrarCoordenador(email, senha, nome);
-            getPersistencia().salvarCentral(getCentral(), getNomeArquivo());
-            
             // Define o coordenador como usuário logado
-            Coordenador coordenador = getCentral().getCoordenador();
+            Coordenador coordenador = new Coordenador(email, senha, nome);
+            gerenciadorDeDados.salvarCoordenador(coordenador);
             sessao.setUsuarioLogado(coordenador);
             
             mostrarSucesso("Coordenador cadastrado com sucesso!");
             
             // Abre a tela principal
-            TelaPrincipal telaPrincipal = new TelaPrincipal(getCentral(), getPersistencia(), getNomeArquivo());
+            TelaPrincipal telaPrincipal = new TelaPrincipal();
             telaPrincipal.inicializar();
             this.dispose();
             
@@ -201,7 +207,7 @@ public class TelaCadastroCoordenador extends TelaBase {
      * Volta para a tela de login.
      */
     private void voltarParaLogin() {
-        TelaLogin telaLogin = new TelaLogin(getCentral(), getPersistencia(), getNomeArquivo());
+        TelaLogin telaLogin = new TelaLogin();
         telaLogin.inicializar();
         this.dispose();
     }

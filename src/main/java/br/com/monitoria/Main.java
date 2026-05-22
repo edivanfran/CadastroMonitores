@@ -10,7 +10,6 @@ import br.com.monitoria.excecoes.*;
 
 public class Main {
     public static void main(String[] args) {
-
         JPAUtil.getEntityManager().close();
 
         File[] pasta = new File(System.getProperty("user.dir")).listFiles();
@@ -33,13 +32,8 @@ public class Main {
             System.out.println("Boa madrugada.");
         }
 
-        Persistencia persistencia = new Persistencia();
-        CentralDeInformacoes central;
-        String nomeArquivo;
         if (arquivos.isEmpty()) {
             System.out.println("Não foi encontrado nenhum arquivo de Central de Informações de Alunos.\nCriando nova Central...");
-            central = new CentralDeInformacoes();
-            nomeArquivo = "central".toUpperCase();
         } else {
             System.out.println("Foram encontradas as seguintes Centrais de Informações de Alunos:\n-------------------------------");
             for (File arquivo : arquivos) {
@@ -47,11 +41,7 @@ public class Main {
             }
             System.out.println("-------------------------------");
             System.out.print("Espere um momento estamos pegar arquivo da nuvem » ");
-            nomeArquivo = "central".toUpperCase();
-            central = persistencia.recuperarCentral(nomeArquivo);
         }
-
-        InicializadorGUI.iniciar(central, persistencia, "CENTRAL");
-
+        InicializadorGUI.iniciar();
     }
 }

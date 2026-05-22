@@ -540,8 +540,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
         telaListagem.addWindowListener(new WindowAdapter() {
             public void windowClosed(WindowEvent e) {
                 // Quando a tela de detalhes fechar, apenas reexibe e atualiza a tela de listagem
-                TelaPrincipal telaPrincipal = new TelaPrincipal();
-                telaPrincipal.inicializar();
+                inicializar();
             }
         });
         telaListagem.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

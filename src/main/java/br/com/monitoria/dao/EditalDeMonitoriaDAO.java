@@ -6,6 +6,7 @@ import jakarta.persistence.TypedQuery;
 
 import java.util.List;
 
+@Deprecated
 public class EditalDeMonitoriaDAO implements DAO<EditalDeMonitoria, Long> {
 
     private final EntityManager em;

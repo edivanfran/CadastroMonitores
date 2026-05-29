@@ -13,17 +13,20 @@ public class PersistenciaNoSql {
             "mongodb://root:root@localhost:27017/nosql-monitores-mongo?authSource=admin";
     private static final String DB_NAME = "nosql-monitores";
 
-    public static MongoDatabase getDatabase() {
+    public static synchronized MongoDatabase getDatabase() {
         if (mongoClient == null) {
-            mongoClient = MongoClients.create(URI);
-        }
-        if (database == null) {
-            database = mongoClient.getDatabase(DB_NAME);
+            try {
+                mongoClient = MongoClients.create(URI);
+                database = mongoClient.getDatabase(DB_NAME);
+            } catch (Exception e) {
+                System.err.println("Falha ao conectar com o MongoDB: " + e.getMessage());
+                throw new RuntimeException("Não foi possível conectar ao banco de dados NoSQL.", e);
+            }
         }
         return database;
     }
 
-    public static void fechar() {
+    public static synchronized void fechar() {
         if (mongoClient != null) {
             mongoClient.close();
             mongoClient = null;

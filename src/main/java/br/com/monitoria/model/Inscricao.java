@@ -4,66 +4,56 @@ import br.com.monitoria.PreferenciaInscricao;
 import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.ValoresInvalidosException;
 import br.com.monitoria.servico.ValidadorInscricao;
-import jakarta.persistence.*;
 
-/**
- * Representa uma inscrição de um aluno em uma disciplina de um edital de monitoria.
- * Armazena o aluno, a disciplina, o CRE, a nota e o tipo de vaga (remunerada ou voluntária).
- */
-
-@Entity
 public class Inscricao {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "aluno_id", nullable = false)
-    private Aluno aluno;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "edital_id", nullable = false)
-    private EditalDeMonitoria edital;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "disciplina_id", nullable = false)
-    private Disciplina disciplina;
-
-    @Column(nullable = false)
+    private String id;
+    private String editalId;
+    private String alunoId;
+    private String disciplinaNome;
     private double cre;
-
-    @Column(nullable = false)
     private double nota;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_Vaga", nullable = false)
     private Vaga tipoVaga;
-
-    @Column(name = "ordem_preferencia")
     private int ordemPreferencia;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "preferencia_vaga")
     private PreferenciaInscricao preferenciaVaga;
-
-    @Column(nullable = false)
     private boolean desistiu;
-
-    @Column(name = "pontuacao_final")
     private double pontuacaoFinal;
 
+    // Campos transientes para carregar objetos completos sob demanda
+    private transient Aluno aluno;
+    private transient Disciplina disciplina;
+    private transient EditalDeMonitoria edital;
+
+    // Construtor padrão
     protected Inscricao() {}
 
+    // Construtor para reconstrução a partir do DAO
+    public Inscricao(String id, String editalId, String alunoId, String disciplinaNome, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga, boolean desistiu, double pontuacaoFinal) {
+        this.id = id;
+        this.editalId = editalId;
+        this.alunoId = alunoId;
+        this.disciplinaNome = disciplinaNome;
+        this.cre = cre;
+        this.nota = nota;
+        this.tipoVaga = tipoVaga;
+        this.ordemPreferencia = ordemPreferencia;
+        this.preferenciaVaga = preferenciaVaga;
+        this.desistiu = desistiu;
+        this.pontuacaoFinal = pontuacaoFinal;
+    }
+
     /**
-     * Construtor da inscrição.
-     * A validação dos dados é delegada para a classe ValidadorInscricao (SRP/High Cohesion).
+     * Construtor para criar uma nova inscrição na lógica de negócio.
      */
     public Inscricao(Aluno aluno, Disciplina disciplina, EditalDeMonitoria edital, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga) throws ValoresInvalidosException {
         ValidadorInscricao.validar(aluno, disciplina, cre, nota, tipoVaga, preferenciaVaga);
         this.aluno = aluno;
         this.disciplina = disciplina;
-        this.edital = edital; // <- novo
+        this.edital = edital;
+        // Supondo que Aluno e Edital já tenham um ID (String) atribuído
+        this.alunoId = aluno.getId();
+        this.editalId = edital.getId();
+        this.disciplinaNome = disciplina.getNomeDisciplina();
         this.cre = cre;
         this.nota = nota;
         this.tipoVaga = tipoVaga;
@@ -73,78 +63,35 @@ public class Inscricao {
         this.pontuacaoFinal = 0;
     }
 
-    public Aluno getAluno() {
-        return aluno;
-    }
+    // Getters e Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getEditalId() { return editalId; }
+    public void setEditalId(String editalId) { this.editalId = editalId; }
+    public String getAlunoId() { return alunoId; }
+    public void setAlunoId(String alunoId) { this.alunoId = alunoId; }
+    public String getDisciplinaNome() { return disciplinaNome; }
+    public double getCre() { return cre; }
+    public double getNota() { return nota; }
+    public Vaga getTipoVaga() { return tipoVaga; }
+    public void setTipoVaga(Vaga tipoVaga) { this.tipoVaga = tipoVaga; }
+    public int getOrdemPreferencia() { return ordemPreferencia; }
+    public PreferenciaInscricao getPreferenciaVaga() { return preferenciaVaga; }
+    public boolean isDesistiu() { return desistiu; }
+    public void setDesistiu(boolean desistiu) { this.desistiu = desistiu; }
+    public double getPontuacaoFinal() { return pontuacaoFinal; }
+    public void setPontuacaoFinal(double pontuacaoFinal) { this.pontuacaoFinal = pontuacaoFinal; }
 
-    public Disciplina getDisciplina() {
-        return disciplina;
-    }
-
-    public double getCre() {
-        return cre;
-    }
-
-    public double getNota() {
-        return nota;
-    }
-
-    public Vaga getTipoVaga() {
-        return tipoVaga;
-    }
-
-    public void setTipoVaga(Vaga vaga) {
-        this.tipoVaga = vaga;
-    }
-
-    public PreferenciaInscricao getPreferenciaVaga() {
-        return preferenciaVaga;
-    }
-
-    public boolean isDesistiu() {
-        return desistiu;
-    }
-
-    public void setDesistiu(boolean desistiu) {
-        this.desistiu = desistiu;
-    }
-
-    public double getPontuacaoFinal() {
-        return pontuacaoFinal;
-    }
-
+    // Getters para os objetos transientes (a lógica de carregamento pode ser adicionada depois)
+    public Aluno getAluno() { return aluno; }
+    public void setAluno(Aluno aluno) { this.aluno = aluno; }
+    public Disciplina getDisciplina() { return disciplina; }
+    public void setDisciplina(Disciplina disciplina) { this.disciplina = disciplina; }
     public EditalDeMonitoria getEdital() { return edital; }
+    public void setEdital(EditalDeMonitoria edital) { this.edital = edital; }
 
-    /**
-     * Define a pontuação final da inscrição.
-     * O cálculo deve ser feito externamente por uma ICalculadoraPontuacao.
-     * @param pontuacaoFinal O valor calculado.
-     */
-    public void setPontuacaoFinal(double pontuacaoFinal) {
-        this.pontuacaoFinal = pontuacaoFinal;
-    }
-
-    /**
-     * Retorna o nome do aluno através da referência ao objeto Aluno.
-     * @return O nome do aluno
-     */
-    public String getNomeAluno() {
-        return aluno.getNome();
-    }
-
-    /**
-     * Retorna a matrícula do aluno através da referência ao objeto Aluno.
-     * @return A matrícula do aluno
-     */
-    public String getMatriculaAluno() {
-        return aluno.getMatricula();
-    }
-
-    /**
-     * Retorna o email do aluno através da referência ao objeto Aluno.
-     * @return O email do aluno
-     */
-    public String getEmailAluno() {
-        return aluno.getEmail();
-    }
+    // Métodos de negócio que dependem dos objetos carregados
+    public String getNomeAluno() { return (aluno != null) ? aluno.getNome() : null; }
+    public String getMatriculaAluno() { return (aluno != null) ? aluno.getMatricula() : null; }
+    public String getEmailAluno() { return (aluno != null) ? aluno.getEmail() : null; }
 }

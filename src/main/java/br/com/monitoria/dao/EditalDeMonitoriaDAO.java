@@ -33,19 +33,20 @@ public class EditalDeMonitoriaDAO implements DAO<EditalDeMonitoria, Long> {
 
     @Override
     public EditalDeMonitoria buscarPorId(Long id) {
-        // Buscar o edital e suas disciplinas
+        // Buscar o edital e suas disciplinas. Usar getResultList para evitar NoResultException.
         TypedQuery<EditalDeMonitoria> query = em.createQuery(
                 "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.disciplinas WHERE e.id = :id", EditalDeMonitoria.class);
         query.setParameter("id", id);
-        EditalDeMonitoria edital = query.getSingleResult();
-
-        // Buscar as inscrições para o edital encontrado
-        if (edital != null) {
-            TypedQuery<EditalDeMonitoria> inscricoesQuery = em.createQuery(
-                    "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.inscricoes WHERE e.id = :id", EditalDeMonitoria.class);
-            inscricoesQuery.setParameter("id", id);
-            edital = inscricoesQuery.getSingleResult();
+        List<EditalDeMonitoria> result = query.getResultList();
+        if (result.isEmpty()) {
+            return null;
         }
+        EditalDeMonitoria edital = result.get(0);
+
+        em.createQuery(
+                "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.inscricoes WHERE e.id = :id", EditalDeMonitoria.class)
+                .setParameter("id", id)
+                .getSingleResult();
 
         return edital;
     }
@@ -57,10 +58,9 @@ public class EditalDeMonitoriaDAO implements DAO<EditalDeMonitoria, Long> {
                 "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.disciplinas", EditalDeMonitoria.class)
                 .getResultList();
 
-        // Buscar as inscrições para os editais encontrados
-        if (editais != null && !editais.isEmpty()) {
-            // A lista retornada terá os mesmos editais
-            editais = em.createQuery(
+        // Para os editais já carregados, buscar as inscrições.
+        if (!editais.isEmpty()) {
+            em.createQuery(
                 "SELECT DISTINCT e FROM EditalDeMonitoria e LEFT JOIN FETCH e.inscricoes WHERE e IN :editais", EditalDeMonitoria.class)
                 .setParameter("editais", editais)
                 .getResultList();

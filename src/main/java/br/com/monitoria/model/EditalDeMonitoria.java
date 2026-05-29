@@ -1,11 +1,5 @@
 package br.com.monitoria.model;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import br.com.monitoria.PreferenciaInscricao;
 import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.*;
@@ -13,99 +7,60 @@ import br.com.monitoria.interfaces.ICalculadoraPontuacao;
 import br.com.monitoria.servico.CalculadoraPontuacaoPadrao;
 import br.com.monitoria.servico.ServicoDeCalculoDeResultado;
 
-import jakarta.persistence.*;
-import java.util.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Representa editais de monitoria de disciplinas do Curso, registradas em uma central de informações. Possui ID {@code long}, um número {@code String}, uma data de início e uma de limite — ambas {@link LocalDate} —, uma lista de disciplinas que esse edital compreende em seu processo seletivo, e um booleano determinando se o edital se encontra ainda aberto.
- */
-
-@Entity
 public class EditalDeMonitoria {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
 
-    @Column(nullable = false)
+    private String id;
     private String numero;
-
-    @Column(name = "data_inicio", nullable = false)
     private LocalDate dataInicio;
-
-    @Column(name = "data_limite", nullable = false)
     private LocalDate dataLimite;
-
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "edital_disciplina",
-              joinColumns = @JoinColumn(name = "edital_id"),
-              inverseJoinColumns = @JoinColumn(name = "disciplina_id")
-    )
     private List<Disciplina> disciplinas = new ArrayList<>();
-
-    @Column(nullable = false)
     private boolean aberto;
-
-    @Column(name = "peso_cre", nullable = false)
     private double pesoCre;
-
-    @Column(name = "peso_nota", nullable = false)
     private double pesoNota;
-
-    @OneToMany(mappedBy = "edital", cascade = {CascadeType.ALL, CascadeType.MERGE}, orphanRemoval = true)
-    private List<Inscricao> inscricoes = new ArrayList<>();
-
-    @Transient
-    private Map<String, ArrayList<Inscricao>> ranquePorDisciplina = new HashMap<>();
-
-    @Column(name = "resultado_calculado", nullable = false)
     private boolean resultadoCalculado;
-
-    @Column(name = "periodo_desistencia_encerrado", nullable = false)
     private boolean periodoDesistenciaEncerrado;
 
-    protected EditalDeMonitoria() {}
-
-    @Transient
+    // Campos transientes (não persistidos) para lógica de negócio em tempo de execução
+    private List<Inscricao> inscricoes = new ArrayList<>();
+    private Map<String, ArrayList<Inscricao>> ranquePorDisciplina = new HashMap<>();
     private ICalculadoraPontuacao calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
 
-    public long getId() {
-        return id;
-    }
-    public String getNumero() {
-        return numero;
-    }
-    public LocalDate getDataInicio() {
-        return dataInicio;
-    }
-    public LocalDate getDataLimite() {
-        return dataLimite;
-    }
-    public List<Disciplina> getDisciplinas() {
-        return disciplinas;
-    }
-    public void setDataInicio(LocalDate dataInicio) {
-        this.dataInicio = dataInicio;
-    }
-    public void setDataLimite(LocalDate dataLimite) {
-        this.dataLimite = dataLimite;
-    }
-    public boolean isAberto() {
-        return aberto;
-    }
-    public void setAberto(boolean aberto) {
-        this.aberto = aberto;
-    }
+    // Construtor padrão
+    public EditalDeMonitoria() {}
 
-    /**
-     * Construtor para clonagem, sem ID.
-     */
-    private EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite,
-                              List<Disciplina> disciplinas, boolean aberto, double pesoCre, double pesoNota) {
+    // Construtor para reconstrução a partir do DAO
+    public EditalDeMonitoria(String id, String numero, LocalDate dataInicio, LocalDate dataLimite, List<Disciplina> disciplinas, boolean aberto, double pesoCre, double pesoNota, boolean resultadoCalculado, boolean periodoDesistenciaEncerrado) {
+        this.id = id;
         this.numero = numero;
         this.dataInicio = dataInicio;
         this.dataLimite = dataLimite;
         this.disciplinas = disciplinas;
         this.aberto = aberto;
+        this.pesoCre = pesoCre;
+        this.pesoNota = pesoNota;
+        this.resultadoCalculado = resultadoCalculado;
+        this.periodoDesistenciaEncerrado = periodoDesistenciaEncerrado;
+    }
+
+    /**
+     * Construtor completo do edital com pesos para cálculo de pontuação.
+     */
+    public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite, double pesoCre, double pesoNota) throws PesosInvalidosException {
+        if (Math.abs((pesoCre + pesoNota) - 1.0) > 0.0001) {
+            throw new PesosInvalidosException(pesoCre, pesoNota);
+        }
+        this.numero = numero;
+        this.dataInicio = dataInicio;
+        this.dataLimite = dataLimite;
+        this.disciplinas = new ArrayList<>();
+        this.aberto = true;
         this.pesoCre = pesoCre;
         this.pesoNota = pesoNota;
         this.inscricoes = new ArrayList<>();
@@ -114,138 +69,50 @@ public class EditalDeMonitoria {
         this.periodoDesistenciaEncerrado = false;
         this.calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
     }
-
-    /**
-     * Construtor completo do edital com pesos para cálculo de pontuação.
-     * <p>Os pesos devem obrigatoriamente somar 1.0.</p>
-     * @param numero O número do edital
-     * @param dataInicio A data de início das inscrições
-     * @param dataLimite A data limite das inscrições
-     * @param pesoCre O peso do CRE no cálculo da pontuação
-     * @param pesoNota O peso da nota (média na disciplina) no cálculo da pontuação
-     * @throws PesosInvalidosException Se a soma dos pesos não for igual a 1.0
-     */
-    public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite, double pesoCre, double pesoNota) throws PesosInvalidosException {
-       if (Math.abs((pesoCre + pesoNota) - 1.0) > 0.0001) {
-           throw new PesosInvalidosException(pesoCre, pesoNota);
-       }
-       this.numero = numero;
-       this.dataInicio = dataInicio;
-       this.dataLimite = dataLimite;
-       this.disciplinas = new ArrayList<>();
-       this.aberto = true;
-       this.pesoCre = pesoCre;
-       this.pesoNota = pesoNota;
-       this.inscricoes = new ArrayList<>();
-       this.ranquePorDisciplina = new HashMap<>();
-       this.resultadoCalculado = false;
-       this.periodoDesistenciaEncerrado = false;
-       this.calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
-   }
-
+    
     /**
      * Construtor do edital com valores padrão para os pesos (0.5 cada).
-     * <p>Como os pesos padrão somam 1.0, este construtor nunca lança exceção.</p>
-     * @param numero O número do edital
-     * @param dataInicio A data de início das inscrições
-     * @param dataLimite A data limite das inscrições
-     * @throws PesosInvalidosException Se a soma dos pesos não for igual a 1.0 (nunca ocorre com valores padrão)
      */
     public EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite) throws PesosInvalidosException {
         this(numero, dataInicio, dataLimite, 0.5, 0.5);
     }
 
-    public double getPesoCre() {
-        return pesoCre;
-    }
+    // Getters e Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getNumero() { return numero; }
+    public LocalDate getDataInicio() { return dataInicio; }
+    public void setDataInicio(LocalDate dataInicio) { this.dataInicio = dataInicio; }
+    public LocalDate getDataLimite() { return dataLimite; }
+    public void setDataLimite(LocalDate dataLimite) { this.dataLimite = dataLimite; }
+    public List<Disciplina> getDisciplinas() { return disciplinas; }
+    public void setDisciplinas(List<Disciplina> disciplinas) { this.disciplinas = disciplinas; }
+    public boolean isAberto() { return aberto; }
+    public void setAberto(boolean aberto) { this.aberto = aberto; }
+    public double getPesoCre() { return pesoCre; }
+    public void setPesoCre(double pesoCre) { this.pesoCre = pesoCre; }
+    public double getPesoNota() { return pesoNota; }
+    public void setPesoNota(double pesoNota) { this.pesoNota = pesoNota; }
+    public boolean isResultadoCalculado() { return resultadoCalculado; }
+    public void setResultadoCalculado(boolean resultadoCalculado) { this.resultadoCalculado = resultadoCalculado; }
+    public boolean isPeriodoDesistenciaEncerrado() { return periodoDesistenciaEncerrado; }
+    public void setPeriodoDesistenciaEncerrado(boolean periodoDesistenciaEncerrado) { this.periodoDesistenciaEncerrado = periodoDesistenciaEncerrado; }
+    public List<Inscricao> getInscricoes() { return inscricoes; }
+    public void setInscricoes(List<Inscricao> inscricoes) { this.inscricoes = inscricoes; }
+    public Map<String, ArrayList<Inscricao>> getRanquePorDisciplina() { return ranquePorDisciplina; }
+    public void setRanquePorDisciplina(Map<String, ArrayList<Inscricao>> ranquePorDisciplina) { this.ranquePorDisciplina = ranquePorDisciplina; }
 
-    public void setPesoCre(double pesoCre) {
-        this.pesoCre = pesoCre;
-    }
+    // Métodos de negócio existentes (mantidos)
+    public void adicionarInscricao(Inscricao inscricao) { inscricoes.add(inscricao); }
+    public void adicionarDisciplina(Disciplina disciplina) { disciplinas.add(disciplina); }
 
-    public double getPesoNota() {
-        return pesoNota;
-    }
-
-    public void setPesoNota(double pesoNota) {
-        this.pesoNota = pesoNota;
-    }
-
-    public List<Inscricao> getInscricoes() {
-        return inscricoes;
-    }
-
-    public Map<String, ArrayList<Inscricao>> getRanquePorDisciplina() {
-        return ranquePorDisciplina;
-    }
-
-    public void setRanquePorDisciplina(Map<String, ArrayList<Inscricao>> ranquePorDisciplina) {
-        this.ranquePorDisciplina = ranquePorDisciplina;
-    }
-
-    public boolean isResultadoCalculado() {
-        return resultadoCalculado;
-    }
-
-    public void setResultadoCalculado(boolean resultadoCalculado) {
-        this.resultadoCalculado = resultadoCalculado;
-    }
-
-    public boolean isPeriodoDesistenciaEncerrado() {
-        return periodoDesistenciaEncerrado;
-    }
-
-    /**
-     * Adiciona uma inscrição ao edital.
-     * @param inscricao A inscrição a ser adicionada
-     */
-    public void adicionarInscricao(Inscricao inscricao) {
-        inscricoes.add(inscricao);
-    }
-
-    /**
-     * Adiciona a disciplina especificada à lista de disciplinas que ofertam vagas no edital.
-     */
-    public void adicionarDisciplina(Disciplina disciplina) {
-        disciplinas.add(disciplina);
-    }
-
-    /**
-     * Inscreve um aluno em uma disciplina do edital.
-     * @param aluno O aluno que se deseja inscrever no edital
-     * @param disciplina A disciplina do edital na qual o aluno deseja concorrer
-     * @param cre O CRE do aluno
-     * @param nota A média do aluno na disciplina específica
-     * @param tipoVaga O tipo de vaga (remunerada ou voluntária)
-     * @param ordemPreferencia A ordem de preferência da disciplina para o aluno
-     * @param preferenciaVaga A preferência do aluno pelo tipo de vaga
-     * @throws EditalFechadoException Se o edital estiver fechado
-     * @throws PrazoInscricaoVencidoException Se o prazo de inscrição tiver vencido
-     * @throws DisciplinaNaoEncontradaException Se a disciplina não pertencer a este edital
-     * @throws ValoresInvalidosException Se o CRE ou a nota estiverem fora do intervalo válido (0-100)
-     * @throws VagasEsgotadasException se não houver mais vagas do tipo solicitado.
-     */
     public void inscreverAluno(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordemPreferencia, PreferenciaInscricao preferenciaVaga)
             throws EditalFechadoException, PrazoInscricaoVencidoException, DisciplinaNaoEncontradaException, ValoresInvalidosException, VagasEsgotadasException {
-        if (!aberto) {
-            throw new EditalFechadoException(numero);
-        }
-        if (LocalDate.now().isAfter(dataLimite)) {
-            throw new PrazoInscricaoVencidoException(dataLimite);
-        }
-
-        // Valida valores de CRE e nota
-        if (cre < 0 || cre > 100) {
-            throw new ValoresInvalidosException("CRE", cre, 0, 100);
-        }
-        if (nota < 0 || nota > 100) {
-            throw new ValoresInvalidosException("Nota", nota, 0, 100);
-        }
-
-        // Verifica se a disciplina pertence a este edital
-        if (!disciplinas.contains(disciplina)) {
-            throw new DisciplinaNaoEncontradaException(disciplina.getNomeDisciplina());
-        }
+        if (!aberto) throw new EditalFechadoException(numero);
+        if (LocalDate.now().isAfter(dataLimite)) throw new PrazoInscricaoVencidoException(dataLimite);
+        if (cre < 0 || cre > 100) throw new ValoresInvalidosException("CRE", cre, 0, 100);
+        if (nota < 0 || nota > 100) throw new ValoresInvalidosException("Nota", nota, 0, 100);
+        if (!disciplinas.contains(disciplina)) throw new DisciplinaNaoEncontradaException(disciplina.getNomeDisciplina());
 
         disciplina.adicionarAluno(aluno, tipoVaga);
         Inscricao inscricao = new Inscricao(aluno, disciplina, this, cre, nota, tipoVaga, ordemPreferencia, preferenciaVaga);
@@ -253,57 +120,26 @@ public class EditalDeMonitoria {
         System.out.println("Inscrição de " + aluno.getNome() + " em " + disciplina.getNomeDisciplina() + " (" + tipoVaga + ") confirmada.");
     }
 
-   public boolean jaAcabou() {
-       return LocalDate.now().isAfter(dataLimite);
-   }
+    public boolean jaAcabou() { return LocalDate.now().isAfter(dataLimite); }
 
-   /**
-    * Calcula o resultado do edital (ranqueamento dos alunos).
-    * A lógica de negócio foi delegada para a classe ServicoDeCalculoDeResultado.
-    * @throws EditalAbertoException Se o edital ainda estiver aberto
-    * @throws SemInscricoesException Se não houver inscrições no edital
-    */
-   public void calcularResultado() throws EditalAbertoException, SemInscricoesException {
-       ServicoDeCalculoDeResultado servico = new ServicoDeCalculoDeResultado();
-       servico.calcular(this);
-   }
-
-    /**
-     * Cria um clone deste edital.
-     * O edital clonado terá um novo ID, um número com o sufixo "- Cópia",
-     * e começará com a lista de inscrições e resultados zerados.
-     * As disciplinas são clonadas para evitar compartilhamento de referências.
-     * @return Uma nova instância de EditalDeMonitoria.
-     */
-    public EditalDeMonitoria clonar() {
-        List<Disciplina> disciplinasClonadas = this.disciplinas.stream()
-                .map(Disciplina::clonar)
-                .collect(Collectors.toList());
-
-        // Chama o construtor correto que não define um ID.
-        return new EditalDeMonitoria(
-                this.numero + " - Cópia",
-                this.dataInicio,
-                this.dataLimite,
-                disciplinasClonadas,
-                true,
-                this.pesoCre,
-                this.pesoNota
-        );
+    public void calcularResultado() throws EditalAbertoException, SemInscricoesException {
+        new ServicoDeCalculoDeResultado().calcular(this);
     }
 
-    /**
-     * Processa a desistência de um aluno de uma vaga.
-     * @param aluno O aluno que está desistindo
-     * @param disciplina A disciplina da qual o aluno está desistindo
-     * @throws InscricaoNaoEncontradaException Se a inscrição não for encontrada
-     * @throws EditalFechadoException Se o período de desistência já estiver encerrado
-     */
-    public void processarDesistencia(Aluno aluno, Disciplina disciplina) throws InscricaoNaoEncontradaException, EditalFechadoException {
-        if (periodoDesistenciaEncerrado) {
-            throw new EditalFechadoException(numero, "O período de desistências já foi encerrado.");
+    public EditalDeMonitoria clonar() {
+        List<Disciplina> disciplinasClonadas = this.disciplinas.stream().map(Disciplina::clonar).collect(Collectors.toList());
+        try {
+            EditalDeMonitoria clone = new EditalDeMonitoria(this.numero + " - Cópia", this.dataInicio, this.dataLimite, this.pesoCre, this.pesoNota);
+            clone.setDisciplinas(disciplinasClonadas);
+            return clone;
+        } catch (PesosInvalidosException e) {
+            // Não deve acontecer, pois os pesos são válidos
+            throw new RuntimeException("Erro inesperado ao clonar edital", e);
         }
+    }
 
+    public void processarDesistencia(Aluno aluno, Disciplina disciplina) throws InscricaoNaoEncontradaException, EditalFechadoException {
+        if (periodoDesistenciaEncerrado) throw new EditalFechadoException(numero, "O período de desistências já foi encerrado.");
         Inscricao inscricaoAlvo = null;
         for (Inscricao inscricao : inscricoes) {
             if (inscricao.getAluno().equals(aluno) && inscricao.getDisciplina().equals(disciplina)) {
@@ -311,22 +147,14 @@ public class EditalDeMonitoria {
                 break;
             }
         }
-
         if (inscricaoAlvo == null) {
             throw new InscricaoNaoEncontradaException();
         }
-
         inscricaoAlvo.setDesistiu(true);
         System.out.println("Aluno " + aluno.getNome() + " desistiu da vaga em " + disciplina.getNomeDisciplina());
-
-        // Recalcula o resultado para a desistência
         recalcularResultado();
     }
 
-    /**
-     * Recalcula o ranqueamento do edital.
-     * Este método é chamado internamente após uma desistência.
-     */
     private void recalcularResultado() {
         System.out.println("Recalculando resultado do edital " + numero + " após desistência...");
         try {
@@ -337,79 +165,38 @@ public class EditalDeMonitoria {
         System.out.println("Resultado recalculado com sucesso.");
     }
 
-    /**
-     * Encerra o período de desistências, tornando o resultado final.
-     * Apenas coordenadores podem executar esta operação.
-     * @param coordenador O coordenador que está executando a operação
-     * @throws PermissaoNegadaException Se o usuário não for coordenador
-     */
     public void encerrarPeriodoDesistencia(Coordenador coordenador) throws PermissaoNegadaException {
-        if (coordenador == null) {
-            throw new PermissaoNegadaException("encerrar o período de desistências");
-        }
+        if (coordenador == null) throw new PermissaoNegadaException("encerrar o período de desistências");
         this.periodoDesistenciaEncerrado = true;
         System.out.println("Período de desistências do edital " + numero + " foi encerrado.");
     }
 
-   /**
-    * Retorna o ranque de uma disciplina específica.
-    * @param nomeDisciplina O nome da disciplina
-    * @return Lista ordenada de inscrições (ranque), ou {@code null} se a disciplina não tiver ranque calculado
-    */
-   public ArrayList<Inscricao> getRanqueDisciplina(String nomeDisciplina) {
-       return ranquePorDisciplina.get(nomeDisciplina);
-   }
+    public ArrayList<Inscricao> getRanqueDisciplina(String nomeDisciplina) {
+        return ranquePorDisciplina.get(nomeDisciplina);
+    }
 
-   /**
-    * Fecha o edital, impedindo novas inscrições.
-    * <p>Apenas coordenadores podem executar esta operação.</p>
-    * @param coordenador O Coordenador que está executando a operação
-    * @throws PermissaoNegadaException Se o usuário não for coordenador
-    * @throws EditalFechadoException Se o edital já estiver fechado
-    */
-   public void fecharEdital(Coordenador coordenador) throws PermissaoNegadaException, EditalFechadoException {
-       if (coordenador == null) {
-           throw new PermissaoNegadaException("fechar o edital");
-       }
-       if (!aberto) {
-           throw new EditalFechadoException(numero, "O edital já se encontra fechado.");
-       }
-       this.aberto = false;
-       System.out.println("Edital " + numero + " foi fechado com sucesso.");
-   }
+    public void fecharEdital(Coordenador coordenador) throws PermissaoNegadaException, EditalFechadoException {
+        if (coordenador == null) throw new PermissaoNegadaException("fechar o edital");
+        if (!aberto) throw new EditalFechadoException(numero, "O edital já se encontra fechado.");
+        this.aberto = false;
+        System.out.println("Edital " + numero + " foi fechado com sucesso.");
+    }
 
-    /**
-     * Reabre um edital que foi fechado, permitindo novas inscrições.
-     * <p>Apenas coordenadores podem executar esta operação.</p>
-     * @param coordenador O Coordenador que está executando a operação
-     * @throws PermissaoNegadaException Se o usuário não for coordenador
-     * @throws EditalAbertoException Se o edital já estiver aberto
-     * @throws PrazoVencidoException Se a data limite para inscrições já tiver passado
-     */
     public void reabrirEdital(Coordenador coordenador) throws PermissaoNegadaException, EditalAbertoException, PrazoVencidoException {
-        if (coordenador == null) {
-            throw new PermissaoNegadaException("reabrir o edital");
-        }
-        if (aberto) {
-            throw new EditalAbertoException(numero);
-        }
-        if (LocalDate.now().isAfter(dataLimite)) {
-            throw new PrazoVencidoException("reabrir o edital", dataLimite);
-        }
+        if (coordenador == null) throw new PermissaoNegadaException("reabrir o edital");
+        if (aberto) throw new EditalAbertoException(numero);
+        if (LocalDate.now().isAfter(dataLimite)) throw new PrazoVencidoException("reabrir o edital", dataLimite);
         this.aberto = true;
         System.out.println("Edital " + numero + " foi reaberto com sucesso.");
     }
 
-    /**
-     * Representação em {@code String} do objeto.
-     * @return Uma listagem dos atributos do edital ({@code numero}, {@code id}, {@code dataInicio}, {@code dataLimite}, {@code disciplinas}, {@code aberto})
-     */
-   public String toString() {
-       return "Edital: " + numero +
-               "\nID: " + id +
-               "\nData de Início: " + dataInicio +
-               "\nData Limite: " + dataLimite +
-               "\nDisciplinas cadastradas: " + disciplinas.size() +
-               "\nAberto: " + (aberto ? "Sim" : "Não");
-       }
+    @Override
+    public String toString() {
+        return "Edital: " + numero +
+                "\nID: " + id +
+                "\nData de Início: " + dataInicio +
+                "\nData Limite: " + dataLimite +
+                "\nDisciplinas cadastradas: " + disciplinas.size() +
+                "\nAberto: " + (aberto ? "Sim" : "Não");
+    }
 }

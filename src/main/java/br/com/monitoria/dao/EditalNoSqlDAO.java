@@ -19,10 +19,8 @@ import java.util.stream.Collectors;
 public class EditalNoSqlDAO implements DAO<EditalDeMonitoria, String> {
 
     private final MongoCollection<Document> editalCollection;
-    private final MongoClient mongoClient;
 
     public EditalNoSqlDAO(MongoClient mongoClient) {
-        this.mongoClient = mongoClient;
         MongoDatabase database = mongoClient.getDatabase("bancomonitores");
         this.editalCollection = database.getCollection("editais");
     }

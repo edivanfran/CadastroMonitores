@@ -4,7 +4,7 @@ package br.com.monitoria.excecoes;
 /**
  * Exceção lançada quando uma inscrição específica não é encontrada no sistema.
  */
-public class InscricaoNaoEncontradaException extends Exception {
+public class InscricaoNaoEncontradaException extends RuntimeException {
     
     /**
      * Construtor padrão que define uma mensagem de erro genérica.

@@ -28,9 +28,9 @@ public class EditalDeMonitoria {
     private boolean periodoDesistenciaEncerrado;
 
     // Campos transientes (não persistidos) para lógica de negócio em tempo de execução
-    private List<Inscricao> inscricoes = new ArrayList<>();
-    private Map<String, ArrayList<Inscricao>> ranquePorDisciplina = new HashMap<>();
-    private ICalculadoraPontuacao calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
+    private transient List<Inscricao> inscricoes = new ArrayList<>();
+    private transient Map<String, ArrayList<Inscricao>> ranquePorDisciplina = new HashMap<>();
+    private transient ICalculadoraPontuacao calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
 
     // Construtor padrão
     public EditalDeMonitoria() {}

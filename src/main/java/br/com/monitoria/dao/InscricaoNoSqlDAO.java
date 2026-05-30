@@ -2,13 +2,13 @@ package br.com.monitoria.dao;
 
 import br.com.monitoria.PreferenciaInscricao;
 import br.com.monitoria.Vaga;
+import br.com.monitoria.excecoes.InscricaoNaoEncontradaException;
 import br.com.monitoria.model.Inscricao;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -20,47 +20,50 @@ public class InscricaoNoSqlDAO implements DAO<Inscricao, String> {
     private final MongoCollection<Document> inscricaoCollection;
 
     public InscricaoNoSqlDAO(MongoClient mongoClient) {
-        MongoDatabase database = mongoClient.getDatabase("bancomonitores");
-        this.inscricaoCollection = database.getCollection("inscricoes");
+       MongoDatabase database = mongoClient.getDatabase("bancomonitores");
+       this.inscricaoCollection = database.getCollection("inscricoes");
     }
 
     @Override
     public void salvar(Inscricao inscricao) {
-        Document inscricaoDoc = toDocument(inscricao);
-        inscricaoCollection.insertOne(inscricaoDoc);
-        inscricao.setId(inscricaoDoc.getObjectId("_id").toString());
+        Document document = toDocument(inscricao);
+        inscricaoCollection.insertOne(document);
+        inscricao.setId(document.getObjectId("_id").toString());
     }
 
     @Override
     public void atualizar(Inscricao inscricao) {
         if (inscricao.getId() == null) {
-            throw new IllegalArgumentException("O ID da inscrição não pode ser nulo para atualização.");
+            throw new InscricaoNaoEncontradaException("O ID da inscrição não pode ser nulo para atualização.");
         }
-        Document inscricaoDoc = toDocument(inscricao);
-        inscricaoCollection.replaceOne(Filters.eq("_id", new ObjectId(inscricao.getId())), inscricaoDoc, new ReplaceOptions().upsert(true));
+        Document document = toDocument(inscricao);
+        inscricaoCollection.replaceOne(Filters.eq("_id", new ObjectId(inscricao.getId())), document);
     }
 
     @Override
     public void excluir(Inscricao inscricao) {
         if (inscricao.getId() == null) {
-            throw new IllegalArgumentException("O ID da inscrição não pode ser nulo para exclusão.");
+            throw new InscricaoNaoEncontradaException("O ID da inscrição não pode ser nulo para atualização.");
         }
         inscricaoCollection.deleteOne(Filters.eq("_id", new ObjectId(inscricao.getId())));
     }
 
     @Override
     public Inscricao buscarPorId(String id) {
-        Document doc = inscricaoCollection.find(Filters.eq("_id", new ObjectId(id))).first();
-        return (doc != null) ? fromDocument(doc) : null;
+        Document document = inscricaoCollection.find(Filters.eq("_id", new ObjectId(id))).first();
+
+        if (document == null) {
+            return null;
+        }
+
+        return fromDocument(document);
     }
 
     @Override
     public List<Inscricao> retornarTodos() {
         List<Inscricao> inscricoes = new ArrayList<>();
-        try (MongoCursor<Document> cursor = inscricaoCollection.find().iterator()) {
-            while (cursor.hasNext()) {
-                inscricoes.add(fromDocument(cursor.next()));
-            }
+        for (Document doc : inscricaoCollection.find()) {
+            inscricoes.add(fromDocument(doc));
         }
         return inscricoes;
     }
@@ -80,17 +83,19 @@ public class InscricaoNoSqlDAO implements DAO<Inscricao, String> {
     }
 
     private Document toDocument(Inscricao inscricao) {
-        return new Document()
-                .append("edital_id", inscricao.getEditalId())
+        Document document = new Document()
+                .append("edital__vd", inscricao.getEditalId())
                 .append("aluno_id", inscricao.getAlunoId())
                 .append("disciplina_nome", inscricao.getDisciplinaNome())
                 .append("cre", inscricao.getCre())
                 .append("nota", inscricao.getNota())
                 .append("tipo_vaga", inscricao.getTipoVaga() != null ? inscricao.getTipoVaga().toString() : null)
                 .append("ordem_preferencia", inscricao.getOrdemPreferencia())
-                .append("preferencia_vaga", inscricao.getPreferenciaVaga() != null ? inscricao.getPreferenciaVaga().toString() : null)
+                .append("preferencia_inscricao", inscricao.getPreferenciaVaga())
                 .append("desistiu", inscricao.isDesistiu())
                 .append("pontuacao_final", inscricao.getPontuacaoFinal());
+
+        return document;
     }
 
     private Inscricao fromDocument(Document doc) {
@@ -106,7 +111,7 @@ public class InscricaoNoSqlDAO implements DAO<Inscricao, String> {
                 doc.getDouble("nota"),
                 doc.getString("tipo_vaga") != null ? Vaga.valueOf(doc.getString("tipo_vaga")) : null,
                 doc.getInteger("ordem_preferencia"),
-                doc.getString("preferencia_vaga") != null ? PreferenciaInscricao.valueOf(doc.getString("preferencia_vaga")) : null,
+                PreferenciaInscricao.valueOf(doc.getString("preferencia_iaga")),
                 doc.getBoolean("desistiu", false),
                 doc.getDouble("pontuacao_final")
         );

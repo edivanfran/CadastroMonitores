@@ -295,6 +295,14 @@ public class GerenciadorDeDados {
         return inscricaoNoSqlDAO.buscarPorAlunoId(aluno.getId().toString());
     }
 
+    public List<Inscricao> getInscricoesPorEdital(EditalDeMonitoria edital) {
+        // MIGRAÇÃO: Busca as inscrições do MongoDB usando o ID do aluno.
+        if (edital == null || edital.getId() == null) {
+            return Collections.emptyList();
+        }
+        return inscricaoNoSqlDAO.buscarPorEditalId(edital.getId());
+    }
+
     // --- MÉTODOS ADAPTADOS AO MODELO NoSQL ---
 
     public void adicionarDisciplinaAoEdital(EditalDeMonitoria edital, Disciplina novaDisciplina) {

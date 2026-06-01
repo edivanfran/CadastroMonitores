@@ -1,22 +1,34 @@
 package br.com.monitoria;
 
-import br.com.monitoria.dao.AlunoDAO;
-import br.com.monitoria.dao.CoordenadorDAO;
-import br.com.monitoria.dao.DisciplinaDAO;
-import br.com.monitoria.dao.EditalDeMonitoriaDAO;
-import br.com.monitoria.dao.InscricaoDAO;
+import br.com.monitoria.dao.*;
 import br.com.monitoria.model.*;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import jakarta.persistence.*;
 
+import java.util.Collections;
 import java.util.List;
 
 public class GerenciadorDeDados {
 
     private static GerenciadorDeDados instancia;
+
+    // Mundo JPA
     private final EntityManagerFactory emf;
 
+    // Mundo NoSQL
+    private final MongoClient mongoClient;
+    private final EditalNoSqlDAO editalNoSqlDAO;
+    private final InscricaoNoSqlDAO inscricaoNoSqlDAO;
+
     private GerenciadorDeDados() {
+        // Inicializa a conexão JPA
         this.emf = Persistence.createEntityManagerFactory("monitoriaPU");
+
+        // Inicializa a conexão com o MongoDB
+        this.mongoClient = MongoClients.create("mongodb://localhost:27017");
+        this.editalNoSqlDAO = new EditalNoSqlDAO(mongoClient);
+        this.inscricaoNoSqlDAO = new InscricaoNoSqlDAO(mongoClient);
     }
 
     public static synchronized GerenciadorDeDados getInstancia() {
@@ -186,250 +198,6 @@ public class GerenciadorDeDados {
         }
     }
 
-    // Métodos para EditalDeMonitoria
-
-    public void salvarEdital(EditalDeMonitoria edital) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            new EditalDeMonitoriaDAO(em).salvar(edital);
-            em.getTransaction().commit();
-            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-    public void atualizarEdital(EditalDeMonitoria edital) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            new EditalDeMonitoriaDAO(em).atualizar(edital);
-            em.getTransaction().commit();
-            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-    public void removerEdital(EditalDeMonitoria edital) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            new EditalDeMonitoriaDAO(em).excluir(edital);
-            em.getTransaction().commit();
-            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-
-    public EditalDeMonitoria buscarEditalPorId(Long id) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            return new EditalDeMonitoriaDAO(em).buscarPorId(id);
-        } finally {
-            em.close();
-        }
-    }
-
-    public List<EditalDeMonitoria> getTodosOsEditais() {
-        EntityManager em = emf.createEntityManager();
-        try {
-            return new EditalDeMonitoriaDAO(em).retornarTodos();
-        } finally {
-            em.close();
-        }
-    }
-
-    // Métodos para disciplina
-
-    public void salvarDisciplina(Disciplina disciplina) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            new DisciplinaDAO(em).salvar(disciplina);
-            em.getTransaction().commit();
-            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-    public void atualizarDisciplina(Disciplina disciplina) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            new DisciplinaDAO(em).atualizar(disciplina);
-            em.getTransaction().commit();
-            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-    public void removerDisciplina(Disciplina disciplina) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            new DisciplinaDAO(em).excluir(disciplina);
-            em.getTransaction().commit();
-            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-    public Disciplina buscarDisciplinaPorId(Long id) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            return new DisciplinaDAO(em).buscarPorId(id);
-        } finally {
-            em.close();
-        }
-    }
-
-    public List<Disciplina> getTodasAsDisciplinas() {
-        EntityManager em = emf.createEntityManager();
-        try {
-            return new DisciplinaDAO(em).retornarTodos();
-        } finally {
-            em.close();
-        }
-    }
-
-    public void adicionarDisciplinaAoEdital(EditalDeMonitoria edital, Disciplina novaDisciplina) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-
-            // Traz o edital para o estado gerenciado
-            EditalDeMonitoria editalGerenciado = em.merge(edital);
-
-            // Adiciona a nova disciplina que ainda não foi persistida
-            editalGerenciado.adicionarDisciplina(novaDisciplina);
-
-            em.getTransaction().commit();
-            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-    public void removerDisciplinaDoEdital(EditalDeMonitoria edital, Disciplina disciplina) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            EditalDeMonitoria editalGerenciado = em.find(EditalDeMonitoria.class, edital.getId());
-            Disciplina disciplinaGerenciada = em.find(Disciplina.class, disciplina.getId());
-
-            if (editalGerenciado != null && disciplinaGerenciada != null) {
-                editalGerenciado.getDisciplinas().remove(disciplinaGerenciada);
-                em.remove(disciplinaGerenciada);
-            }
-            em.getTransaction().commit();
-            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-    // Métodos de Inscricao
-    public List<Inscricao> getInscricoesPorAluno(Aluno aluno) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            InscricaoDAO inscricaoDAO = new InscricaoDAO(em);
-            return inscricaoDAO.buscarPorAluno(aluno);
-        } finally {
-            em.close();
-        }
-    }
-
-    public void inscreverAlunoEmEdital(EditalDeMonitoria edital, Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws Exception {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-
-            EditalDeMonitoria editalGerenciado = em.find(EditalDeMonitoria.class, edital.getId());
-            if (editalGerenciado == null) {
-                throw new IllegalArgumentException("Edital não encontrado.");
-            }
-
-            // Encontra a disciplina gerenciada e inicializa suas coleções
-            Disciplina disciplinaGerenciada = null;
-            DisciplinaDAO disciplinaDAO = new DisciplinaDAO(em);
-            for (Disciplina d : editalGerenciado.getDisciplinas()) {
-                if (d.getId().equals(disciplina.getId())) {
-                    disciplinaGerenciada = d;
-                    // Usa o métoodo do DAO para inicializar as coleções
-                    disciplinaDAO.inicializarColecoesAlunos(disciplinaGerenciada);
-                    break;
-                }
-            }
-
-            if (disciplinaGerenciada == null) {
-                throw new IllegalArgumentException("Disciplina não encontrada no edital.");
-            }
-
-            // Passa o objeto Disciplina em vez do nome
-            editalGerenciado.inscreverAluno(aluno, disciplinaGerenciada, cre, nota, tipoVaga, ordem, pref);
-
-            em.getTransaction().commit();
-            GerenciadorDeEventos.getInstancia().notificarAtualizacao();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-
-    // Métodos de Autenticação e Usuário Genérico
-
     public void atualizarUsuario(Usuario usuario) {
         EntityManager em = emf.createEntityManager();
         try {
@@ -478,9 +246,87 @@ public class GerenciadorDeDados {
         return usuario.autenticarUsuario(email, senha);
     }
 
+    // --- MÉTODOS MIGRADOS PARA NoSQL ---
+
+    public void salvarEdital(EditalDeMonitoria edital) {
+        editalNoSqlDAO.salvar(edital);
+        GerenciadorDeEventos.getInstancia().notificarAtualizacao();
+    }
+
+    public void atualizarEdital(EditalDeMonitoria edital) {
+        editalNoSqlDAO.atualizar(edital);
+        GerenciadorDeEventos.getInstancia().notificarAtualizacao();
+    }
+
+    public void removerEdital(EditalDeMonitoria edital) {
+        inscricaoNoSqlDAO.excluirPorEditalId(edital.getId());
+        editalNoSqlDAO.excluir(edital);
+        GerenciadorDeEventos.getInstancia().notificarAtualizacao();
+    }
+
+    @Deprecated
+    public EditalDeMonitoria buscarEditalPorId(Long id) {
+        return null;
+    }
+
+    public EditalDeMonitoria buscarEditalPorId(String id) {
+        return editalNoSqlDAO.buscarPorId(id);
+    }
+
+    public List<EditalDeMonitoria> getTodosOsEditais() {
+        return editalNoSqlDAO.retornarTodos();
+    }
+
+    // --- MÉTODOS HÍBRIDOS E EM TRANSIÇÃO ---
+
+    public void inscreverAlunoEmEdital(EditalDeMonitoria edital, Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws Exception {
+        // AVISO: Esta operação não é transacionalmente atômica entre os bancos de dados.
+        Inscricao novaInscricao = new Inscricao(aluno, disciplina, edital, cre, nota, tipoVaga, ordem, pref);
+        inscricaoNoSqlDAO.salvar(novaInscricao);
+        GerenciadorDeEventos.getInstancia().notificarAtualizacao();
+    }
+
+    // Métodos de Inscricao
+    public List<Inscricao> getInscricoesPorAluno(Aluno aluno) {
+        // MIGRAÇÃO: Busca as inscrições do MongoDB usando o ID do aluno.
+        if (aluno == null || aluno.getId() == null) {
+            return Collections.emptyList();
+        }
+        return inscricaoNoSqlDAO.buscarPorAlunoId(aluno.getId().toString());
+    }
+
+    // --- MÉTODOS ADAPTADOS AO MODELO NoSQL ---
+
+    public void adicionarDisciplinaAoEdital(EditalDeMonitoria edital, Disciplina novaDisciplina) {
+        // A disciplina agora é um objeto aninhado. A lógica é em memória.
+        edital.adicionarDisciplina(novaDisciplina);
+        // Persiste o edital inteiro com a nova disciplina.
+        this.atualizarEdital(edital);
+    }
+
+    public void removerDisciplinaDoEdital(EditalDeMonitoria edital, Disciplina disciplina) {
+        // A disciplina agora é um objeto aninhado. A lógica é em memória.
+        edital.getDisciplinas().remove(disciplina);
+        // Persiste o edital inteiro sem a disciplina.
+        this.atualizarEdital(edital);
+    }
+
+    /**
+     * @deprecated As disciplinas não são mais entidades globais, mas sim aninhadas em editais.
+     * Para obter as disciplinas, primeiro busque um edital.
+     */
+    @Deprecated
+    public List<Disciplina> getTodasAsDisciplinas() {
+        // Este método perdeu o sentido. Retornando uma lista vazia.
+        return Collections.emptyList();
+    }
+
     public void fechar() {
         if (emf != null && emf.isOpen()){
             emf.close();
+        }
+        if (mongoClient != null) {
+            mongoClient.close();
         }
     }
 }

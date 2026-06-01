@@ -4,17 +4,14 @@ import br.com.monitoria.model.Disciplina;
 import br.com.monitoria.model.EditalDeMonitoria;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class EditalNoSqlDAO implements DAO<EditalDeMonitoria, String> {
 
@@ -39,7 +36,7 @@ public class EditalNoSqlDAO implements DAO<EditalDeMonitoria, String> {
         }
         Document editalDoc = toDocument(edital);
         ObjectId objectId = new ObjectId(edital.getId());
-        editalCollection.replaceOne(Filters.eq("_id", objectId), editalDoc, new ReplaceOptions().upsert(true));
+        editalCollection.replaceOne(Filters.eq("_id", objectId), editalDoc);
     }
 
     @Override
@@ -59,21 +56,20 @@ public class EditalNoSqlDAO implements DAO<EditalDeMonitoria, String> {
     @Override
     public List<EditalDeMonitoria> retornarTodos() {
         List<EditalDeMonitoria> editais = new ArrayList<>();
-        try (MongoCursor<Document> cursor = editalCollection.find().iterator()) {
-            while (cursor.hasNext()) {
-                Document doc = cursor.next();
-                editais.add(fromDocument(doc));
-            }
+        for (Document doc : editalCollection.find()) {
+            editais.add(fromDocument(doc));
         }
         return editais;
     }
 
     private Document toDocument(EditalDeMonitoria edital) {
-        List<Document> disciplinasDocs = edital.getDisciplinas().stream()
-                .map(d -> new Document("nome", d.getNomeDisciplina())
+        List<Document> disciplinasDocs = new ArrayList<>();
+        for (Disciplina d : edital.getDisciplinas()) {
+            Document disciplinaDoc = new Document("nome", d.getNomeDisciplina())
                         .append("vagas_remuneradas", d.getVagasRemuneradas())
-                        .append("vagas_voluntarias", d.getVagasVoluntarias()))
-                .collect(Collectors.toList());
+                        .append("vagas_voluntarias", d.getVagasVoluntarias());
+            disciplinasDocs.add(disciplinaDoc);
+        }
 
         Document doc = new Document()
                 .append("numero", edital.getNumero())
@@ -99,12 +95,14 @@ public class EditalNoSqlDAO implements DAO<EditalDeMonitoria, String> {
         }
 
         List<Document> disciplinasDocs = doc.getList("disciplinas", Document.class, new ArrayList<>());
-        List<Disciplina> disciplinas = disciplinasDocs.stream()
-                .map(d -> new Disciplina(
+        List<Disciplina> disciplinas = new ArrayList<>();
+        for (Document d : disciplinasDocs) {
+            disciplinas.add(new Disciplina(
                         d.getString("nome"),
                         d.getInteger("vagas_voluntarias", 0),
-                        d.getInteger("vagas_remuneradas", 0)))
-                .collect(Collectors.toList());
+                        d.getInteger("vagas_remuneradas", 0)
+            ));
+        }
 
         return new EditalDeMonitoria(
                 doc.getObjectId("_id").toString(),

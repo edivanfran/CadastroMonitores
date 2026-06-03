@@ -14,7 +14,9 @@ import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 /**
@@ -41,8 +43,35 @@ public class TelaResultadoEdital extends TelaBase {
 
     @Override
     public void inicializar() {
-        // Busca uma instância gerenciada do edital para evitar LazyInitializationException
-        this.edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(this.edital.getId());
+        GerenciadorDeDados gerenciador = GerenciadorDeDados.getInstancia();
+
+        // 1. Busca o edital
+        this.edital = gerenciador.buscarEditalPorId(this.edital.getId());
+        if (this.edital == null) {
+            mostrarErro("Não foi possível carregar os dados do edital.");
+            dispose();
+            return;
+        }
+
+        // 2. Busca as inscrições
+        List<Inscricao> inscricoes = gerenciador.getInscricoesPorEdital(this.edital);
+
+        // 3. Hidrata cada inscrição com seus objetos Aluno e Disciplina
+        for (Inscricao inscricao : inscricoes) {
+            // Hidrata Aluno
+            Aluno aluno = gerenciador.buscarAlunoPorId(inscricao.getAlunoId());
+            inscricao.setAluno(aluno);
+
+            // Hidrata Disciplina
+            Optional<Disciplina> disciplinaOpt = this.edital.getDisciplinas().stream()
+                .filter(d -> d.getNomeDisciplina().equals(inscricao.getDisciplinaNome()))
+                .findFirst();
+            disciplinaOpt.ifPresent(inscricao::setDisciplina);
+        }
+
+        // 4. Injeta a lista de inscrições hidratada no edital
+        this.edital.setInscricoes(inscricoes);
+
         super.inicializar();
     }
 
@@ -85,7 +114,9 @@ public class TelaResultadoEdital extends TelaBase {
             abasDisciplinas.addTab("Aviso", painelAviso);
         } else {
             Map<String, ArrayList<Inscricao>> todasInscricoesPorDisciplina = new HashMap<>();
+            // A lista de inscrições agora está hidratada e completa
             for (Inscricao inscricao : edital.getInscricoes()) {
+                if(inscricao.getDisciplina() == null) continue; // Segurança extra
                 String nomeDisciplina = inscricao.getDisciplina().getNomeDisciplina();
                 todasInscricoesPorDisciplina.putIfAbsent(nomeDisciplina, new ArrayList<>());
                 todasInscricoesPorDisciplina.get(nomeDisciplina).add(inscricao);
@@ -143,7 +174,6 @@ public class TelaResultadoEdital extends TelaBase {
             }
 
             modeloTabela.addRow(new Object[]{
-                    // A posição só é relevante se o aluno foi contemplado e não desistiu
                     (vagaContemplada != null && !inscricao.isDesistiu()) ? String.valueOf(posicao++) : "-",
                     inscricao.getNomeAluno(),
                     inscricao.getMatriculaAluno(),

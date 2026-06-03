@@ -400,12 +400,20 @@ public class TelaPrincipal extends TelaBase implements Observador {
                 mostrarErro("Selecione uma linha!");
                 return;
             }
-            long id = (long) tabelaEditais.getValueAt(linhaSelecionada, 0);
+            // CORREÇÃO: Obter o ID como String, que é o tipo correto para o MongoDB.
+            String id = (String) tabelaEditais.getValueAt(linhaSelecionada, 0);
 
             EditalDeMonitoria edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(id);
 
             if (edital != null) {
                 TelaDetalharEdital telaDetalhes = new TelaDetalharEdital(edital);
+                // CORREÇÃO: Adiciona um listener para atualizar a tela principal quando a de detalhes fechar.
+                telaDetalhes.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+                        atualizar(); // Atualiza a tabela de editais
+                    }
+                });
                 telaDetalhes.inicializar();
                 telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             } else {
@@ -423,7 +431,8 @@ public class TelaPrincipal extends TelaBase implements Observador {
                 return;
             }
 
-            long id = (long) tabelaEditais.getValueAt(linhaSelecionada, 0);
+            // CORREÇÃO: Obter o ID como String.
+            String id = (String) tabelaEditais.getValueAt(linhaSelecionada, 0);
             EditalDeMonitoria edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(id);
 
             if (edital == null) {
@@ -473,7 +482,8 @@ public class TelaPrincipal extends TelaBase implements Observador {
                 mostrarErro("Selecione uma linha!");
                 return;
             }
-            long id = (long) tabelaEditais.getValueAt(linhaSelecionada, 0);
+            // CORREÇÃO: Obter o ID como String.
+            String id = (String) tabelaEditais.getValueAt(linhaSelecionada, 0);
 
             EditalDeMonitoria edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(id);
 
@@ -536,16 +546,19 @@ public class TelaPrincipal extends TelaBase implements Observador {
     }
 
     private void abrirTelaListagemEditais() {
+        // CORREÇÃO: Cria a tela de listagem e adiciona um listener para se reexibir quando ela fechar.
         TelaListagemEditais telaListagem = new TelaListagemEditais();
         telaListagem.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosed(WindowEvent e) {
-                // Quando a tela de detalhes fechar, apenas reexibe e atualiza a tela de listagem
-                inicializar();
+                // Quando a tela de listagem fechar, reexibe a tela principal.
+                setVisible(true);
+                atualizar(); // Garante que os dados estejam atualizados.
             }
         });
         telaListagem.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         telaListagem.inicializar();
-        this.dispose();
+        this.setVisible(false); // Esconde a tela principal.
     }
 
     /**

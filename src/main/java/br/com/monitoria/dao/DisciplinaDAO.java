@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 
 import java.util.List;
 
+@Deprecated
 public class DisciplinaDAO implements DAO<Disciplina, Long> {
 
     private final EntityManager em;

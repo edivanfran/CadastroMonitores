@@ -51,7 +51,7 @@ public class Inscricao {
         this.disciplina = disciplina;
         this.edital = edital;
         // Supondo que Aluno e Edital já tenham um ID (String) atribuído
-        this.alunoId = aluno.getId();
+        this.alunoId = String.valueOf(aluno.getId());
         this.editalId = edital.getId();
         this.disciplinaNome = disciplina.getNomeDisciplina();
         this.cre = cre;

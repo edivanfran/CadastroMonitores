@@ -242,6 +242,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
                         public void windowOpened(WindowEvent e) {}
                         public void windowClosing(WindowEvent e) {}
                         public void windowClosed(WindowEvent e) {
+                            edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(edital.getId());
                             preencherCamposComDados(edital);
                         }
                         public void windowIconified(WindowEvent e) {}

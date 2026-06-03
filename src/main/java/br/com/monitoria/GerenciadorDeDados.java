@@ -21,6 +21,9 @@ public class GerenciadorDeDados {
     private final EditalNoSqlDAO editalNoSqlDAO;
     private final InscricaoNoSqlDAO inscricaoNoSqlDAO;
 
+    // Cache com Redis
+    private final RedisDAO redisDAO;
+
     private GerenciadorDeDados() {
         // Inicializa a conexão JPA
         this.emf = Persistence.createEntityManagerFactory("monitoriaPU");
@@ -29,6 +32,9 @@ public class GerenciadorDeDados {
         this.mongoClient = MongoClients.create("mongodb://localhost:27017");
         this.editalNoSqlDAO = new EditalNoSqlDAO(mongoClient);
         this.inscricaoNoSqlDAO = new InscricaoNoSqlDAO(mongoClient);
+
+        // Inicializa a conexão com o Redis
+        this.redisDAO = new RedisDAO();
     }
 
     public static synchronized GerenciadorDeDados getInstancia() {
@@ -96,6 +102,20 @@ public class GerenciadorDeDados {
             return new AlunoDAO(em).buscarPorId(id);
         } finally {
             em.close();
+        }
+    }
+
+    /**
+     * Sobrecarga para buscar aluno por ID no formato String (conveniente para IDs vindos do MongoDB).
+     */
+    public Aluno buscarAlunoPorId(String id) {
+        try {
+            Long longId = Long.parseLong(id);
+            return buscarAlunoPorId(longId);
+        } catch (NumberFormatException e) {
+            // Logar o erro em um sistema real seria uma boa prática
+            System.err.println("Erro ao converter ID de Aluno para Long: " + id);
+            return null;
         }
     }
 
@@ -255,12 +275,20 @@ public class GerenciadorDeDados {
 
     public void atualizarEdital(EditalDeMonitoria edital) {
         editalNoSqlDAO.atualizar(edital);
+        // Invalida o cache para garantir consistência
+        if (edital != null && edital.getId() != null) {
+            redisDAO.removerEdital(edital.getId());
+        }
         GerenciadorDeEventos.getInstancia().notificarAtualizacao();
     }
 
     public void removerEdital(EditalDeMonitoria edital) {
         inscricaoNoSqlDAO.excluirPorEditalId(edital.getId());
         editalNoSqlDAO.excluir(edital);
+        // Remove do cache
+        if (edital != null && edital.getId() != null) {
+            redisDAO.removerEdital(edital.getId());
+        }
         GerenciadorDeEventos.getInstancia().notificarAtualizacao();
     }
 
@@ -270,7 +298,19 @@ public class GerenciadorDeDados {
     }
 
     public EditalDeMonitoria buscarEditalPorId(String id) {
-        return editalNoSqlDAO.buscarPorId(id);
+        // 1. Tenta buscar do cache (Redis)
+        EditalDeMonitoria edital = redisDAO.buscarEditalPorId(id);
+
+        // 2. Se não estiver no cache (cache miss), busca no banco (MongoDB)
+        if (edital == null) {
+            edital = editalNoSqlDAO.buscarPorId(id);
+            // 3. Se encontrou no banco, armazena no cache para futuras consultas
+            if (edital != null) {
+                redisDAO.salvarEdital(edital);
+            }
+        }
+        // Se estiver no cache (cache hit), retorna diretamente
+        return edital;
     }
 
     public List<EditalDeMonitoria> getTodosOsEditais() {
@@ -303,22 +343,6 @@ public class GerenciadorDeDados {
         return inscricaoNoSqlDAO.buscarPorEditalId(edital.getId());
     }
 
-    // --- MÉTODOS ADAPTADOS AO MODELO NoSQL ---
-
-    public void adicionarDisciplinaAoEdital(EditalDeMonitoria edital, Disciplina novaDisciplina) {
-        // A disciplina agora é um objeto aninhado. A lógica é em memória.
-        edital.adicionarDisciplina(novaDisciplina);
-        // Persiste o edital inteiro com a nova disciplina.
-        this.atualizarEdital(edital);
-    }
-
-    public void removerDisciplinaDoEdital(EditalDeMonitoria edital, Disciplina disciplina) {
-        // A disciplina agora é um objeto aninhado. A lógica é em memória.
-        edital.getDisciplinas().remove(disciplina);
-        // Persiste o edital inteiro sem a disciplina.
-        this.atualizarEdital(edital);
-    }
-
     /**
      * @deprecated As disciplinas não são mais entidades globais, mas sim aninhadas em editais.
      * Para obter as disciplinas, primeiro busque um edital.
@@ -335,6 +359,9 @@ public class GerenciadorDeDados {
         }
         if (mongoClient != null) {
             mongoClient.close();
+        }
+        if (redisDAO != null) {
+            redisDAO.fechar();
         }
     }
 }

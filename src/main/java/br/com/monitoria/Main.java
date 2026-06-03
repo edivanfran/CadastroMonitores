@@ -11,8 +11,6 @@ import com.mongodb.client.MongoDatabase;
 
 public class Main {
     public static void main(String[] args) {
-        JPAUtil.getEntityManager().close();
-
         MongoDatabase db = PersistenciaNoSql.getDatabase();
         System.out.println("Conectado: " + db.getName());
 

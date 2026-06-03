@@ -60,9 +60,10 @@ public class TelaGerenciarDisciplinas extends TelaBase {
         painelPrincipal.add(labelLista);
 
         listModel = new DefaultListModel<>();
-        List<Disciplina> disciplinasDoEdital = edital.getDisciplinas();
-        for (Disciplina disciplina : disciplinasDoEdital) {
-            listModel.addElement(disciplina);
+        if (edital != null && edital.getDisciplinas() != null) {
+            for (Disciplina disciplina : edital.getDisciplinas()) {
+                listModel.addElement(disciplina);
+            }
         }
 
         listaDisciplinas = new JList<>(listModel);
@@ -178,14 +179,19 @@ public class TelaGerenciarDisciplinas extends TelaBase {
             try {
                 Disciplina novaDisciplina = new Disciplina(nome, vagasVoluntarias, vagasRemuneradas);
 
-                GerenciadorDeDados.getInstancia().adicionarDisciplinaAoEdital(edital, novaDisciplina);
-
-                // Atualiza a UI somente após o sucesso da persistência
-                listModel.addElement(novaDisciplina);
+                // 1. Modifica o objeto em memória
                 edital.adicionarDisciplina(novaDisciplina);
+
+                // 2. Persiste o objeto edital inteiro
+                GerenciadorDeDados.getInstancia().atualizarEdital(edital);
+
+                // 3. Atualiza a UI somente após o sucesso da persistência
+                listModel.addElement(novaDisciplina);
                 mostrarSucesso("Disciplina adicionada com sucesso!");
                 limparCampos();
             } catch (Exception ex) {
+                // Em caso de erro, remove a disciplina da lista em memória para manter a consistência
+                edital.getDisciplinas().removeIf(d -> d.getNomeDisciplina().equals(nome));
                 mostrarErro("Ocorreu um erro ao adicionar a disciplina: " + ex.getMessage());
                 ex.printStackTrace();
             }
@@ -217,9 +223,11 @@ public class TelaGerenciarDisciplinas extends TelaBase {
             }
 
             try {
+                // Atualiza o objeto em memória
                 selecionada.setVagasRemuneradas(novasVagasRem);
                 selecionada.setVagasVoluntarias(novasVagasVol);
-                GerenciadorDeDados.getInstancia().atualizarDisciplina(selecionada);
+                // Persiste o objeto edital inteiro, que contém a disciplina modificada
+                GerenciadorDeDados.getInstancia().atualizarEdital(edital);
                 mostrarSucesso("Alterações salvas com sucesso!");
                 listaDisciplinas.repaint(); // Para garantir que a exibição (se houver) seja atualizada
                 limparCampos();
@@ -238,9 +246,12 @@ public class TelaGerenciarDisciplinas extends TelaBase {
                 return;
             }
 
+            // Buscar as inscrições do banco de dados antes de verificar
+            List<Inscricao> inscricoes = GerenciadorDeDados.getInstancia().getInscricoesPorEdital(edital);
+
             // Não apagar se houver inscritos
-            for (Inscricao insc : edital.getInscricoes()) {
-                if (insc.getDisciplina().equals(selecionada)) {
+            for (Inscricao insc : inscricoes) {
+                if (insc.getDisciplinaNome().equals(selecionada.getNomeDisciplina())) {
                     mostrarErro("Não é possível apagar uma disciplina que já possui alunos inscritos.");
                     return;
                 }
@@ -256,12 +267,19 @@ public class TelaGerenciarDisciplinas extends TelaBase {
 
             if (confirmacao == JOptionPane.YES_OPTION) {
                 try {
-                    GerenciadorDeDados.getInstancia().removerDisciplinaDoEdital(edital, selecionada);
+                    // 1. Modifica o objeto em memória
                     edital.getDisciplinas().remove(selecionada);
+
+                    // 2. Persiste o objeto edital inteiro
+                    GerenciadorDeDados.getInstancia().atualizarEdital(edital);
+
+                    // 3. Atualiza a UI somente após o sucesso da persistência
                     listModel.removeElement(selecionada);
                     mostrarSucesso("Disciplina apagada com sucesso.");
                     limparCampos();
                 } catch (Exception ex) {
+                    // Em caso de erro, adiciona a disciplina de volta à lista em memória
+                    edital.getDisciplinas().add(selecionada);
                     mostrarErro("Ocorreu um erro ao apagar a disciplina: " + ex.getMessage());
                     ex.printStackTrace();
                 }

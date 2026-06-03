@@ -127,7 +127,7 @@ public class GeradorDeRelatorios {
      * @param matricula A matrícula do aluno
      * @param idEdital O ID do edital de monitoria
      */
-    public static void obterComprovanteDeInscricoesAluno(String matricula, long idEdital) {
+    public static void obterComprovanteDeInscricoesAluno(String matricula, String idEdital) {
        try {
            Document documento = new Document(); // Instancia o documento o qual será trabalhado
            PdfWriter.getInstance(documento, new FileOutputStream("relatorio.pdf")); // Define o nome do documento

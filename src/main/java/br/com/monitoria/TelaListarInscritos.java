@@ -1,5 +1,6 @@
 package br.com.monitoria;
 
+import br.com.monitoria.model.Aluno;
 import br.com.monitoria.model.Disciplina;
 import br.com.monitoria.model.EditalDeMonitoria;
 import br.com.monitoria.model.Inscricao;
@@ -12,7 +13,7 @@ import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.ListSelectionModel;
 
@@ -46,16 +47,24 @@ public class TelaListarInscritos extends TelaBase {
         model.addColumn("E-mail");
         model.addColumn("Tipo de Vaga");
 
-        ArrayList<Inscricao> inscricoesDaDisciplina = edital.getInscricoes().stream()
-                .filter(insc -> insc.getDisciplina().equals(disciplina))
-                .collect(Collectors.toCollection(ArrayList::new));
+        // Buscar as inscrições do banco de dados
+        List<Inscricao> todasInscricoes = GerenciadorDeDados.getInstancia().getInscricoesPorEdital(edital);
+
+        // Filtrar pelo nome da disciplina
+        List<Inscricao> inscricoesDaDisciplina = todasInscricoes.stream()
+                .filter(insc -> insc.getDisciplinaNome().equals(disciplina.getNomeDisciplina()))
+                .collect(Collectors.toList());
 
         for (Inscricao insc : inscricoesDaDisciplina) {
-            model.addRow(new Object[]{
-                    insc.getAluno().getNome(),
-                    insc.getAluno().getEmail(),
-                    insc.getTipoVaga().toString()
-            });
+            // "Hidratar" o objeto Aluno usando o novo método que aceita String.
+            Aluno aluno = GerenciadorDeDados.getInstancia().buscarAlunoPorId(insc.getAlunoId());
+            if (aluno != null) {
+                model.addRow(new Object[]{
+                        aluno.getNome(),
+                        aluno.getEmail(),
+                        insc.getTipoVaga().toString()
+                });
+            }
         }
 
         tabelaInscritos = new JTable(model);

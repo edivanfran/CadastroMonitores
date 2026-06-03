@@ -318,6 +318,14 @@ public class GerenciadorDeDados {
     }
 
     // Métodos de Inscricao
+    public void atualizarInscricoes(List<Inscricao> inscricoes) {
+        for (Inscricao inscricao : inscricoes) {
+            inscricaoNoSqlDAO.atualizar(inscricao);
+        }
+        // Poderíamos notificar um evento específico de inscrição se necessário
+        // GerenciadorDeEventos.getInstancia().notificarAtualizacao();
+    }
+
     public List<Inscricao> getInscricoesPorAluno(Aluno aluno) {
         // MIGRAÇÃO: Busca as inscrições do MongoDB usando o ID do aluno.
         if (aluno == null || aluno.getId() == null) {

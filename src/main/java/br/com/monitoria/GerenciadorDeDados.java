@@ -12,10 +12,8 @@ import java.util.List;
 public class GerenciadorDeDados {
 
     private static GerenciadorDeDados instancia;
-
     // Mundo JPA
     private final EntityManagerFactory emf;
-
     // Mundo NoSQL
     private final MongoClient mongoClient;
     private final EditalNoSqlDAO editalNoSqlDAO;
@@ -105,9 +103,7 @@ public class GerenciadorDeDados {
         }
     }
 
-    /**
-     * Sobrecarga para buscar aluno por ID no formato String (conveniente para IDs vindos do MongoDB).
-     */
+    // Sobrecarga para buscar aluno por Id no formato String
     public Aluno buscarAlunoPorId(String id) {
         try {
             Long longId = Long.parseLong(id);
@@ -282,7 +278,7 @@ public class GerenciadorDeDados {
         GerenciadorDeEventos.getInstancia().notificarAtualizacao();
     }
 
-    public void removerEdital(EditalDeMonitoria edital) {
+    public void excluirEdital(EditalDeMonitoria edital) {
         inscricaoNoSqlDAO.excluirPorEditalId(edital.getId());
         editalNoSqlDAO.excluir(edital);
         // Remove do cache
@@ -292,19 +288,14 @@ public class GerenciadorDeDados {
         GerenciadorDeEventos.getInstancia().notificarAtualizacao();
     }
 
-    @Deprecated
-    public EditalDeMonitoria buscarEditalPorId(Long id) {
-        return null;
-    }
-
     public EditalDeMonitoria buscarEditalPorId(String id) {
-        // 1. Tenta buscar do cache (Redis)
+        // Tenta buscar do cache (Redis)
         EditalDeMonitoria edital = redisDAO.buscarEditalPorId(id);
 
-        // 2. Se não estiver no cache (cache miss), busca no banco (MongoDB)
+        // Se não estiver no cache (cache miss), busca no banco (MongoDB)
         if (edital == null) {
             edital = editalNoSqlDAO.buscarPorId(id);
-            // 3. Se encontrou no banco, armazena no cache para futuras consultas
+            // Se encontrou no banco, armazena no cache para futuras consultas
             if (edital != null) {
                 redisDAO.salvarEdital(edital);
             }
@@ -341,16 +332,6 @@ public class GerenciadorDeDados {
             return Collections.emptyList();
         }
         return inscricaoNoSqlDAO.buscarPorEditalId(edital.getId());
-    }
-
-    /**
-     * @deprecated As disciplinas não são mais entidades globais, mas sim aninhadas em editais.
-     * Para obter as disciplinas, primeiro busque um edital.
-     */
-    @Deprecated
-    public List<Disciplina> getTodasAsDisciplinas() {
-        // Este método perdeu o sentido. Retornando uma lista vazia.
-        return Collections.emptyList();
     }
 
     public void fechar() {

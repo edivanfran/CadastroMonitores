@@ -5,7 +5,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import br.com.monitoria.dao.JPAUtil;
 import br.com.monitoria.excecoes.*;
 import com.mongodb.client.MongoDatabase;
 
@@ -42,7 +41,6 @@ public class Main {
                 System.out.println("  \"" + arquivo.getName() + "\"");
             }
             System.out.println("-------------------------------");
-            System.out.print("Espere um momento estamos pegar arquivo da nuvem » ");
         }
         PersistenciaNoSql.fechar();
         InicializadorGUI.iniciar();

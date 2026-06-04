@@ -451,7 +451,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
                     Optional<Disciplina> disciplinaOpt = edital.getDisciplinas().stream()
                         .filter(d -> d.getNomeDisciplina().equals(inscricao.getDisciplinaNome()))
                         .findFirst();
-                    
+
                     // Se encontrou, injeta o objeto Disciplina na inscrição
                     disciplinaOpt.ifPresent(inscricao::setDisciplina);
                 }
@@ -460,8 +460,10 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
                 edital.calcularResultado();
                 gerenciador.atualizarEdital(edital);
+                gerenciador.atualizarInscricoes(edital.getInscricoes());
+
                 mostrarSucesso("Resultado do edital '" + edital.getNumero() + "' calculado e vagas alocadas com sucesso!");
-                atualizar(); // Atualiza a tela para refletir o novo estado (ex: resultado calculado)
+                atualizar();
             } catch (EditalAbertoException | SemInscricoesException ex) {
                 mostrarErro(ex.getMessage());
             } catch (Exception ex) {

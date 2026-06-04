@@ -5,7 +5,7 @@ import br.com.monitoria.model.Inscricao;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
-
+@Deprecated
 public class InscricaoDAO implements DAO<Inscricao, Long> {
 
     private final EntityManager em;

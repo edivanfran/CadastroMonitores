@@ -272,7 +272,7 @@ public class GerenciadorDeDados {
     public void atualizarEdital(EditalDeMonitoria edital) {
         editalNoSqlDAO.atualizar(edital);
         // Invalida o cache para garantir consistência
-        if (edital != null && edital.getId() != null) {
+        if (edital.getId() != null) {
             redisDAO.removerEdital(edital.getId());
         }
         GerenciadorDeEventos.getInstancia().notificarAtualizacao();
@@ -282,7 +282,7 @@ public class GerenciadorDeDados {
         inscricaoNoSqlDAO.excluirPorEditalId(edital.getId());
         editalNoSqlDAO.excluir(edital);
         // Remove do cache
-        if (edital != null && edital.getId() != null) {
+        if (edital.getId() != null) {
             redisDAO.removerEdital(edital.getId());
         }
         GerenciadorDeEventos.getInstancia().notificarAtualizacao();
@@ -291,7 +291,6 @@ public class GerenciadorDeDados {
     public EditalDeMonitoria buscarEditalPorId(String id) {
         // Tenta buscar do cache (Redis)
         EditalDeMonitoria edital = redisDAO.buscarEditalPorId(id);
-
         // Se não estiver no cache (cache miss), busca no banco (MongoDB)
         if (edital == null) {
             edital = editalNoSqlDAO.buscarPorId(id);

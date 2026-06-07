@@ -20,7 +20,7 @@ public class SessaoUsuario {
      * Retorna a instância única da sessão.
      * @return A instância de SessaoUsuario
      */
-    public static SessaoUsuario getInstancia() {
+    public synchronized static SessaoUsuario getInstancia() {
         if (instancia == null) {
             instancia = new SessaoUsuario();
         }

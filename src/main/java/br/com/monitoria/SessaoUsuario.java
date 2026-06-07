@@ -9,11 +9,14 @@ import br.com.monitoria.model.Usuario;
  * Permite verificar se o usuário é coordenador ou aluno em qualquer parte da aplicação.
  */
 public class SessaoUsuario {
-    private static SessaoUsuario instancia;
     private Usuario usuarioLogado;
     
     private SessaoUsuario() {
         // Construtor privado para singleton
+    }
+    
+    private static class Holder {
+        private static final SessaoUsuario INSTANCIA = new SessaoUsuario();
     }
     
     /**
@@ -21,10 +24,7 @@ public class SessaoUsuario {
      * @return A instância de SessaoUsuario
      */
     public static SessaoUsuario getInstancia() {
-        if (instancia == null) {
-            instancia = new SessaoUsuario();
-        }
-        return instancia;
+        return Holder.INSTANCIA;
     }
     
     /**

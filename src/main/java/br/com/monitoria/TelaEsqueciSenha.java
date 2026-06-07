@@ -73,7 +73,7 @@ public class TelaEsqueciSenha extends TelaBase {
                 String assunto = "Código de Recuperação de Senha";
                 String mensagem = "Olá,\\n\\nSeu código para redefinição de senha é: " + codigo +
                                   "\\n\\nSe você não solicitou isso, por favor, ignore este e-mail.";
-                Mensageiro.enviarEmail(email, assunto, mensagem);
+                NotificadorFactory.obterInstancia().enviarEmail(email, assunto, mensagem);
 
                 SwingUtilities.invokeLater(() -> {
                     mostrarSucesso("Um código de recuperação foi enviado para o seu e-mail.");

@@ -127,7 +127,7 @@ public class TelaListarInscritos extends TelaBase {
                 }
                 
                 try {
-                    Mensageiro.enviarEmail(emailDestinatario, assunto, mensagem);
+                    NotificadorFactory.obterInstancia().enviarEmail(emailDestinatario, assunto, mensagem);
                     mostrarSucesso("E-mail enviado com sucesso para " + nomeAluno + ".");
                 } catch (Exception ex) {
                     mostrarErro("Falha ao enviar o e-mail: " + ex.getMessage());

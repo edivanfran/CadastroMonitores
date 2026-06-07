@@ -219,7 +219,8 @@ public class TelaResultadoEdital extends TelaBase {
 
     private void exportarResultadoPDF() {
         try {
-            GeradorDeRelatorios.gerarResultadoEdital(edital);
+            GeradorDeRelatorios geradorDeRelatorios = new GeradorDeRelatorios(new PdfFormatter());
+            geradorDeRelatorios.gerarResultadoEdital(edital);
             mostrarSucesso("Relatório PDF gerado com sucesso na pasta do projeto!");
         } catch (Exception e) {
             mostrarErro("Erro ao gerar PDF: " + e.getMessage());

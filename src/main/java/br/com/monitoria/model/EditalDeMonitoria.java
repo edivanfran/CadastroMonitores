@@ -68,6 +68,17 @@ public class EditalDeMonitoria {
     @Transient
     private ICalculadoraPontuacao calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
 
+    public ICalculadoraPontuacao getCalculadoraPontuacao() {
+        return this.calculadoraPontuacao;
+    }
+
+    public void setCalculadoraPontuacao(ICalculadoraPontuacao calculadoraPontuacao) {
+        if (calculadoraPontuacao == null) {
+            throw new IllegalArgumentException("A estratégia de cálculo de pontuação não pode ser nula.");
+        }
+        this.calculadoraPontuacao = calculadoraPontuacao;
+    }
+
     public long getId() {
         return id;
     }

@@ -44,8 +44,8 @@ public class ServicoDeCalculoDeResultado {
             ArrayList<Inscricao> inscricoesDisciplina = entry.getValue();
             Disciplina disciplina = inscricoesDisciplina.get(0).getDisciplina();
 
-            // A estratégia de cálculo agora é pega do edital
-            ICalculadoraPontuacao calculadora = new CalculadoraPontuacaoPadrao(); // Ou obter do edital se for configurável
+            // A estratégia de cálculo é obtida dinamicamente a partir do edital
+            ICalculadoraPontuacao calculadora = edital.getCalculadoraPontuacao();
 
             // Calcula a pontuação
             for (Inscricao inscricao : inscricoesDisciplina) {

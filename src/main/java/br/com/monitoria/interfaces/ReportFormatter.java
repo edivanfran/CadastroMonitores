@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public interface ReportFormatter {
 
-    String getTipoFormmater();
+    String getTipoFormatter();
 
     void iniciarDocumento(String nomeArquivo, boolean landscape) throws Exception;
 

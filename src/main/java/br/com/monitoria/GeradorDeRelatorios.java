@@ -39,7 +39,8 @@ public class GeradorDeRelatorios {
      * @throws Exception Se ocorrer um erro durante a geração do relatório.
      */
     public void gerarResultadoEdital(EditalDeMonitoria edital) throws Exception {
-        String nomeArquivo = "Resultado_Edital_" + edital.getNumero() + "." + formatter.getTipoFormmater().toLowerCase();
+        String nomeArquivo =
+                "Resultado_Edital_" + edital.getNumero() + "." + formatter.getTipoFormatter().toLowerCase();
         try {
             formatter.iniciarDocumento(nomeArquivo, true);
             formatter.adicionarTituloPrincipal("Resultado do Edital de Monitoria nº " + edital.getNumero());

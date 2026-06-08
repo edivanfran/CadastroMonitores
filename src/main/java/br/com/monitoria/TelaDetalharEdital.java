@@ -1,20 +1,14 @@
 package br.com.monitoria;
 
-import br.com.monitoria.excecoes.EditalAbertoException;
-import br.com.monitoria.excecoes.EditalFechadoException;
-import br.com.monitoria.excecoes.PermissaoNegadaException;
-import br.com.monitoria.excecoes.PrazoVencidoException;
-import br.com.monitoria.model.Coordenador;
 import br.com.monitoria.model.Disciplina;
 import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.servico.EditalService;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 public class TelaDetalharEdital extends TelaEditalBase {
 
@@ -30,8 +24,11 @@ public class TelaDetalharEdital extends TelaEditalBase {
     // Botão do Aluno
     private JButton botaoInscrever;
 
+    private EditalService editalService;
+
     public TelaDetalharEdital(EditalDeMonitoria edital) {
         super("Detalhar Edital", edital);
+        this.editalService = new EditalService();
     }
 
     @Override
@@ -43,6 +40,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
         }
     }
 
+    @Override
     protected void criarComponentes() {
         criarLabels();
         criarCampos();
@@ -172,36 +170,30 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 mostrarErro("Apenas coordenadores podem alterar o estado do edital.");
                 return;
             }
-            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-            Coordenador coordenador = (Coordenador) sessao.getUsuarioLogado();
             
             if (edital.isAberto()) {
                 // Confirmar para encerrar
                 int confirmacao = JOptionPane.showConfirmDialog(TelaDetalharEdital.this,
-                        "Tem certeza que deseja encerrar as inscrições para este edital?",
-                        "Confirmar Encerramento", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                        "Tem certeza que deseja encerrar as inscrições?", "Confirmar", JOptionPane.YES_NO_OPTION);
                 if (confirmacao == JOptionPane.YES_OPTION) {
                     try {
-                        edital.fecharEdital(coordenador);
-                        gerenciadorDeDados.atualizarEdital(edital);
+                        editalService.encerrarEdital(edital);
                         mostrarSucesso("Edital encerrado com sucesso!");
                         atualizarBotaoEncerramento();
-                    } catch (PermissaoNegadaException | EditalFechadoException ex) {
+                    } catch (Exception ex) {
                         mostrarErro(ex.getMessage());
                     }
                 }
             } else {
                 // Confirmar para reabrir
                 int confirmacao = JOptionPane.showConfirmDialog(TelaDetalharEdital.this,
-                        "Deseja reabrir as inscrições para este edital?",
-                        "Confirmar Reabertura", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                        "Deseja reabrir as inscrições?", "Confirmar", JOptionPane.YES_NO_OPTION);
                 if (confirmacao == JOptionPane.YES_OPTION) {
                     try {
-                        edital.reabrirEdital(coordenador);
-                        gerenciadorDeDados.atualizarEdital(edital);
+                        editalService.reabrirEdital(edital);
                         mostrarSucesso("Edital reaberto para inscrições!");
                         atualizarBotaoEncerramento();
-                    } catch (PermissaoNegadaException | EditalAbertoException | PrazoVencidoException ex) {
+                    } catch (Exception ex) {
                         mostrarErro(ex.getMessage());
                     }
                 }
@@ -215,9 +207,12 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 mostrarErro("Apenas coordenadores podem clonar editais.");
                 return;
             }
-            EditalDeMonitoria copiaEdital = edital.clonar();
-            GerenciadorDeDados.getInstancia().salvarEdital(copiaEdital);
-            mostrarSucesso("Edital clonado com sucesso!");
+            try {
+                editalService.clonarEdital(edital);
+                mostrarSucesso("Edital clonado com sucesso!");
+            } catch (Exception ex) {
+                mostrarErro(ex.getMessage());
+            }
         }
     }
     
@@ -251,29 +246,20 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 mostrarErro("A soma dos valores dos pesos deve ser igual a 1.");
                 return;
             }
-
-            DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            LocalDate dataInicioFormatada;
-            LocalDate dataFinalFormatada;
             try {
-                dataInicioFormatada = LocalDate.parse(dataInicio.getText(), formatador);
-                dataFinalFormatada = LocalDate.parse(dataFinal.getText(), formatador);
+                editalService.salvarEdital(
+                    edital,
+                    dataInicio.getText(),
+                    dataFinal.getText(),
+                    (Double) pesoCRE.getValue(),
+                    (Double) pesoNota.getValue()
+                );
+                mostrarSucesso("Edital salvo com sucesso!");
+                tornarCamposEditaveis(false);
+                mudarVisibilidadeBotoes(false);
             } catch (Exception ex) {
-                mostrarErro("Formato de data inválido. Siga o padrão dd/mm/aaaa.");
-                return;
+                mostrarErro(ex.getMessage());
             }
-            if (dataFinalFormatada.isBefore(dataInicioFormatada)) {
-                mostrarErro("A data final não pode ser antes da data inicial.");
-                return;
-            }
-            edital.setDataInicio(dataInicioFormatada);
-            edital.setDataLimite(dataFinalFormatada);
-            edital.setPesoCre((Double) pesoCRE.getValue());
-            edital.setPesoNota((Double) pesoNota.getValue());
-            GerenciadorDeDados.getInstancia().atualizarEdital(edital);
-            mostrarSucesso("Edital salvo com sucesso!");
-            tornarCamposEditaveis(false);
-            mudarVisibilidadeBotoes(false);
         }
     }
 

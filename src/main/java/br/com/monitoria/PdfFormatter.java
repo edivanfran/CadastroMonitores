@@ -17,15 +17,15 @@ import java.util.ArrayList;
 public class PdfFormatter implements ReportFormatter {
 
     private Document documento;
-    public String tipoFormmater;
+    public String tipoFormatter;
 
     public PdfFormatter() {
-        this.tipoFormmater = "PDF";
+        this.tipoFormatter = "PDF";
     }
 
     @Override
-    public String getTipoFormmater() {
-        return tipoFormmater;
+    public String getTipoFormatter() {
+        return tipoFormatter;
     }
 
     @Override

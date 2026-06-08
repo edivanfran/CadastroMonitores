@@ -171,15 +171,15 @@ public class TelaCadastroCoordenador extends TelaBase {
             TelaPrincipal telaPrincipal = new TelaPrincipal();
             telaPrincipal.inicializar();
             this.dispose();
-        } catch (CampoSenhaInvalidadoException cs) {
-            campoSenha.setText("");
-            campoConfirmarSenha.setText("");
-            campoSenha.requestFocus();
-        } catch (CampoEmailInvalidadoException ce) {
-            campoEmail.requestFocus();
-        }
-        catch (Exception e) {
-            mostrarErro("Erro ao cadastrar coordenador: " + e.getMessage());
+        } catch (Exception e) {
+            mostrarErro(e.getMessage());
+            if (e instanceof CampoEmailInvalidadoException) {
+                campoEmail.requestFocus();
+            } else if (e instanceof CampoSenhaInvalidadoException) {
+                campoSenha.setText("");
+                campoConfirmarSenha.setText("");
+                campoSenha.requestFocus();
+            }
         }
     }
     

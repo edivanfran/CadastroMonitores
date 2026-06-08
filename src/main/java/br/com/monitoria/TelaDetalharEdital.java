@@ -1,14 +1,5 @@
 package br.com.monitoria;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import br.com.monitoria.excecoes.EditalAbertoException;
 import br.com.monitoria.excecoes.EditalFechadoException;
 import br.com.monitoria.excecoes.PermissaoNegadaException;
@@ -16,6 +7,14 @@ import br.com.monitoria.excecoes.PrazoVencidoException;
 import br.com.monitoria.model.Coordenador;
 import br.com.monitoria.model.Disciplina;
 import br.com.monitoria.model.EditalDeMonitoria;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class TelaDetalharEdital extends TelaEditalBase {
 
@@ -102,10 +101,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
 
     private void atualizarBotaoEncerramento() {
-        if (botaoEncerrarReabrir == null) {
-            // Não faz nada se o botão não foi criado
-            return;
-        }
+        if (botaoEncerrarReabrir == null) return;
 
         if (edital.jaAcabou()) {
             botaoEncerrarReabrir.setText("Encerrado Definitivamente");
@@ -123,10 +119,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
     }
 
     private void mudarVisibilidadeBotoes(boolean editando) {
-        if (!isCoordenador()) {
-            // Alunos não vão ter botões para gerenciar
-            return;
-        }
+        if (!isCoordenador()) return;
 
         botaoEncerrarReabrir.setVisible(!editando);
         botaoEditarEdital.setVisible(!editando);
@@ -161,13 +154,11 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 mostrarErro("Apenas coordenadores podem visualizar a lista de inscritos.");
                 return;
             }
-
             Disciplina disciplinaSelecionada = (Disciplina) campoDeDisciplina.getSelectedItem();
             if (disciplinaSelecionada == null) {
                 mostrarErro("Por favor, selecione uma disciplina para visualizar os inscritos.");
                 return;
             }
-
             TelaListarInscritos telaInscritos = new TelaListarInscritos(edital, disciplinaSelecionada);
             telaInscritos.inicializar();
             telaInscritos.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -189,7 +180,6 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 int confirmacao = JOptionPane.showConfirmDialog(TelaDetalharEdital.this,
                         "Tem certeza que deseja encerrar as inscrições para este edital?",
                         "Confirmar Encerramento", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-
                 if (confirmacao == JOptionPane.YES_OPTION) {
                     try {
                         edital.fecharEdital(coordenador);
@@ -205,7 +195,6 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 int confirmacao = JOptionPane.showConfirmDialog(TelaDetalharEdital.this,
                         "Deseja reabrir as inscrições para este edital?",
                         "Confirmar Reabertura", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-
                 if (confirmacao == JOptionPane.YES_OPTION) {
                     try {
                         edital.reabrirEdital(coordenador);
@@ -227,8 +216,7 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 return;
             }
             EditalDeMonitoria copiaEdital = edital.clonar();
-            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-            gerenciadorDeDados.salvarEdital(copiaEdital);
+            GerenciadorDeDados.getInstancia().salvarEdital(copiaEdital);
             mostrarSucesso("Edital clonado com sucesso!");
         }
     }
@@ -236,20 +224,16 @@ public class TelaDetalharEdital extends TelaEditalBase {
     private class OuvinteBotaoEditarDisciplina implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             TelaGerenciarDisciplinas telaDisciplinas = new TelaGerenciarDisciplinas(edital);
-            telaDisciplinas.inicializar();
-            telaDisciplinas.addWindowListener(
-                    new WindowListener() {
-                        public void windowOpened(WindowEvent e) {}
-                        public void windowClosing(WindowEvent e) {}
-                        public void windowClosed(WindowEvent e) {
-                            preencherCamposComDados(edital);
-                        }
-                        public void windowIconified(WindowEvent e) {}
-                        public void windowDeiconified(WindowEvent e) {}
-                        public void windowActivated(WindowEvent e) {}
-                        public void windowDeactivated(WindowEvent e) {}
-                    });
             telaDisciplinas.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            telaDisciplinas.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent we) {
+                    // Recarrega o edital do banco de dados para obter a lista de disciplinas atualizada
+                    edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(edital.getId());
+                    preencherCamposComDados(edital);
+                }
+            });
+            telaDisciplinas.inicializar();
         }
     }
 
@@ -278,28 +262,16 @@ public class TelaDetalharEdital extends TelaEditalBase {
                 mostrarErro("Formato de data inválido. Siga o padrão dd/mm/aaaa.");
                 return;
             }
-
-            if (dataInicioFormatada.isBefore(LocalDate.now())) {
-                mostrarErro("A data inicial não pode ser uma data que já passou.");
-                return;
-            }
             if (dataFinalFormatada.isBefore(dataInicioFormatada)) {
                 mostrarErro("A data final não pode ser antes da data inicial.");
                 return;
             }
-            if (dataFinalFormatada.isBefore(LocalDate.now())) {
-                mostrarErro("A data final não pode ser uma data que já passou.");
-                return;
-            }
-
             edital.setDataInicio(dataInicioFormatada);
             edital.setDataLimite(dataFinalFormatada);
             edital.setPesoCre((Double) pesoCRE.getValue());
             edital.setPesoNota((Double) pesoNota.getValue());
-            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-            gerenciadorDeDados.atualizarEdital(edital);
+            GerenciadorDeDados.getInstancia().atualizarEdital(edital);
             mostrarSucesso("Edital salvo com sucesso!");
-
             tornarCamposEditaveis(false);
             mudarVisibilidadeBotoes(false);
         }

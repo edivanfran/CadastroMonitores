@@ -52,7 +52,7 @@ public class TelaLogin extends TelaBase {
      */
     private JLabel criarLogo() {
         try {
-            URL resource = getClass().getResource("/IFPB_icon.jpg");
+            URL resource = getClass().getResource("/IFPB_icon.png");
             if (resource != null) {
                 ImageIcon icon = new ImageIcon(resource);
                 // Redimensiona o logo para um tamanho padrão

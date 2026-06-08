@@ -2,18 +2,19 @@ package br.com.monitoria.model;
 
 import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.VagasEsgotadasException;
+import br.com.monitoria.interfaces.Prototype;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects; // Importar Objects
-
-import jakarta.persistence.*;
+import java.util.Objects;
 
 /**
  * Representa uma disciplina em um edital de monitoria, portanto, além de nome, possui como atributos: quantidade de vagas de monitoria que serão remuneradas, quantidade de vagas de monitoria para voluntariado — ambas {@code int} —, uma lista de alunos inscritos para voluntariado e outra para alunos inscritos em vagas com remuneração, e o total de alunos expresso em {@code int}.
  */
 
 @Entity
-public class Disciplina {
+public class Disciplina implements Prototype {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

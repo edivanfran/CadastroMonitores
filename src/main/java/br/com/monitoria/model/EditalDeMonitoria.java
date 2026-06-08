@@ -1,27 +1,27 @@
 package br.com.monitoria.model;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import br.com.monitoria.PreferenciaInscricao;
 import br.com.monitoria.Vaga;
 import br.com.monitoria.excecoes.*;
 import br.com.monitoria.interfaces.ICalculadoraPontuacao;
+import br.com.monitoria.interfaces.Prototype;
 import br.com.monitoria.servico.CalculadoraPontuacaoPadrao;
 import br.com.monitoria.servico.ServicoDeCalculoDeResultado;
-
 import jakarta.persistence.*;
-import java.util.*;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Representa editais de monitoria de disciplinas do Curso, registradas em uma central de informações. Possui ID {@code long}, um número {@code String}, uma data de início e uma de limite — ambas {@link LocalDate} —, uma lista de disciplinas que esse edital compreende em seu processo seletivo, e um booleano determinando se o edital se encontra ainda aberto.
  */
 
 @Entity
-public class EditalDeMonitoria {
+public class EditalDeMonitoria implements Prototype {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -94,6 +94,31 @@ public class EditalDeMonitoria {
     public List<Disciplina> getDisciplinas() {
         return disciplinas;
     }
+
+    /**
+     * <p>Construtor para clonagem — não clona o atributo {@code id}.</p>
+     * <p>Os atributos {@code inscricoes}, {@code ranquePorDisciplina}, {@code resultadoCalculado}, {@code
+     * periodoDesistenciaEncerrado} e {@code calculadoraPontuacao} estarão zerados no clone.</p>
+     * <p>Cria uma cópia profunda do atributo {@code disciplinas}, a fim de evitar que a referência aponte para a
+     * original.</p>
+     * Adiciona o sufixo <samp>"- Cópia"</samp> no atributo {@code numero}.
+     */
+    private EditalDeMonitoria(EditalDeMonitoria edital) {
+        this.numero = edital.numero + "- Cópia";
+        this.dataInicio = edital.dataInicio;
+        this.dataLimite = edital.dataLimite;
+        this.disciplinas = edital.disciplinas.stream()
+                .map(Disciplina::clonar)
+                .collect(Collectors.toList());
+        this.aberto = edital.aberto;
+        this.pesoCre = edital.pesoCre;
+        this.pesoNota = edital.pesoNota;
+        this.inscricoes = new ArrayList<>();
+        this.ranquePorDisciplina = new HashMap<>();
+        this.resultadoCalculado = false;
+        this.periodoDesistenciaEncerrado = false;
+        this.calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
+    }
     public void setDataInicio(LocalDate dataInicio) {
         this.dataInicio = dataInicio;
     }
@@ -107,23 +132,8 @@ public class EditalDeMonitoria {
         this.aberto = aberto;
     }
 
-    /**
-     * Construtor para clonagem, sem ID.
-     */
-    private EditalDeMonitoria(String numero, LocalDate dataInicio, LocalDate dataLimite,
-                              List<Disciplina> disciplinas, boolean aberto, double pesoCre, double pesoNota) {
+    public void setNumero(String numero) {
         this.numero = numero;
-        this.dataInicio = dataInicio;
-        this.dataLimite = dataLimite;
-        this.disciplinas = disciplinas;
-        this.aberto = aberto;
-        this.pesoCre = pesoCre;
-        this.pesoNota = pesoNota;
-        this.inscricoes = new ArrayList<>();
-        this.ranquePorDisciplina = new HashMap<>();
-        this.resultadoCalculado = false;
-        this.periodoDesistenciaEncerrado = false;
-        this.calculadoraPontuacao = new CalculadoraPontuacaoPadrao();
     }
 
     /**
@@ -282,27 +292,15 @@ public class EditalDeMonitoria {
    }
 
     /**
-     * Cria um clone deste edital.
-     * O edital clonado terá um novo ID, um número com o sufixo "- Cópia",
-     * e começará com a lista de inscrições e resultados zerados.
-     * As disciplinas são clonadas para evitar compartilhamento de referências.
-     * @return Uma nova instância de EditalDeMonitoria.
+     * <p>Cria um clone deste edital.</p>
+     * <p>O edital clonado terá um novo ID, um número com o sufixo <samp>"- Cópia"</samp>,
+     * e começará com a lista de inscrições e resultados zerados.</p>
+     * <p>As disciplinas são clonadas para evitar compartilhamento de referências.</p>
+     * @return Uma nova instância de {@link EditalDeMonitoria}.
      */
     public EditalDeMonitoria clonar() {
-        List<Disciplina> disciplinasClonadas = this.disciplinas.stream()
-                .map(Disciplina::clonar)
-                .collect(Collectors.toList());
-
         // Chama o construtor correto que não define um ID.
-        return new EditalDeMonitoria(
-                this.numero + " - Cópia",
-                this.dataInicio,
-                this.dataLimite,
-                disciplinasClonadas,
-                true,
-                this.pesoCre,
-                this.pesoNota
-        );
+        return new EditalDeMonitoria(this);
     }
 
     /**

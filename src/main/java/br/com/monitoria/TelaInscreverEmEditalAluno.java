@@ -1,9 +1,8 @@
 package br.com.monitoria;
 
-import br.com.monitoria.excecoes.*;
-import br.com.monitoria.model.Aluno;
 import br.com.monitoria.model.Disciplina;
 import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.servico.InscricaoService;
 
 import javax.swing.*;
 import javax.swing.text.MaskFormatter;
@@ -25,9 +24,12 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
     private JSpinner campoOrdemPreferencia;
     private JButton botaoInscrever;
 
+    private InscricaoService inscricaoService;
+
     public TelaInscreverEmEditalAluno(EditalDeMonitoria edital) {
         super("Inscrever-se no Edital " + edital.getNumero());
         this.edital = edital;
+        this.inscricaoService = new InscricaoService();
         setSize(700, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
@@ -160,51 +162,19 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
         public void actionPerformed(ActionEvent e) {
             // Coleta os dados da tela
             Disciplina disciplinaSelecionada = (Disciplina) campoDeDisciplina.getSelectedItem();
-            if (disciplinaSelecionada == null) {
-                mostrarErro("Por favor, selecione uma disciplina.");
-                return;
-            }
-
             double cre = ((Number) campoCRE.getValue()).doubleValue();
             double nota = ((Number) campoNota.getValue()).doubleValue();
             int ordemPreferencia = (Integer) campoOrdemPreferencia.getValue();
             PreferenciaInscricao preferenciaVaga = (PreferenciaInscricao) campoPreferencia.getSelectedItem();
-            Aluno alunoLogado = (Aluno) sessao.getUsuarioLogado();
 
             try {
-                switch (preferenciaVaga) {
-                    case SOMENTE_REMUNERADA:
-                        realizarInscricao(alunoLogado, disciplinaSelecionada, cre, nota, Vaga.REMUNERADA, ordemPreferencia, preferenciaVaga);
-                        break;
-                    case SOMENTE_VOLUNTARIA:
-                        realizarInscricao(alunoLogado, disciplinaSelecionada, cre, nota, Vaga.VOLUNTARIA, ordemPreferencia, preferenciaVaga);
-                        break;
-                    case REMUNERADA_OU_VOLUNTARIA:
-                        try {
-                            // Tenta primeiro a vaga remunerada
-                            realizarInscricao(alunoLogado, disciplinaSelecionada, cre, nota, Vaga.REMUNERADA, ordemPreferencia, preferenciaVaga);
-                        } catch (VagasEsgotadasException eRemunerada) {
-                            // Se não conseguiu, tenta a voluntária
-                            try {
-                                mostrarAviso("Vagas remuneradas esgotadas. Tentando vaga voluntária...");
-                                realizarInscricao(alunoLogado, disciplinaSelecionada, cre, nota, Vaga.VOLUNTARIA, ordemPreferencia, preferenciaVaga);
-                            } catch (VagasEsgotadasException eVoluntaria) {
-                                // Se também não conseguiu, informa o erro
-                                mostrarErro("Não há mais vagas remuneradas ou voluntárias para esta disciplina.");
-                            }
-                        }
-                        break;
-                }
+                String mensagem = inscricaoService.inscreverAluno(edital, disciplinaSelecionada, cre, nota, ordemPreferencia, preferenciaVaga);
+                mostrarSucesso(mensagem);
+                dispose();
             } catch (Exception ex) {
                 mostrarErro(ex.getMessage());
                 ex.printStackTrace(); // Para depuração
             }
-        }
-
-        private void realizarInscricao(Aluno aluno, Disciplina disciplina, double cre, double nota, Vaga tipoVaga, int ordem, PreferenciaInscricao pref) throws Exception {
-            GerenciadorDeDados.getInstancia().inscreverAlunoEmEdital(edital, aluno, disciplina, cre, nota, tipoVaga, ordem, pref);
-            mostrarSucesso("Inscrição para vaga " + tipoVaga + " realizada com sucesso!");
-            dispose();
         }
     }
 }

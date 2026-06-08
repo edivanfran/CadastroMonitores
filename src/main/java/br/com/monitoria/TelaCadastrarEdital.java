@@ -1,25 +1,24 @@
 package br.com.monitoria;
 
-import br.com.monitoria.excecoes.PesosInvalidosException;
-import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.servico.EditalService;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class TelaCadastrarEdital extends TelaEditalBase {
 
     private JButton botaoSalvar;
     private JButton botaoVoltar;
+    private EditalService editalService;
 
     public TelaCadastrarEdital() {
         // Passa null porque não tem um edital cadastrado.
         super("Cadastrar Novo Edital", null);
+        this.editalService = new EditalService();
     }
 
+    @Override
     protected void criarComponentes() {
         criarLabels();
         criarCampos();
@@ -47,55 +46,17 @@ public class TelaCadastrarEdital extends TelaEditalBase {
     private class OuvinteBotaoSalvar implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            if (((Double) pesoCRE.getValue() + (Double) pesoNota.getValue()) != 1.0) {
-                mostrarErro("A soma dos valores dos pesos deve ser igual a 1.");
-                return;
-            }
-
-            DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            LocalDate dataInicioFormatada;
-            LocalDate dataFinalFormatada;
-            try {
-                dataInicioFormatada = LocalDate.parse(dataInicio.getText(), formatador);
-                dataFinalFormatada = LocalDate.parse(dataFinal.getText(), formatador);
-            } catch (java.time.format.DateTimeParseException ex) {
-                mostrarErro("Formato de data inválido. Siga o padrão dd/mm/aaaa.");
-                return;
-            }
-
-            if (dataInicioFormatada.isBefore(LocalDate.now())) {
-                mostrarErro("A data inicial não pode ser uma data que já passou.");
-                return;
-            }
-            if (dataFinalFormatada.isBefore(dataInicioFormatada)) {
-                mostrarErro("A data final não pode ser antes da data inicial.");
-                return;
-            }
-            if (dataFinalFormatada.isBefore(LocalDate.now())) {
-                mostrarErro("A data final não pode ser uma data que já passou.");
-                return;
-            }
-
-            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-            List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+            String dataInicioStr = dataInicio.getText();
+            String dataFimStr = dataFinal.getText();
+            Double cre = (Double) pesoCRE.getValue();
+            Double nota = (Double) pesoNota.getValue();
 
             try {
-                // Usando o número do edital do campo de texto, se houver um
-                String numeroEdital = "Edital " + (editais.size() + 1);
-                EditalDeMonitoria novoEdital = new EditalDeMonitoria(
-                        numeroEdital,
-                        dataInicioFormatada,
-                        dataFinalFormatada,
-                        (Double) pesoCRE.getValue(),
-                        (Double) pesoNota.getValue()
-                );
-
-                gerenciadorDeDados.salvarEdital(novoEdital);
+                editalService.cadastrarEdital(dataInicioStr, dataFimStr, cre, nota);
                 mostrarSucesso("Edital cadastrado com sucesso!");
-
                 voltarParaTelaPrincipal();
-            } catch (PesosInvalidosException ex) {
-                mostrarErro("Erro ao cadastrar edital: " + ex.getMessage());
+            } catch (Exception ex) {
+                mostrarErro(ex.getMessage());
             }
         }
     }

@@ -1,5 +1,7 @@
 package br.com.monitoria;
 
+import br.com.monitoria.servico.RecuperacaoSenhaService;
+
 import javax.swing.*;
 
 /**
@@ -12,9 +14,11 @@ public class TelaEsqueciSenha extends TelaBase {
     private JTextField campoEmail;
     private JButton botaoEnviar;
     private JButton botaoVoltar;
+    private RecuperacaoSenhaService recuperacaoSenhaService;
 
     public TelaEsqueciSenha() {
         super("Recuperação de Senha");
+        this.recuperacaoSenhaService = new RecuperacaoSenhaService();
     }
 
     @Override
@@ -56,32 +60,24 @@ public class TelaEsqueciSenha extends TelaBase {
     private void enviarCodigo() {
         String email = campoEmail.getText().trim();
 
-        if (email.isEmpty()) {
-            mostrarErro("Por favor, insira seu endereço de e-mail.");
-            return;
-        }
-
-        String codigo = RecuperadorDeSenhas.gerarCodigoRecuperacao(email);
-
-        if (codigo == null) {
-            mostrarErro("O e-mail inserido não foi encontrado em nosso sistema.");
-            return;
-        }
+        // Desativa o botão para evitar múltiplos cliques
+        botaoEnviar.setEnabled(false);
+        botaoEnviar.setText("Enviando...");
 
         new Thread(() -> {
             try {
-                String assunto = "Código de Recuperação de Senha";
-                String mensagem = "Olá,\\n\\nSeu código para redefinição de senha é: " + codigo +
-                                  "\\n\\nSe você não solicitou isso, por favor, ignore este e-mail.";
-                NotificadorFactory.obterInstancia().enviarEmail(email, assunto, mensagem);
-
+                recuperacaoSenhaService.enviarCodigoRecuperacao(email);
                 SwingUtilities.invokeLater(() -> {
                     mostrarSucesso("Um código de recuperação foi enviado para o seu e-mail.");
                     abrirTelaVerificacao(email);
                 });
-
             } catch (Exception e) {
-                SwingUtilities.invokeLater(() -> mostrarErro("Erro ao enviar e-mail: " + e.getMessage()));
+                SwingUtilities.invokeLater(() -> mostrarErro(e.getMessage()));
+            } finally {
+                SwingUtilities.invokeLater(() -> {
+                    botaoEnviar.setEnabled(true);
+                    botaoEnviar.setText("Enviar");
+                });
             }
         }).start();
     }

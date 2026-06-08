@@ -25,6 +25,10 @@ public class EditalService {
         this.sessaoUsuario = SessaoUsuario.getInstancia();
     }
 
+    public List<EditalDeMonitoria> listarTodosOsEditais() {
+        return gerenciadorDeDados.getTodosOsEditais();
+    }
+
     public void cadastrarEdital(String dataInicioStr, String dataFimStr, Double pesoCre, Double pesoNota) throws Exception {
         if (pesoCre + pesoNota != 1.0) {
             throw new Exception("A soma dos valores dos pesos deve ser igual a 1.");

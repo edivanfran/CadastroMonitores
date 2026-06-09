@@ -1,5 +1,7 @@
 package br.com.monitoria;
 
+import br.com.monitoria.excecoes.ValidacaoException;
+import br.com.monitoria.excecoes.VagasEsgotadasException;
 import br.com.monitoria.model.Disciplina;
 import br.com.monitoria.model.EditalDeMonitoria;
 import br.com.monitoria.servico.InscricaoService;
@@ -56,35 +58,35 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
         dataInicial.setBounds(40, 30, 100, 40);
         painelPrincipal.add(dataInicial);
 
-        JLabel dataFinal = new JLabel("Data Final:");
-        dataFinal.setFont(Estilos.FONTE_NORMAL);
-        dataFinal.setBounds(250, 30, 100, 40);
-        painelPrincipal.add(dataFinal);
+        JLabel dataFinalLabel = new JLabel("Data Final:");
+        dataFinalLabel.setFont(Estilos.FONTE_NORMAL);
+        dataFinalLabel.setBounds(250, 30, 100, 40);
+        painelPrincipal.add(dataFinalLabel);
 
-        JLabel Disciplina = new JLabel("Selecione a Disciplina:");
-        Disciplina.setFont(Estilos.FONTE_NORMAL);
-        Disciplina.setBounds(40, 90, 178, 40);
-        painelPrincipal.add(Disciplina);
+        JLabel disciplinaLabel = new JLabel("Selecione a Disciplina:");
+        disciplinaLabel.setFont(Estilos.FONTE_NORMAL);
+        disciplinaLabel.setBounds(40, 90, 178, 40);
+        painelPrincipal.add(disciplinaLabel);
 
-        JLabel CRELabel = new JLabel("Nota do CRE:");
-        CRELabel.setFont(Estilos.FONTE_NORMAL);
-        CRELabel.setBounds(40, 150, 120, 40);
-        painelPrincipal.add(CRELabel);
+        JLabel creLabel = new JLabel("Nota do CRE:");
+        creLabel.setFont(Estilos.FONTE_NORMAL);
+        creLabel.setBounds(40, 150, 120, 40);
+        painelPrincipal.add(creLabel);
 
-        JLabel NotaLabel = new JLabel("Nota da Disciplina:");
-        NotaLabel.setFont(Estilos.FONTE_NORMAL);
-        NotaLabel.setBounds(40, 210, 160, 40);
-        painelPrincipal.add(NotaLabel);
+        JLabel notaLabel = new JLabel("Nota da Disciplina:");
+        notaLabel.setFont(Estilos.FONTE_NORMAL);
+        notaLabel.setBounds(40, 210, 160, 40);
+        painelPrincipal.add(notaLabel);
 
-        JLabel OrdemLabel = new JLabel("Ordem de Preferência:");
-        OrdemLabel.setFont(Estilos.FONTE_NORMAL);
-        OrdemLabel.setBounds(40, 270, 200, 40);
-        painelPrincipal.add(OrdemLabel);
+        JLabel ordemLabel = new JLabel("Ordem de Preferência:");
+        ordemLabel.setFont(Estilos.FONTE_NORMAL);
+        ordemLabel.setBounds(40, 270, 200, 40);
+        painelPrincipal.add(ordemLabel);
 
-        JLabel TipoVagaLabel = new JLabel("Tipo de Vaga Preferencial:");
-        TipoVagaLabel.setFont(Estilos.FONTE_NORMAL);
-        TipoVagaLabel.setBounds(40, 330, 220, 40);
-        painelPrincipal.add(TipoVagaLabel);
+        JLabel tipoVagaLabel = new JLabel("Tipo de Vaga Preferencial:");
+        tipoVagaLabel.setFont(Estilos.FONTE_NORMAL);
+        tipoVagaLabel.setBounds(40, 330, 220, 40);
+        painelPrincipal.add(tipoVagaLabel);
     }
 
     private void criarCampos() {
@@ -171,9 +173,13 @@ public class TelaInscreverEmEditalAluno extends TelaBase {
                 String mensagem = inscricaoService.inscreverAluno(edital, disciplinaSelecionada, cre, nota, ordemPreferencia, preferenciaVaga);
                 mostrarSucesso(mensagem);
                 dispose();
-            } catch (Exception ex) {
+            } catch (ValidacaoException | VagasEsgotadasException ex) {
+                // Erros esperados e amigáveis para o usuário
                 mostrarErro(ex.getMessage());
-                ex.printStackTrace(); // Para depuração
+            } catch (Exception ex) {
+                // Erros inesperados
+                mostrarErro("Ocorreu um erro inesperado ao realizar a inscrição.");
+                ex.printStackTrace(); // Loga o erro para depuração
             }
         }
     }

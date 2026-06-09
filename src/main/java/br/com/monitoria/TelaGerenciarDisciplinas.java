@@ -2,7 +2,7 @@ package br.com.monitoria;
 
 import br.com.monitoria.model.Disciplina;
 import br.com.monitoria.model.EditalDeMonitoria;
-import br.com.monitoria.model.Inscricao;
+import br.com.monitoria.servico.DisciplinaService;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -10,7 +10,6 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.LocalDate;
 import java.util.List;
 
 public class TelaGerenciarDisciplinas extends TelaBase {
@@ -26,16 +25,18 @@ public class TelaGerenciarDisciplinas extends TelaBase {
     private JButton botaoApagar;
     private JButton botaoFechar;
 
+    private DisciplinaService disciplinaService;
+
     public TelaGerenciarDisciplinas(EditalDeMonitoria edital) {
         super("Gerenciar Disciplinas do Edital " + edital.getNumero());
         this.edital = edital;
+        this.disciplinaService = new DisciplinaService();
         setSize(700, 500);
     }
 
     @Override
     public void inicializar() {
-        // Busca uma instância gerenciada do edital para evitar LazyInitializationException
-        this.edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(this.edital.getId());
+        this.edital = disciplinaService.buscarEditalPorId(this.edital.getId());
         super.inicializar();
     }
 
@@ -61,8 +62,10 @@ public class TelaGerenciarDisciplinas extends TelaBase {
 
         listModel = new DefaultListModel<>();
         List<Disciplina> disciplinasDoEdital = edital.getDisciplinas();
-        for (Disciplina disciplina : disciplinasDoEdital) {
-            listModel.addElement(disciplina);
+        if (disciplinasDoEdital != null) {
+            for (Disciplina disciplina : disciplinasDoEdital) {
+                listModel.addElement(disciplina);
+            }
         }
 
         listaDisciplinas = new JList<>(listModel);
@@ -75,7 +78,6 @@ public class TelaGerenciarDisciplinas extends TelaBase {
     }
 
     private void criarCamposDeEdicao() {
-
         JLabel labelNome = criarLabel("Nome:", Estilos.FONTE_NORMAL);
         labelNome.setBounds(310, 40, 100, 40);
         painelPrincipal.add(labelNome);
@@ -139,7 +141,6 @@ public class TelaGerenciarDisciplinas extends TelaBase {
     }
 
     private class OuvinteSelecaoLista implements ListSelectionListener {
-
         public void valueChanged(ListSelectionEvent e) {
             if (!e.getValueIsAdjusting()) {
                 Disciplina selecionada = listaDisciplinas.getSelectedValue();
@@ -147,8 +148,6 @@ public class TelaGerenciarDisciplinas extends TelaBase {
                     campoNomeDisciplina.setText(selecionada.getNomeDisciplina());
                     spinnerVagasRemuneradas.setValue(selecionada.getVagasRemuneradas());
                     spinnerVagasVoluntarias.setValue(selecionada.getVagasVoluntarias());
-
-                    // Não permite editar o nome de uma disciplina existente para manter a integridade
                     campoNomeDisciplina.setEditable(false);
                     campoNomeDisciplina.setBackground(Estilos.COR_FUNDO);
                 }
@@ -157,43 +156,24 @@ public class TelaGerenciarDisciplinas extends TelaBase {
     }
 
     private class OuvinteBotaoAdicionar implements ActionListener {
-
         public void actionPerformed(ActionEvent e) {
-            String nome = campoNomeDisciplina.getText().trim();
-            if (nome.isEmpty()) {
-                mostrarErro("O nome da disciplina não pode ser vazio.");
-                return;
-            }
-
-            for (Disciplina d : edital.getDisciplinas()) {
-                if (d.getNomeDisciplina().equalsIgnoreCase(nome)) {
-                    mostrarErro("Já existe uma disciplina com este nome no edital.");
-                    return;
-                }
-            }
-
-            int vagasRemuneradas = (int) spinnerVagasRemuneradas.getValue();
-            int vagasVoluntarias = (int) spinnerVagasVoluntarias.getValue();
-
             try {
-                Disciplina novaDisciplina = new Disciplina(nome, vagasVoluntarias, vagasRemuneradas);
+                String nome = campoNomeDisciplina.getText().trim();
+                int vagasRemuneradas = (int) spinnerVagasRemuneradas.getValue();
+                int vagasVoluntarias = (int) spinnerVagasVoluntarias.getValue();
 
-                GerenciadorDeDados.getInstancia().adicionarDisciplinaAoEdital(edital, novaDisciplina);
-
-                // Atualiza a UI somente após o sucesso da persistência
+                Disciplina novaDisciplina = disciplinaService.adicionarDisciplina(edital, nome, vagasRemuneradas, vagasVoluntarias);
+                
                 listModel.addElement(novaDisciplina);
-                edital.adicionarDisciplina(novaDisciplina);
                 mostrarSucesso("Disciplina adicionada com sucesso!");
                 limparCampos();
             } catch (Exception ex) {
-                mostrarErro("Ocorreu um erro ao adicionar a disciplina: " + ex.getMessage());
-                ex.printStackTrace();
+                mostrarErro(ex.getMessage());
             }
         }
     }
 
     private class OuvinteBotaoSalvar implements ActionListener {
-
         public void actionPerformed(ActionEvent e) {
             Disciplina selecionada = listaDisciplinas.getSelectedValue();
             if (selecionada == null) {
@@ -201,49 +181,31 @@ public class TelaGerenciarDisciplinas extends TelaBase {
                 return;
             }
 
-            int novasVagasRem = (int) spinnerVagasRemuneradas.getValue();
-            int novasVagasVol = (int) spinnerVagasVoluntarias.getValue();
-
-            // Regra: Se o edital está aberto, só pode aumentar as vagas.
-            boolean editalAberto = edital.isAberto() && edital.getDataInicio().isBefore(LocalDate.now().plusDays(1));
-            if (editalAberto) {
-                if (novasVagasRem < selecionada.getVagasRemuneradas() || novasVagasVol < selecionada.getVagasVoluntarias()) {
-                    mostrarErro("Com o edital aberto, você só pode aumentar o número de vagas.");
-                    // Reseta os spinners para os valores originais
-                    spinnerVagasRemuneradas.setValue(selecionada.getVagasRemuneradas());
-                    spinnerVagasVoluntarias.setValue(selecionada.getVagasVoluntarias());
-                    return;
-                }
-            }
-
             try {
-                selecionada.setVagasRemuneradas(novasVagasRem);
-                selecionada.setVagasVoluntarias(novasVagasVol);
-                GerenciadorDeDados.getInstancia().atualizarDisciplina(selecionada);
+                int novasVagasRem = (int) spinnerVagasRemuneradas.getValue();
+                int novasVagasVol = (int) spinnerVagasVoluntarias.getValue();
+                
+                disciplinaService.salvarDisciplina(edital, selecionada, novasVagasRem, novasVagasVol);
+                
+                // Atualiza a UI
                 mostrarSucesso("Alterações salvas com sucesso!");
-                listaDisciplinas.repaint(); // Para garantir que a exibição (se houver) seja atualizada
+                listaDisciplinas.repaint();
                 limparCampos();
             } catch (Exception ex) {
-                mostrarErro("Ocorreu um erro ao salvar as alterações: " + ex.getMessage());
+                // Em caso de erro de regra de negócio, reseta os spinners para os valores originais
+                spinnerVagasRemuneradas.setValue(selecionada.getVagasRemuneradas());
+                spinnerVagasVoluntarias.setValue(selecionada.getVagasVoluntarias());
+                mostrarErro(ex.getMessage());
             }
         }
     }
 
     private class OuvinteBotaoApagar implements ActionListener {
-
         public void actionPerformed(ActionEvent e) {
             Disciplina selecionada = listaDisciplinas.getSelectedValue();
             if (selecionada == null) {
                 mostrarErro("Selecione uma disciplina para apagar.");
                 return;
-            }
-
-            // Não apagar se houver inscritos
-            for (Inscricao insc : edital.getInscricoes()) {
-                if (insc.getDisciplina().equals(selecionada)) {
-                    mostrarErro("Não é possível apagar uma disciplina que já possui alunos inscritos.");
-                    return;
-                }
             }
 
             int confirmacao = JOptionPane.showConfirmDialog(
@@ -256,14 +218,12 @@ public class TelaGerenciarDisciplinas extends TelaBase {
 
             if (confirmacao == JOptionPane.YES_OPTION) {
                 try {
-                    GerenciadorDeDados.getInstancia().removerDisciplinaDoEdital(edital, selecionada);
-                    edital.getDisciplinas().remove(selecionada);
+                    disciplinaService.apagarDisciplina(edital, selecionada);
                     listModel.removeElement(selecionada);
                     mostrarSucesso("Disciplina apagada com sucesso.");
                     limparCampos();
                 } catch (Exception ex) {
-                    mostrarErro("Ocorreu um erro ao apagar a disciplina: " + ex.getMessage());
-                    ex.printStackTrace();
+                    mostrarErro(ex.getMessage());
                 }
             }
         }

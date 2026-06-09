@@ -1,10 +1,8 @@
 package br.com.monitoria;
 
-import br.com.monitoria.model.Aluno;
-import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.servico.AlunoService;
 
 import javax.swing.*;
-import java.util.List;
 
 /**
  * Tela para o cadastro de um novo aluno no sistema.
@@ -12,7 +10,7 @@ import java.util.List;
  * Permite ao usuário inserir nome, matrícula, e-mail, gênero e senha.
  *
  * @author Seu Nome
- * @version 1.3
+ * @version 1.4
  */
 public class TelaCadastroAluno extends TelaBase {
 
@@ -25,8 +23,11 @@ public class TelaCadastroAluno extends TelaBase {
     private JButton botaoCadastrar;
     private JButton botaoVoltar;
 
+    private AlunoService alunoService;
+
     public TelaCadastroAluno() {
         super("Cadastro de Aluno");
+        this.alunoService = new AlunoService();
     }
 
     @Override
@@ -128,49 +129,23 @@ public class TelaCadastroAluno extends TelaBase {
         Sexo sexo = (Sexo) campoSexo.getSelectedItem();
         String senha = new String(campoSenha.getPassword());
         String confirmarSenha = new String(campoConfirmarSenha.getPassword());
-        
-        if (nome.isEmpty() || matricula.isEmpty() || email.isEmpty() || senha.isEmpty()) {
-            mostrarErro("Por favor, preencha todos os campos.");
-            return;
-        }
-        
-        if (!senha.equals(confirmarSenha)) {
-            mostrarErro("As senhas não coincidem.");
-            campoSenha.setText("");
-            campoConfirmarSenha.setText("");
-            campoSenha.requestFocus();
-            return;
-        }
-        
-        if (!email.matches("(?i)^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$")) {
-            mostrarErro("E-mail inválido. Por favor, insira um e-mail válido.");
-            campoEmail.requestFocus();
-            return;
-        }
-
-        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-
-        // Validação de E-mail e Matrícula (MUITO MAIS EFICIENTE)
-        if (gerenciadorDeDados.getUsuarioPorEmail(email) != null) {
-            mostrarErro("Já existe um usuário cadastrado com este e-mail.");
-            campoEmail.requestFocus();
-            return;
-        }
-        if (gerenciadorDeDados.buscarAlunoPorMatricula(matricula) != null) {
-            mostrarErro("Já existe um usuário cadastrado com esta matrícula.");
-            campoMatricula.requestFocus();
-            return;
-        }
 
         try {
-            Aluno novoAluno = new Aluno(email, senha, nome, matricula, sexo);
-            gerenciadorDeDados.salvarAluno(novoAluno);
-            
+            alunoService.cadastrarAluno(nome, matricula, email, sexo, senha, confirmarSenha);
             mostrarSucesso("Aluno cadastrado com sucesso! Agora você pode fazer o login.");
             voltarParaLogin();
-            
         } catch (Exception e) {
-            mostrarErro("Erro ao cadastrar aluno: " + e.getMessage());
+            mostrarErro(e.getMessage());
+            // Opcional: focar no campo relevante com base no erro
+            if (e.getMessage().contains("e-mail")) {
+                campoEmail.requestFocus();
+            } else if (e.getMessage().contains("matrícula")) {
+                campoMatricula.requestFocus();
+            } else if (e.getMessage().contains("senhas")) {
+                campoSenha.setText("");
+                campoConfirmarSenha.setText("");
+                campoSenha.requestFocus();
+            }
         }
     }
     

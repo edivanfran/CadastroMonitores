@@ -1,6 +1,9 @@
 package br.com.monitoria;
 
+import br.com.monitoria.excecoes.CampoEmailInvalidadoException;
+import br.com.monitoria.excecoes.CampoSenhaInvalidadoException;
 import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.servico.CoordenadorService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,7 +14,7 @@ import java.net.URL;
  * Exibida quando não há coordenador cadastrado no sistema.
  */
 public class TelaCadastroCoordenador extends TelaBase {
-    
+
     private JTextField campoNome;
     private JTextField campoEmail;
     private JPasswordField campoSenha;
@@ -19,8 +22,11 @@ public class TelaCadastroCoordenador extends TelaBase {
     private JButton botaoCadastrar;
     private JButton botaoVoltar;
 
+    private CoordenadorService coordenadorService;
+
     public TelaCadastroCoordenador() {
         super("Cadastro de Coordenador");
+        this.coordenadorService = new CoordenadorService();
     }
 
     protected void criarComponentes() {
@@ -63,7 +69,7 @@ public class TelaCadastroCoordenador extends TelaBase {
     private JLabel criarLogo() {
         try {
             // Tenta carregar a imagem do logo a partir do classpath
-            URL resource = getClass().getResource("/IFPB_icon.jpg");
+            URL resource = getClass().getResource("/IFPB_icon.png");
             if (resource != null) {
                 ImageIcon icon = new ImageIcon(resource);
                 // Redimensiona o logo se necessário
@@ -153,53 +159,27 @@ public class TelaCadastroCoordenador extends TelaBase {
         String email = campoEmail.getText().trim();
         String senha = new String(campoSenha.getPassword());
         String confirmarSenha = new String(campoConfirmarSenha.getPassword());
-        
-        // Validações
-        if (nome.isEmpty() || email.isEmpty() || senha.isEmpty() || confirmarSenha.isEmpty()) {
-            mostrarErro("Por favor, preencha todos os campos.");
-            return;
-        }
-        
-        if (!senha.equals(confirmarSenha)) {
-            mostrarErro("As senhas não coincidem. Tente novamente.");
-            campoSenha.setText("");
-            campoConfirmarSenha.setText("");
-            campoSenha.requestFocus();
-            return;
-        }
-        
-        // Validação de email básica
-        if (!email.matches("(?i)^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$")) {
-            mostrarErro("E-mail inválido. Por favor, insira um e-mail válido.");
-            campoEmail.requestFocus();
-            return;
-        }
 
-        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-
-        // Adiciona verificação de e-mail existente
-        if (gerenciadorDeDados.getUsuarioPorEmail(email) != null) {
-            mostrarErro("Este e-mail já está em uso. Por favor, escolha outro.");
-            campoEmail.requestFocus();
-            return;
-        }
-        
         // Cadastra o coordenador
         try {
             // Define o coordenador como usuário logado
-            Coordenador coordenador = new Coordenador(email, senha, nome);
-            gerenciadorDeDados.salvarCoordenador(coordenador);
+            Coordenador coordenador = coordenadorService.cadastrarCoordenador(nome, email, senha, confirmarSenha);
             sessao.setUsuarioLogado(coordenador);
-            
             mostrarSucesso("Coordenador cadastrado com sucesso!");
-            
+
             // Abre a tela principal
             TelaPrincipal telaPrincipal = new TelaPrincipal();
             telaPrincipal.inicializar();
             this.dispose();
-            
         } catch (Exception e) {
-            mostrarErro("Erro ao cadastrar coordenador: " + e.getMessage());
+            mostrarErro(e.getMessage());
+            if (e instanceof CampoEmailInvalidadoException) {
+                campoEmail.requestFocus();
+            } else if (e instanceof CampoSenhaInvalidadoException) {
+                campoSenha.setText("");
+                campoConfirmarSenha.setText("");
+                campoSenha.requestFocus();
+            }
         }
     }
     

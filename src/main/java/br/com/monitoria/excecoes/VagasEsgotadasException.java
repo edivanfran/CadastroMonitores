@@ -6,4 +6,7 @@ public class VagasEsgotadasException extends Exception {
     public VagasEsgotadasException(String nomeDisciplina, Vaga tipoVaga) {
         super("Não há mais vagas do tipo '" + tipoVaga + "' para a disciplina " + nomeDisciplina);
     }
+    public VagasEsgotadasException(String mensagem) {
+        super(mensagem);
+    }
 }

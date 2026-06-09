@@ -15,7 +15,8 @@ public class GerenciadorDeEventos {
     private static GerenciadorDeEventos instancia;
     private final List<Observador> observadores = new ArrayList<>();
 
-    private GerenciadorDeEventos() {}
+    private GerenciadorDeEventos() {
+    }
 
     public static synchronized GerenciadorDeEventos getInstancia() {
         if (instancia == null) {
@@ -26,6 +27,7 @@ public class GerenciadorDeEventos {
 
     /**
      * Adiciona um observador à lista para ser notificado sobre atualizações.
+     * 
      * @param observador A tela ou componente que implementa a interface Observador.
      */
     public void adicionarObservador(Observador observador) {

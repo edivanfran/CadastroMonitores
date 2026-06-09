@@ -14,11 +14,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -50,16 +46,34 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
     public TelaPrincipal() {
         super("Sistema de Cadastro de Monitores");
-        // Registra a TelaPrincipal para observar a Central
         GerenciadorDeEventos.getInstancia().adicionarObservador(this);
+
+        // BUGFIX: Adiciona um listener para redimensionar a tabela com a janela
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                redimensionarTabelas();
+            }
+        });
     }
 
     @Override
     public void atualizar() {
-        // Vai atualizar os valores na tabela edital
         atualizarValoresDaTabelaEdital();
         if (isCoordenador()) {
             atualizarValoresDaTabelaAluno();
+        }
+    }
+
+    private void redimensionarTabelas() {
+        int larguraPainel = painelPrincipal.getWidth() - 230; // 210 (x) + 20 (margem)
+        int alturaPainel = painelPrincipal.getHeight() - 185; // 125 (y) + 60 (rodapé)
+
+        if (painelTabelaEditais != null) {
+            painelTabelaEditais.setBounds(210, 125, larguraPainel, alturaPainel);
+        }
+        if (painelTabelaAlunos != null) {
+            painelTabelaAlunos.setBounds(210, 125, larguraPainel, alturaPainel);
         }
     }
 
@@ -86,6 +100,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
                 labelFiltro.setVisible(false);
             }
         }
+        redimensionarTabelas();
     }
 
     /**
@@ -135,9 +150,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
         menuAbas.addTab("Editais", null, painelEditais, "Funcionalidades relacionadas a editais, pressione Alt + 1 para abrir essa aba");
         menuAbas.setMnemonicAt(0, KeyEvent.VK_1);
 
-        // Adicionar botões à aba de Editais
-        botaoCadastrarEdital = criarBotaoLateral("Cadastrar Edital",
-                new OuvinteBotaoCadastrarEdital());
+        botaoCadastrarEdital = criarBotaoLateral("Cadastrar Edital", new OuvinteBotaoCadastrarEdital());
         if (!isCoordenador()) {
             botaoCadastrarEdital.setVisible(false);
         }
@@ -177,8 +190,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
             botaoInscreverMonitoria = criarBotaoLateral("Inscrever em Monitoria", new OuvinteBotaoInscreverMonitoria());
             painelAluno.add(botaoInscreverMonitoria);
 
-            botaoVerRanque = criarBotaoLateral("Ver Ranque",
-                    e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
+            botaoVerRanque = criarBotaoLateral("Ver Ranque", e -> mostrarSucesso("Funcionalidade em desenvolvimento"));
             painelAluno.add(botaoVerRanque);
         }
 
@@ -211,9 +223,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
     private void criarPainelTabelaAlunos() {
         modeloTabelaAlunos = new DefaultTableModel() {
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         String[] colunas = {"Matrícula", "Nome", "Email"};
         for (String coluna : colunas) {
@@ -241,15 +251,9 @@ public class TelaPrincipal extends TelaBase implements Observador {
         painelPrincipal.add(campoFiltro);
 
         campoFiltro.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                filtrarTabelaAlunos();
-            }
-            public void removeUpdate(DocumentEvent e) {
-                filtrarTabelaAlunos();
-            }
-            public void changedUpdate(DocumentEvent e) {
-                filtrarTabelaAlunos();
-            }
+            public void insertUpdate(DocumentEvent e) { filtrarTabelaAlunos(); }
+            public void removeUpdate(DocumentEvent e) { filtrarTabelaAlunos(); }
+            public void changedUpdate(DocumentEvent e) { filtrarTabelaAlunos(); }
         });
     }
 
@@ -263,17 +267,11 @@ public class TelaPrincipal extends TelaBase implements Observador {
     }
 
     public void atualizarValoresDaTabelaEdital() {
+        if (modeloTabelaEditais == null) return;
         modeloTabelaEditais.setRowCount(0);
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
-
-        if (editais == null) {
-            return;
-        }
-
-        //Filtra as colunas que vai colocar na tabela
+        List<EditalDeMonitoria> editais = GerenciadorDeDados.getInstancia().getTodosOsEditais();
+        if (editais == null) return;
         for (EditalDeMonitoria item : editais) {
             modeloTabelaEditais.addRow(new Object[]{item.getId(), item.getNumero(), item.getDataInicio().format(formatador),
                     item.getDataLimite().format(formatador), item.getDisciplinas(), item.isAberto() ? "aberto" : "FECHADO"});
@@ -281,20 +279,10 @@ public class TelaPrincipal extends TelaBase implements Observador {
     }
 
     public void atualizarValoresDaTabelaAluno() {
-
-        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-
-        List<Aluno> alunos = gerenciadorDeDados.getTodosOsAlunos();
-
         if (modeloTabelaAlunos == null) return;
         modeloTabelaAlunos.setRowCount(0);
-
-        // Adiciona uma verificação para evitar NullPointerException se a lista for nula.
-        if (alunos == null) {
-            return;
-        }
-
-        //Filtra as colunas que vai colocar na tabela
+        List<Aluno> alunos = GerenciadorDeDados.getInstancia().getTodosOsAlunos();
+        if (alunos == null) return;
         for (Aluno alguem : alunos) {
             modeloTabelaAlunos.addRow(new Object[]{alguem.getMatricula(), alguem.getNome(), alguem.getEmail()});
         }
@@ -338,7 +326,6 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
             private Color corOriginal = Estilos.COR_PRIMARIA;
-            
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 corOriginal = botao.getBackground();
                 botao.setBackground(corOriginal.brighter());
@@ -361,18 +348,17 @@ public class TelaPrincipal extends TelaBase implements Observador {
 
             if (isCoordenador()) {
                 switch (numeroAba) {
-                    case 0: {
-                        // Aba Editais
+                    case 0: { // Aba Editais
                         if (painelTabelaAlunos != null) {
                             painelTabelaAlunos.setVisible(false);
                             campoFiltro.setVisible(false);
                             labelFiltro.setVisible(false);
                         }
                         painelTabelaEditais.setVisible(true);
+                        atualizarValoresDaTabelaEdital(); // Garante que os dados apareçam
                         break;
                     }
-                    case 1: {
-                        // Aba Alunos
+                    case 1: { // Aba Alunos
                         painelTabelaEditais.setVisible(false);
                         if (painelTabelaAlunos != null) {
                             campoFiltro.setVisible(true);
@@ -395,7 +381,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
     private class OuvinteBotaoDetalharEdital implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             int linhaSelecionada = tabelaEditais.getSelectedRow();
-            
+
             if (linhaSelecionada == -1) {
                 mostrarErro("Selecione uma linha!");
                 return;
@@ -457,8 +443,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
             String matricula = (String) tabelaAlunos.getValueAt(linhaSelecionada, 0);
             Aluno aluno = GerenciadorDeDados.getInstancia().buscarAlunoPorMatricula(matricula);
             if (aluno != null) {
-                TelaPerfilAluno telaPerfil = new TelaPerfilAluno(aluno);
-                telaPerfil.setVisible(true);
+                new TelaPerfilAluno(aluno).setVisible(true);
             } else {
                 mostrarErro("Aluno não encontrado!");
             }
@@ -478,9 +463,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
             EditalDeMonitoria edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(id);
 
             if (edital != null) {
-                TelaInscreverEmEditalAluno telaDetalhes = new TelaInscreverEmEditalAluno(edital);
-                telaDetalhes.inicializar();
-                telaDetalhes.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                new TelaInscreverEmEditalAluno(edital).inicializar();
             } else {
                 mostrarErro("Edital não encontrado");
             }
@@ -492,8 +475,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
         public void actionPerformed(ActionEvent e) {
             Aluno alunoLogado = (Aluno) sessao.getUsuarioLogado();
             if (alunoLogado != null) {
-                TelaPerfilAluno telaPerfil = new TelaPerfilAluno(alunoLogado);
-                telaPerfil.setVisible(true);
+                new TelaPerfilAluno(alunoLogado).setVisible(true);
             } else {
                 mostrarErro("Não foi possível encontrar os dados do seu perfil.");
             }
@@ -503,9 +485,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
     public class OuvinteBotaoCadastrarEdital implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
-            TelaCadastrarEdital telaCadastrarEdital = new TelaCadastrarEdital();
-            telaCadastrarEdital.inicializar();
-            telaCadastrarEdital.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            new TelaCadastrarEdital().inicializar();
         }
     }
 
@@ -536,16 +516,18 @@ public class TelaPrincipal extends TelaBase implements Observador {
     }
 
     private void abrirTelaListagemEditais() {
+        this.setEnabled(false);
         TelaListagemEditais telaListagem = new TelaListagemEditais();
+        telaListagem.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         telaListagem.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosed(WindowEvent e) {
-                // Quando a tela de detalhes fechar, apenas reexibe e atualiza a tela de listagem
-                inicializar();
+                TelaPrincipal.this.setEnabled(true); // Reabilita a tela principal
+                TelaPrincipal.this.toFront(); // Traz a tela principal para frente
+                atualizar(); // Atualiza os dados
             }
         });
-        telaListagem.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         telaListagem.inicializar();
-        this.dispose();
     }
 
     /**
@@ -567,8 +549,7 @@ public class TelaPrincipal extends TelaBase implements Observador {
             
             if (opcao == JOptionPane.YES_OPTION) {
                 sessao.limparSessao();
-                TelaLogin telaLogin = new TelaLogin();
-                telaLogin.inicializar();
+                new TelaLogin().inicializar();
                 this.dispose();
             }
         });

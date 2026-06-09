@@ -36,7 +36,7 @@ public class TelaGerenciarDisciplinas extends TelaBase {
 
     @Override
     public void inicializar() {
-        this.edital = GerenciadorDeDados.getInstancia().buscarEditalPorId(this.edital.getId());
+        this.edital = disciplinaService.buscarEditalPorId(this.edital.getId());
         super.inicializar();
     }
 
@@ -189,7 +189,7 @@ public class TelaGerenciarDisciplinas extends TelaBase {
                 
                 // Atualiza a UI
                 mostrarSucesso("Alterações salvas com sucesso!");
-                listaDisciplinas.repaint(); // Repinta a lista para refletir os novos totais de vagas no toString()
+                listaDisciplinas.repaint();
                 limparCampos();
             } catch (Exception ex) {
                 // Em caso de erro de regra de negócio, reseta os spinners para os valores originais

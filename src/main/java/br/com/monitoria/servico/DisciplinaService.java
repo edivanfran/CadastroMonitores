@@ -1,6 +1,7 @@
 package br.com.monitoria.servico;
 
 import br.com.monitoria.GerenciadorDeDados;
+import br.com.monitoria.GerenciadorDeEventos;
 import br.com.monitoria.model.Disciplina;
 import br.com.monitoria.model.EditalDeMonitoria;
 import br.com.monitoria.model.Inscricao;
@@ -13,6 +14,10 @@ public class DisciplinaService {
 
     public DisciplinaService() {
         this.gerenciadorDeDados = GerenciadorDeDados.getInstancia();
+    }
+
+    public EditalDeMonitoria buscarEditalPorId(Long id) {
+        return gerenciadorDeDados.buscarEditalPorId(id);
     }
 
     public Disciplina adicionarDisciplina(EditalDeMonitoria edital, String nome, int vagasRemuneradas, int vagasVoluntarias) throws Exception {
@@ -30,6 +35,7 @@ public class DisciplinaService {
 
         Disciplina novaDisciplina = new Disciplina(nome, vagasVoluntarias, vagasRemuneradas);
         gerenciadorDeDados.adicionarDisciplinaAoEdital(editalAtualizado, novaDisciplina);
+        GerenciadorDeEventos.getInstancia().notificarAtualizacao();
         
         return novaDisciplina;
     }
@@ -49,6 +55,7 @@ public class DisciplinaService {
         disciplina.setVagasRemuneradas(novasVagasRem);
         disciplina.setVagasVoluntarias(novasVagasVol);
         gerenciadorDeDados.atualizarDisciplina(disciplina);
+        GerenciadorDeEventos.getInstancia().notificarAtualizacao();
     }
 
     public void apagarDisciplina(EditalDeMonitoria edital, Disciplina disciplina) throws Exception {
@@ -65,5 +72,6 @@ public class DisciplinaService {
         }
 
         gerenciadorDeDados.removerDisciplinaDoEdital(editalAtualizado, disciplina);
+        GerenciadorDeEventos.getInstancia().notificarAtualizacao();
     }
 }

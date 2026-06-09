@@ -9,6 +9,7 @@ import br.com.monitoria.excecoes.PesosInvalidosException;
 import br.com.monitoria.excecoes.PrazoVencidoException;
 import br.com.monitoria.model.Coordenador;
 import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.model.EditalBuilder;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -42,7 +43,12 @@ public class EditalService {
         String numeroEdital = "Edital " + (editais.size() + 1);
 
         try {
-            EditalDeMonitoria novoEdital = new EditalDeMonitoria(numeroEdital, dataInicio, dataFim, pesoCre, pesoNota);
+            EditalDeMonitoria novoEdital = new EditalBuilder()
+                    .comNumero(numeroEdital)
+                    .comDatas(dataInicio, dataFim)
+                    .comPesoCre(pesoCre)
+                    .comPesoNota(pesoNota)
+                    .build();
             gerenciadorDeDados.salvarEdital(novoEdital);
         } catch (PesosInvalidosException ex) {
             throw new Exception("Erro ao cadastrar edital: " + ex.getMessage());

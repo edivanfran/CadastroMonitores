@@ -4,6 +4,7 @@ import br.com.monitoria.GerenciadorDeDados;
 import br.com.monitoria.Sexo;
 import br.com.monitoria.model.Aluno;
 import br.com.monitoria.model.Inscricao;
+import br.com.monitoria.model.UsuarioFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,8 +39,8 @@ public class AlunoService {
             throw new Exception("Já existe um usuário cadastrado com esta matrícula.");
         }
 
-        // Criação e persistência
-        Aluno novoAluno = new Aluno(email, senha, nome, matricula, sexo);
+        // Criação e persistência usando a Factory
+        Aluno novoAluno = UsuarioFactory.criarAluno(email, senha, nome, matricula, sexo);
         gerenciadorDeDados.salvarAluno(novoAluno);
     }
 

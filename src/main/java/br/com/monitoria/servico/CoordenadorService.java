@@ -4,6 +4,7 @@ import br.com.monitoria.GerenciadorDeDados;
 import br.com.monitoria.excecoes.CampoEmailInvalidadoException;
 import br.com.monitoria.excecoes.CampoSenhaInvalidadoException;
 import br.com.monitoria.model.Coordenador;
+import br.com.monitoria.model.UsuarioFactory;
 
 public class CoordenadorService {
     private GerenciadorDeDados gerenciadorDeDados;
@@ -32,8 +33,8 @@ public class CoordenadorService {
             throw new CampoEmailInvalidadoException("Este e-mail já está em uso. Por favor, escolha outro.");
         }
 
-        // Cadastra o coordenador
-        Coordenador coordenador = new Coordenador(email, senha, nome);
+        // Cadastra o coordenador usando a Factory
+        Coordenador coordenador = UsuarioFactory.criarCoordenador(email, senha, nome);
         gerenciadorDeDados.salvarCoordenador(coordenador);
         return coordenador;
     }

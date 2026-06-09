@@ -230,6 +230,12 @@ public class TelaDetalharEdital extends TelaEditalBase {
             GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
             gerenciadorDeDados.salvarEdital(copiaEdital);
             mostrarSucesso("Edital clonado com sucesso!");
+            
+            // Abre os detalhes do novo edital clonado para o usuário ver/editar a cópia
+            TelaDetalharEdital telaCopia = new TelaDetalharEdital(copiaEdital);
+            telaCopia.inicializar();
+            telaCopia.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            dispose(); // Fecha a janela do edital original
         }
     }
     

@@ -1,13 +1,13 @@
 package br.com.monitoria;
 
-import br.com.monitoria.model.Aluno;
-import br.com.monitoria.model.Coordenador;
-import br.com.monitoria.model.Usuario;
+import br.com.monitoria.excecoes.CamposObrigatoriosException;
+import br.com.monitoria.excecoes.CoordenadorNaoCadastradoException;
+import br.com.monitoria.excecoes.CredenciaisInvalidasException;
+import br.com.monitoria.servico.LoginService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
-import java.util.List;
 
 /**
  * Tela de login do sistema.
@@ -18,9 +18,11 @@ public class TelaLogin extends TelaBase {
     private JTextField campoEmail;
     private JPasswordField campoSenha;
     private JButton botaoLogin;
+    private LoginService loginService;
     
     public TelaLogin() {
         super("Sistema de Cadastro de Monitores - Login");
+        this.loginService = new LoginService();
     }
 
     protected void criarComponentes() {
@@ -35,7 +37,7 @@ public class TelaLogin extends TelaBase {
     private void criarCabecalho() {
         JLabel logo = criarLogo();
         if (logo != null) {
-            logo.setBounds(375, 50, 150, 150); // Centralizado horizontalmente
+            logo.setBounds(375, 50, 150, 150);
             painelPrincipal.add(logo);
         }
 
@@ -52,7 +54,7 @@ public class TelaLogin extends TelaBase {
      */
     private JLabel criarLogo() {
         try {
-            URL resource = getClass().getResource("/IFPB_icon.jpg");
+            URL resource = getClass().getResource("/IFPB_icon.png");
             if (resource != null) {
                 ImageIcon icon = new ImageIcon(resource);
                 // Redimensiona o logo para um tamanho padrão
@@ -62,7 +64,6 @@ public class TelaLogin extends TelaBase {
                 return new JLabel(icon);
             }
         } catch (Exception e) {
-            // Se ocorrer um erro, continua sem logo, mas imprime o erro para depuração
             e.printStackTrace();
         }
         return null;
@@ -108,7 +109,7 @@ public class TelaLogin extends TelaBase {
 
         // Adiciona listener para Enter no campo de senha
         campoSenha.addActionListener(e -> realizarLogin());
-        
+
         // Adiciona listener para Enter no campo de email para pular para o campo de senha
         campoEmail.addActionListener(e -> campoSenha.requestFocus());
     }
@@ -126,7 +127,7 @@ public class TelaLogin extends TelaBase {
         botao.setFocusPainted(false);
         botao.setBorderPainted(false);
         botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         // Efeito hover (O efeito de quando o mouse passa por cima)
         botao.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -136,9 +137,9 @@ public class TelaLogin extends TelaBase {
                 botao.setBackground(Estilos.COR_VERDE_CLARO);
             }
         });
-        
+
         botao.addActionListener(e -> realizarLogin());
-        
+
         return botao;
     }
     
@@ -146,69 +147,27 @@ public class TelaLogin extends TelaBase {
      * Realiza o processo de login.
      */
     private void realizarLogin() {
-        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-        List<Coordenador> coordenadores = gerenciadorDeDados.getTodosOsCoordenadores();
-
-        Boolean temCoordenador;
-
-        if (!coordenadores.isEmpty()) {
-            temCoordenador = Boolean.TRUE;
-        } else {
-            temCoordenador = Boolean.FALSE;
-        }
-
-        // Primeiro, verifica se o coordenador precisa ser cadastrado
-        if (!temCoordenador) {
-            mostrarAviso("Nenhum coordenador encontrado. É necessário cadastrar um administrador primeiro.");
-            abrirTelaCadastroCoordenador();
-            return;
-        }
-
         String email = campoEmail.getText().trim();
         String senha = new String(campoSenha.getPassword());
         
-        // Validação básica
-        if (email.isEmpty() || senha.isEmpty()) {
-            mostrarErro("Por favor, preencha todos os campos.");
-            return;
-        }
-
-        // Verifica se é coordenador
-        Coordenador coordenador = gerenciadorDeDados.getCoordenador();
-        if (coordenador.getEmail().equalsIgnoreCase(email) && 
-            coordenador.getSenha().equals(senha)) {
-            sessao.setUsuarioLogado(coordenador);
+        try {
+            loginService.autenticar(email, senha);
             abrirTelaPrincipal();
-            return;
-        }
-        
-        // Verifica se é aluno
-        if (gerenciadorDeDados.isLoginPermitido(email, senha)) {
-            Usuario usuario = gerenciadorDeDados.getUsuarioPorEmail(email);
-            if (usuario instanceof Aluno) {
-                Aluno aluno = (Aluno) usuario;
-                sessao.setUsuarioLogado(aluno);
-                abrirTelaPrincipal();
-                return;
-            }
-        } else {
-            mostrarErro("E-mail ou senha inválidos.");
-            campoEmail.requestFocus();
+        } catch (CoordenadorNaoCadastradoException e) {
+            mostrarAviso(e.getMessage());
+            abrirTelaCadastroCoordenador();
+        } catch (CamposObrigatoriosException | CredenciaisInvalidasException e) {
+            mostrarErro(e.getMessage());
             campoSenha.setText("");
+            campoEmail.requestFocus();
         }
-        
-        // Credenciais inválidas
-        mostrarErro("E-mail ou senha inválidos. Tente novamente.");
-        campoSenha.setText("");
-        campoEmail.requestFocus();
     }
     
     /**
      * Abre a tela de cadastro de coordenador.
      */
     private void abrirTelaCadastroCoordenador() {
-        TelaCadastroCoordenador telaCadastro = new TelaCadastroCoordenador();
-        telaCadastro.inicializar();
+        new TelaCadastroCoordenador().inicializar();
         this.dispose();
     }
     
@@ -222,7 +181,7 @@ public class TelaLogin extends TelaBase {
         linkEsqueciSenha.setCursor(new Cursor(Cursor.HAND_CURSOR));
         linkEsqueciSenha.setHorizontalAlignment(SwingConstants.RIGHT);
         linkEsqueciSenha.setBounds(315, 400, 350, 20);
-        
+
         // Efeito hover
         linkEsqueciSenha.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -235,7 +194,7 @@ public class TelaLogin extends TelaBase {
                 abrirTelaEsqueciSenha();
             }
         });
-        
+
         painelPrincipal.add(linkEsqueciSenha);
     }
     
@@ -249,7 +208,7 @@ public class TelaLogin extends TelaBase {
         linkCadastro.setCursor(new Cursor(Cursor.HAND_CURSOR));
         linkCadastro.setHorizontalAlignment(SwingConstants.CENTER);
         linkCadastro.setBounds(350, 485, 200, 25);
-        
+
         // Efeito hover
         linkCadastro.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -262,7 +221,7 @@ public class TelaLogin extends TelaBase {
                 abrirTelaCadastroAluno();
             }
         });
-        
+
         painelPrincipal.add(linkCadastro);
     }
     
@@ -270,8 +229,7 @@ public class TelaLogin extends TelaBase {
      * Abre a tela de esqueci senha.
      */
     private void abrirTelaEsqueciSenha() {
-        TelaEsqueciSenha telaEsqueciSenha = new TelaEsqueciSenha();
-        telaEsqueciSenha.inicializar();
+        new TelaEsqueciSenha().inicializar();
         this.dispose();
     }
     
@@ -279,17 +237,12 @@ public class TelaLogin extends TelaBase {
      * Abre a tela de cadastro de aluno.
      */
     private void abrirTelaCadastroAluno() {
-        TelaCadastroAluno telaCadastro = new TelaCadastroAluno();
-        telaCadastro.inicializar();
+        new TelaCadastroAluno().inicializar();
         this.dispose();
     }
     
-    /**
-     * Abre a tela principal após login bem-sucedido.
-     */
     private void abrirTelaPrincipal() {
-        TelaPrincipal telaPrincipal = new TelaPrincipal();
-        telaPrincipal.inicializar();
+        new TelaPrincipal().inicializar();
         this.dispose();
     }
 }

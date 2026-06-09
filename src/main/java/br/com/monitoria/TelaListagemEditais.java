@@ -2,6 +2,7 @@ package br.com.monitoria;
 
 import br.com.monitoria.interfaces.Observador;
 import br.com.monitoria.model.EditalDeMonitoria;
+import br.com.monitoria.servico.EditalService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -19,9 +20,11 @@ public class TelaListagemEditais extends TelaBase implements Observador {
     private DefaultTableModel modeloTabela;
     private JButton botaoVerDetalhes;
     private JButton botaoVoltar;
+    private EditalService editalService;
 
     public TelaListagemEditais() {
         super("Listagem de Editais");
+        this.editalService = new EditalService();
         GerenciadorDeEventos.getInstancia().adicionarObservador(this);
     }
 
@@ -92,8 +95,7 @@ public class TelaListagemEditais extends TelaBase implements Observador {
             return;
         }
 
-        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+        List<EditalDeMonitoria> editais = editalService.listarTodosOsEditais();
 
         String numeroEdital = (String) modeloTabela.getValueAt(linhaSelecionada, 0);
         EditalDeMonitoria editalSelecionado = null;
@@ -153,8 +155,7 @@ public class TelaListagemEditais extends TelaBase implements Observador {
     private void recarregarDadosDaTabela() {
         modeloTabela.setRowCount(0);
 
-        GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-        List<EditalDeMonitoria> editais = gerenciadorDeDados.getTodosOsEditais();
+        List<EditalDeMonitoria> editais = editalService.listarTodosOsEditais();
 
         // Preenche a tabela com os dados dos editais
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -176,8 +177,6 @@ public class TelaListagemEditais extends TelaBase implements Observador {
      * Fecha a tela atual e volta para a tela principal.
      */
     private void voltarParaTelaPrincipal() {
-        TelaPrincipal telaPrincipal = new TelaPrincipal();
-        telaPrincipal.inicializar();
         this.dispose();
     }
 

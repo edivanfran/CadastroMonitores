@@ -3,6 +3,7 @@ package br.com.monitoria;
 import br.com.monitoria.model.Aluno;
 import br.com.monitoria.model.EditalDeMonitoria;
 import br.com.monitoria.model.Inscricao;
+import br.com.monitoria.servico.AlunoService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -10,12 +11,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 public class TelaPerfilAluno extends TelaBase {
 
     private Aluno aluno;
+    private AlunoService alunoService;
+
     private JTextField campoNome;
     private JTextField campoEmail;
     private JPasswordField campoSenha;
@@ -28,11 +30,11 @@ public class TelaPerfilAluno extends TelaBase {
     private JButton botaoCancelar;
     private JTable tabelaHistorico;
     private DefaultTableModel modeloTabelaHistorico;
-    private JScrollPane painelTabelaHistorico;
 
     public TelaPerfilAluno(Aluno aluno) {
         super("Perfil do Aluno");
         this.aluno = aluno;
+        this.alunoService = new AlunoService();
 
         setSize(700, 650);
         setResizable(true);
@@ -112,7 +114,6 @@ public class TelaPerfilAluno extends TelaBase {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         String[] colunas = {"Edital", "Disciplina", "Período", "Vaga"};
-
         for (String coluna : colunas) {
             modeloTabelaHistorico.addColumn(coluna);
         }
@@ -121,8 +122,8 @@ public class TelaPerfilAluno extends TelaBase {
         tabelaHistorico.setRowHeight(25);
         tabelaHistorico.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
         
-        painelTabelaHistorico = new JScrollPane(tabelaHistorico);
-        painelTabelaHistorico.setBounds(40, 330, 600, 180); // Posicionada abaixo dos dados
+        JScrollPane painelTabelaHistorico = new JScrollPane(tabelaHistorico);
+        painelTabelaHistorico.setBounds(40, 330, 600, 180);
         painelPrincipal.add(painelTabelaHistorico);
     }
 
@@ -138,23 +139,19 @@ public class TelaPerfilAluno extends TelaBase {
         modeloTabelaHistorico.setRowCount(0);
         DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        List<Inscricao> inscricoes = GerenciadorDeDados.getInstancia().getInscricoesPorAluno(this.aluno);
+        List<Inscricao> inscricoes = alunoService.getHistoricoInscricoes(this.aluno);
 
-        if (inscricoes != null) {
-            for (Inscricao inscricao : inscricoes) {
-                if (!inscricao.isDesistiu()) {
-                    EditalDeMonitoria edital = inscricao.getEdital();
-                    String periodo = edital.getDataInicio().format(formatador) + " - " + 
-                                     edital.getDataLimite().format(formatador);
-                    
-                    modeloTabelaHistorico.addRow(new Object[]{
-                        edital.getNumero(),
-                        inscricao.getDisciplina().getNomeDisciplina(),
-                        periodo,
-                        inscricao.getTipoVaga()
-                    });
-                }
-            }
+        for (Inscricao inscricao : inscricoes) {
+            EditalDeMonitoria edital = inscricao.getEdital();
+            String periodo = edital.getDataInicio().format(formatador) + " - " + 
+                             edital.getDataLimite().format(formatador);
+            
+            modeloTabelaHistorico.addRow(new Object[]{
+                edital.getNumero(),
+                inscricao.getDisciplina().getNomeDisciplina(),
+                periodo,
+                inscricao.getTipoVaga()
+            });
         }
     }
 
@@ -197,6 +194,7 @@ public class TelaPerfilAluno extends TelaBase {
         botaoSalvar.setVisible(editando);
         botaoCancelar.setVisible(editando);
     }
+
     private class OuvinteBotaoCancelar implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             // Coloca os dados originais
@@ -208,31 +206,17 @@ public class TelaPerfilAluno extends TelaBase {
     private class OuvinteBotaoSalvar implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Validar nome
-            String nome = campoNome.getText().strip();
-            if (nome.isEmpty() || !nome.matches("^[A-ZÀ-Ÿ][a-zà-ÿ]+(?: (?:[dD]e|[dD]a|[dD]os|[dD]as|[eE])? ?[A-ZÀ-Ÿ]?[a-zà-ÿ]+)+$")) {
-                mostrarErro("Nome inválido. Por favor, insira um nome completo válido.");
-                return;
-            }
-
-            // Validar senha
+            String nome = campoNome.getText().trim();
             String senha = new String(campoSenha.getPassword());
-            if (senha.isEmpty()) {
-                mostrarErro("A senha não pode estar em branco.");
-                return;
+            Sexo genero = (Sexo) campoGenero.getSelectedItem();
+
+            try {
+                alunoService.atualizarPerfil(aluno, nome, senha, genero);
+                mostrarSucesso("Dados do aluno atualizados com sucesso!");
+                alternarModoEdicao(false);
+            } catch (Exception ex) {
+                mostrarErro(ex.getMessage());
             }
-
-            // Atualizar dados do aluno
-            aluno.setNome(nome);
-            aluno.setSenha(senha);
-            aluno.setGenero((Sexo) campoGenero.getSelectedItem());
-
-            // Salva na central
-            GerenciadorDeDados gerenciadorDeDados = GerenciadorDeDados.getInstancia();
-            gerenciadorDeDados.atualizarAluno(aluno);
-            mostrarSucesso("Dados do aluno atualizados com sucesso!");
-            
-            alternarModoEdicao(false);
         }
     }
 }
